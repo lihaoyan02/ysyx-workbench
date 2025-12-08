@@ -10,3 +10,4 @@ sim:
 	@echo "Write this Makefile by your self."
 
 include ../Makefile
+include $(NVBOARD_HOME)/scripts/nvboard.mk
