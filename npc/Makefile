@@ -1,5 +1,5 @@
 VERILATOR_FLAGS = -cc --exe --trace-fst --build -Wall
-VERILATOR_INPUT = -f top.v tb.cpp
+VERILATOR_INPUT = vsrc/top.v csrc/tb.cpp
 
 all: sim
 	@echo "Write this Makefile by your self."
