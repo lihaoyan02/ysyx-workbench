@@ -91,7 +91,7 @@ static int cmd_x(char *args) {
 		if((expr[0]=='0') && (expr[1]=='x')) {
 			paddr_t val = strtoul(expr, NULL, 16);
 			for(paddr_t i = 0; i != N_num; i++) {
-				printf("%d : %x\n", i, paddr_read(i+val, 4));
+				printf("%d : %x\n", i, paddr_read(i*4+val, 4));
 			}
 		}
 	}
