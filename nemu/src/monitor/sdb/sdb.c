@@ -65,7 +65,7 @@ static int cmd_si(char *args) {
 	cpu_exec(N_num);
 	return 0;
 }
-/*
+
 // print program status
 static int cmd_info(char *args) {
 	char *arg = strtok(NULL," ");
@@ -75,9 +75,10 @@ static int cmd_info(char *args) {
 		isa_reg_display();
 	} else {
 		printf("Invalid argument\n");
+	}
 	return 0;
 }
-*/
+
 static struct {
   const char *name;
   const char *description;
@@ -87,7 +88,7 @@ static struct {
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
 	{ "si", "Execute N instruction(s) and stop, default N = 1", cmd_si},
-	//{ "info", "Print register status(r), print watch point messages", cmd_info},
+	{ "info", "Print register status(r), print watch point messages", cmd_info},
 
   /* TODO: Add more commands */
 
