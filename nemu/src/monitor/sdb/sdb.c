@@ -18,6 +18,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "sdb.h"
+#include <memory/paddr.h>
 
 static int is_batch_mode = false;
 
@@ -79,7 +80,6 @@ static int cmd_info(char *args) {
 	return 0;
 }
 
-/*
 // scan memeory
 static int cmd_x(char *args) {
 	char *N_str = strtok(NULL," ");
@@ -89,13 +89,14 @@ static int cmd_x(char *args) {
 	}else {
 		unsigned int N_num = (unsigned int)atoi(N_str);
 		if((expr[0]=='0') && (expr[1]=='x')) {
-			unsigned long val = strtoul(expr, NULL, 16);
-			for(unsigned i = N_num; i != 0; i--) {
-				printf(
+			paddr_t val = strtoul(expr, NULL, 16);
+			for(paddr_t i = 0; i != N_num; i++) {
+				printf("%d : %x\n", i, paddr_read(i+val, 4));
+			}
+		}
 	}
 	return 0;
 }
-*/
 
 static struct {
   const char *name;
@@ -107,7 +108,7 @@ static struct {
   { "q", "Exit NEMU", cmd_q },
 	{ "si", "Execute N instruction(s) and stop, default N = 1", cmd_si },
 	{ "info", "Print register status(r), print watch point messages", cmd_info },
-//	{ "x", "scan the memory from the given expression in heximal for N times of 4 bytes", cmd_x },
+	{ "x", "scan the memory from the given expression in heximal for N times of 4 bytes", cmd_x },
 
   /* TODO: Add more commands */
 
