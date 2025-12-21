@@ -245,7 +245,7 @@ static int eval(int p, int q) {
 	else if ((p+1)==q) {
 		Assert(tokens[p].type == '-', "Invalid format at %d", p);
 		Assert(tokens[q].type == TK_NUM, "Invalid format at %d", q);
-		return -atoi(tokens[p].str);
+		return -atoi(tokens[q].str);
 		/* return negative number*/
 	}
 	else if (check_parentheses(p, q) == true) {
