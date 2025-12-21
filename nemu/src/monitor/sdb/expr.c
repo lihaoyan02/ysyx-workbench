@@ -254,7 +254,10 @@ static int eval(int p, int q) {
 	}
 	else {
 		int op =find_main_op(p,q);
-		int val1 = eval(p, op - 1);
+		int val1 =0;
+		if(op!=0) {
+			val1 = eval(p, op - 1);
+		}
 		int val2 = eval(op + 1, q);
 
 		switch (tokens[op].type) {
