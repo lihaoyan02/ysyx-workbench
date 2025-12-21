@@ -100,8 +100,9 @@ static int cmd_x(char *args) {
 
 // print expression
 static int cmd_p(char *args) {
-	bool *success = false;
-	expr(args, success);
+	bool success;
+	bool *ptr_success = &success;
+	expr(args, ptr_success);
 	return 0;
 }
 
