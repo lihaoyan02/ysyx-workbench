@@ -21,7 +21,7 @@
 #include <regex.h>
 
 enum {
-  TK_NOTYPE = 256, TK_EQ,
+  TK_NOTYPE = 256, TK_EQ, TK_NUM
 
   /* TODO: Add more token types */
 
@@ -38,7 +38,13 @@ static struct rule {
 
   {" +", TK_NOTYPE},    // spaces
   {"\\+", '+'},         // plus
-  {"==", TK_EQ},        // equal
+	{"\\-", '-'},
+	{"\\*", '*'},
+	{"/", '/'},
+	{"[0-9]+", TK_NUM},
+	{"\\(", '('},
+	{"\\)", ')'},
+  {"==", TK_EQ}        // equal
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -95,7 +101,46 @@ static bool make_token(char *e) {
          */
 
         switch (rules[i].token_type) {
-          default: TODO();
+					case '+':
+						tokens[nr_token].type = '+';
+						nr_token++;
+						break;
+					case '-':
+						tokens[nr_token].type = '-';
+						nr_token++;
+						break;
+					case '*':
+						tokens[nr_token].type = '*';
+						nr_token++;
+						break;
+					case '/':
+						tokens[nr_token].type = '/';
+						nr_token++;
+						break;
+					case TK_NUM:
+						if(substr_len>31) {
+							printf("the number is too long\n");
+							return false;
+						} else {
+							tokens[nr_token].type = TK_NUM;
+							strncpy(tokens[nr_token].str, substr_start, substr_len);
+							tokens[nr_token].str[substr_len] = '\0';	
+							nr_token++;
+						}
+						break;
+					case '(':
+						tokens[nr_token].type = '(';
+						nr_token++;
+						break;
+					case ')':
+						tokens[nr_token].type = ')';
+						nr_token++;
+						break;
+					case TK_EQ:
+						tokens[nr_token].type = TK_EQ;
+						nr_token++;
+						break;
+          default: ;
         }
 
         break;
@@ -111,6 +156,117 @@ static bool make_token(char *e) {
   return true;
 }
 
+static bool check_parentheses(int p, int q) {
+	assert(q > p);
+	if(tokens[p].type != '(' || tokens[q].type != ')') {
+		return false;
+	} else {
+		int flag = 0;
+		int cnt = 0;
+		for(int i=p+1; i<q; i++) {
+			if (tokens[i].type == '(') {
+				cnt ++;
+			} else if (tokens[i].type == ')') {
+				cnt --;
+			}
+			if (cnt == -1) {
+				flag = 1; // matched internal
+			} else if (cnt < -1) {
+				panic("Invalid format, require '(' before ')'");
+			}
+		}
+		Assert(cnt==0, "Invalid format (parentheses number not match");
+		if (flag == 0) {
+			return true;
+		} else{
+			return false;
+		}
+	}
+}
+
+static bool is_operator(int expr) {
+	if(expr=='-' || expr=='+' || expr=='*' || expr=='/') {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+static int find_main_op(int p, int q) {
+	int musk = 0;
+	int main_op = 0;
+	for(int i=q; i>p; i--) {
+		switch (tokens[i].type) {
+			case ')': musk++;
+				break;
+			case '(': musk--;
+				break;
+			case '+':
+				if(musk == 0) {
+					return i;
+				}
+				break;
+			case '-':
+				if (musk == 0) {
+					if(is_operator(tokens[i-1].type)) {
+						return i-1;
+					} else {
+						return i;
+					}
+				}
+				break;
+			case '*':
+				if (musk == 0 && main_op ==0) {
+					main_op = i;
+				}
+				break;
+			case '/':
+				if (musk == 0 && main_op ==0) {
+					main_op = i;
+				}
+				break;
+			default:;
+		}
+	}
+	assert(main_op!=0);
+	return main_op;
+}
+
+static int eval(int p, int q) {
+	if (p > q) {
+		panic("Invalid format at position %d", q);
+		/* bad */
+	}
+	else if (p == q) {
+		Assert(tokens[p].type == TK_NUM, "Invalid format at %d", p);
+		return atoi(tokens[p].str);
+		/* return the singel number*/
+	}
+	else if ((p+1)==q) {
+		Assert(tokens[p].type == '-', "Invalid format at %d", p);
+		Assert(tokens[q].type == TK_NUM, "Invalid format at %d", q);
+		return -atoi(tokens[p].str);
+		/* return negative number*/
+	}
+	else if (check_parentheses(p, q) == true) {
+		/* surrounded by a matched parentheses*/
+		return eval(p+1, q-1);
+	}
+	else {
+		int op =find_main_op(p,q);
+		int val1 = eval(p, op - 1);
+		int val2 = eval(op + 1, q);
+
+		switch (tokens[op].type) {
+			case '+': return val1 + val2;
+			case '-': return val1 - val2;
+			case '*': return val1 * val2;
+			case '/': Assert(val2 != 0, "the denominater is zero!!!, divation at %d", op);
+				return val1 / val2;
+			default: assert(0);
+		}
+	}
+}
 
 word_t expr(char *e, bool *success) {
   if (!make_token(e)) {
@@ -119,7 +275,8 @@ word_t expr(char *e, bool *success) {
   }
 
   /* TODO: Insert codes to evaluate the expression. */
-  TODO();
-
+	int expr_result = eval(0,nr_token-1);
+	printf("%d\n", expr_result);
+	*success = true;
   return 0;
 }

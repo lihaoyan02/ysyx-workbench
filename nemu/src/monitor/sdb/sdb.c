@@ -98,6 +98,14 @@ static int cmd_x(char *args) {
 	return 0;
 }
 
+// print expression
+static int cmd_p(char *args) {
+	init_regex();
+	bool *success = false;
+	expr(args, success);
+	return 0;
+}
+
 static struct {
   const char *name;
   const char *description;
@@ -108,7 +116,8 @@ static struct {
   { "q", "Exit NEMU", cmd_q },
 	{ "si", "Execute N instruction(s) and stop, default N = 1", cmd_si },
 	{ "info", "Print register status(r), print watch point messages", cmd_info },
-	{ "x", "scan the memory from the given expression in heximal for N times of 4 bytes", cmd_x },
+	{ "x", "Scan the memory from the given expression in heximal for N times of 4 bytes", cmd_x },
+	{ "p", "Print the expression's result", cmd_p },
 
   /* TODO: Add more commands */
 
