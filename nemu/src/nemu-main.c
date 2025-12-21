@@ -31,6 +31,7 @@ void test_expr() {
 	bool success = true;
 	int linenum = 0;
 	while (fscanf(fp, "%d %[^\n]", &exp_result, expression)==2) {
+		printf("%d\n",linenum);
 		linenum++;
 		result = expr(expression,&success);
 		if (result!=exp_result) { failtimes++;}
