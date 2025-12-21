@@ -100,7 +100,6 @@ static int cmd_x(char *args) {
 
 // print expression
 static int cmd_p(char *args) {
-	init_regex();
 	bool *success = false;
 	expr(args, success);
 	return 0;
