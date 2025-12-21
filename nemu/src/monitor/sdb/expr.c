@@ -235,7 +235,7 @@ static int find_main_op(int p, int q, bool* success) {
 		}
 	}
 	if(main_op == 0) {
-		printf("Invalid format");
+		printf("Invalid format\n");
 		*success = false;
 	}
 	//assert(main_op!=0);
