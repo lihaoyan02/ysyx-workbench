@@ -156,7 +156,7 @@ static bool make_token(char *e) {
   return true;
 }
 
-static bool check_parentheses(int p, int q) {
+static bool check_parentheses(int p, int q, bool *success) {
 	assert(q > p);
 	if(tokens[p].type != '(' || tokens[q].type != ')') {
 		return false;
@@ -172,10 +172,16 @@ static bool check_parentheses(int p, int q) {
 			if (cnt == -1) {
 				flag = 1; // matched internal
 			} else if (cnt < -1) {
-				panic("Invalid format, require '(' before ')'");
+				*success = false;
+				printf("Invalid format, require '(' before ')'\n");
+				//panic("Invalid format, require '(' before ')'");
 			}
 		}
-		Assert(cnt==0, "Invalid format (parentheses number not match");
+		if (cnt!=0) {
+			printf("Invalid format (parentheses number not match\n");
+			*success = false;
+		}
+		//Assert(cnt==0, "Invalid format (parentheses number not match");
 		if (flag == 0) {
 			return true;
 		} else{
@@ -232,33 +238,41 @@ static int find_main_op(int p, int q) {
 	return main_op;
 }
 
-static int eval(int p, int q) {
+static int eval(int p, int q, bool* success) {
 	if (p > q) {
 		panic("Invalid format at position %d", q);
 		/* bad */
 	}
 	else if (p == q) {
-		Assert(tokens[p].type == TK_NUM, "Invalid format at %d", p);
+		if(tokens[p].type != TK_NUM) {
+			printf("Invalid format at %d\n", p);
+			*success = false;
+		}
+		//Assert(tokens[p].type == TK_NUM, "Invalid format at %d", p);
 		return atoi(tokens[p].str);
 		/* return the singel number*/
 	}
 	else if ((p+1)==q) {
-		Assert(tokens[p].type == '-', "Invalid format at %d", p);
-		Assert(tokens[q].type == TK_NUM, "Invalid format at %d", q);
+		if(tokens[p].type != '-' || tokens[q].type != TK_NUM) {
+			printf("Invalid format at %d\n", p); 
+			*success = false;
+		}
+		//Assert(tokens[p].type == '-', "Invalid format at %d", p);
+		//Assert(tokens[q].type == TK_NUM, "Invalid format at %d", q);
 		return -atoi(tokens[q].str);
 		/* return negative number*/
 	}
-	else if (check_parentheses(p, q) == true) {
+	else if (check_parentheses(p, q, success) == true) {
 		/* surrounded by a matched parentheses*/
-		return eval(p+1, q-1);
+		return eval(p+1, q-1, success);
 	}
 	else {
 		int op =find_main_op(p,q);
 		int val1 =0;
 		if(op!=0) {
-			val1 = eval(p, op - 1);
+			val1 = eval(p, op - 1, success);
 		}
-		int val2 = eval(op + 1, q);
+		int val2 = eval(op + 1, q, success);
 
 		switch (tokens[op].type) {
 			case '+': return val1 + val2;
@@ -269,6 +283,9 @@ static int eval(int p, int q) {
 			default: assert(0);
 		}
 	}
+	if (*success == false) {
+		return 1;
+	}
 }
 
 word_t expr(char *e, bool *success) {
@@ -278,8 +295,9 @@ word_t expr(char *e, bool *success) {
   }
 
   /* TODO: Insert codes to evaluate the expression. */
-	int expr_result = eval(0,nr_token-1);
-	printf("%d\n", expr_result);
-	*success = true;
+	int expr_result = eval(0, nr_token-1, success);
+	if(*success==true) {
+		printf("%d\n", expr_result);
+	}
   return 0;
 }

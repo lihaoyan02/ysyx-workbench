@@ -100,9 +100,12 @@ static int cmd_x(char *args) {
 
 // print expression
 static int cmd_p(char *args) {
-	bool success;
+	bool success = true;
 	bool *ptr_success = &success;
 	expr(args, ptr_success);
+	if(success == false) {
+		printf("try again\n");
+	}
 	return 0;
 }
 
