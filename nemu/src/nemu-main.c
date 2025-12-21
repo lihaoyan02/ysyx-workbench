@@ -25,7 +25,7 @@ void test_expr() {
 	FILE *fp = fopen("tools/gen-expr/input","r");
 	assert(fp != NULL);
 	uint32_t exp_result;
-	char expression[32];
+	char expression[65536];
 	int failtimes = 0;
 	uint32_t result;
 	bool success = true;
