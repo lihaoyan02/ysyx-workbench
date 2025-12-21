@@ -29,7 +29,9 @@ void test_expr() {
 	int failtimes = 0;
 	uint32_t result;
 	bool success = true;
+	int linenum = 0;
 	while (fscanf(fp, "%d %[^\n]", &exp_result, expression)==2) {
+		linenum++;
 		result = expr(expression,&success);
 		if (result!=exp_result) { failtimes++;}
 	}
