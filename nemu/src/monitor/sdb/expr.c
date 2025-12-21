@@ -198,7 +198,7 @@ static bool is_operator(int expr) {
 	}
 }
 
-static int find_main_op(int p, int q) {
+static int find_main_op(int p, int q, bool* success) {
 	int musk = 0;
 	int main_op = 0;
 	for(int i=q; i>p; i--) {
@@ -234,7 +234,11 @@ static int find_main_op(int p, int q) {
 			default:;
 		}
 	}
-	assert(main_op!=0);
+	if(main_op == 0) {
+		printf("Invalid format");
+		*success = false;
+	}
+	//assert(main_op!=0);
 	return main_op;
 }
 
@@ -267,7 +271,10 @@ static int eval(int p, int q, bool* success) {
 		return eval(p+1, q-1, success);
 	}
 	else {
-		int op =find_main_op(p,q);
+		int op =find_main_op(p, q, success);
+		if(*success == false) {
+			return 1;
+		}
 		int val1 =0;
 		if(op!=0) {
 			val1 = eval(p, op - 1, success);
