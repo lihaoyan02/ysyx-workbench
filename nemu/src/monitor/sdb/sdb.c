@@ -18,6 +18,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "sdb.h"
+#include <memory/paddr.h>
 
 static int is_batch_mode = false;
 
@@ -49,10 +50,64 @@ static int cmd_c(char *args) {
 
 
 static int cmd_q(char *args) {
+	nemu_state.state = NEMU_QUIT;
   return -1;
 }
 
 static int cmd_help(char *args);
+
+// single execution
+static int cmd_si(char *args) {
+	char *N_str = strtok(NULL, " ");
+	int N_num = 1;
+  if (N_str != NULL) {
+		N_num = atoi(N_str);
+	}
+	cpu_exec(N_num);
+	return 0;
+}
+
+// print program status
+static int cmd_info(char *args) {
+	char *arg = strtok(NULL," ");
+	if (arg == NULL) {
+		printf("An argument r or w is required\n");
+	} else if(strcmp(arg, "r") == 0) {
+		isa_reg_display();
+	} else {
+		printf("Invalid argument\n");
+	}
+	return 0;
+}
+
+// scan memeory
+static int cmd_x(char *args) {
+	char *N_str = strtok(NULL," ");
+	char *expr = strtok(NULL," ");
+	if ((N_str==NULL) || (expr==NULL)) {
+		printf("require 2 arguments N and EXPR\n");
+	}else {
+		unsigned int N_num = (unsigned int)atoi(N_str);
+		if((expr[0]=='0') && (expr[1]=='x')) {
+			paddr_t val = strtoul(expr, NULL, 16);
+			for(paddr_t i = 0; i != N_num; i++) {
+				printf("%d : 0x%08X\n", i, paddr_read(i*4+val, 4));
+			}
+		}
+	}
+	return 0;
+}
+
+// print expression
+static int cmd_p(char *args) {
+	bool success = true;
+	bool *ptr_success = &success;
+	expr(args, ptr_success);
+	if(success == false) {
+		printf("try again\n");
+	}
+	return 0;
+}
 
 static struct {
   const char *name;
@@ -62,6 +117,10 @@ static struct {
   { "help", "Display information about all supported commands", cmd_help },
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
+	{ "si", "Execute N instruction(s) and stop, default N = 1", cmd_si },
+	{ "info", "Print register status(r), print watch point messages", cmd_info },
+	{ "x", "Scan the memory from the given expression in heximal for N times of 4 bytes", cmd_x },
+	{ "p", "Print the expression's result", cmd_p },
 
   /* TODO: Add more commands */
 
