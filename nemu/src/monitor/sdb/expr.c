@@ -335,7 +335,7 @@ static word_t eval(int p, int q, bool* success) {
 					*success = false;
 					return 1;
 				} else {
-					return val1 / val2;
+					return (int)val1 / (int)val2;
 				}
 			case TK_EQ: return val1 == val2;
 			case TK_NEQ: return val1 != val2;
