@@ -1,5 +1,11 @@
 mainmenu "NEMU Configuration Menu"
 
+config WATCHPOINT
+	bool "enable watchpoint"
+	default y
+	help
+		set this to enable watchpoint scan for each execution
+
 choice
   prompt "Base ISA"
   default ISA_riscv
