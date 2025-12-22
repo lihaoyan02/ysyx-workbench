@@ -24,6 +24,9 @@ static int is_batch_mode = false;
 
 void init_regex();
 void init_wp_pool();
+void set_new_wp(char *e);
+void delete_wp(int N);
+void print_wp_info();
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
@@ -74,6 +77,8 @@ static int cmd_info(char *args) {
 		printf("An argument r or w is required\n");
 	} else if(strcmp(arg, "r") == 0) {
 		isa_reg_display();
+	} else if (strcmp(arg, "w") == 0) {
+		print_wp_info();
 	} else {
 		printf("Invalid argument\n");
 	}
@@ -83,16 +88,19 @@ static int cmd_info(char *args) {
 // scan memeory
 static int cmd_x(char *args) {
 	char *N_str = strtok(NULL," ");
-	char *expr = strtok(NULL," ");
-	if ((N_str==NULL) || (expr==NULL)) {
+	char *expression = strtok(NULL," ");
+	if ((N_str==NULL) || (expression==NULL)) {
 		printf("require 2 arguments N and EXPR\n");
 	}else {
 		unsigned int N_num = (unsigned int)atoi(N_str);
-		if((expr[0]=='0') && (expr[1]=='x')) {
-			paddr_t val = strtoul(expr, NULL, 16);
+		bool success = true;
+		word_t result = expr(expression, &success);
+		if(success) {
 			for(paddr_t i = 0; i != N_num; i++) {
-				printf("%d : 0x%08X\n", i, paddr_read(i*4+val, 4));
+				printf("[%d] 0x%08X : 0x%08X\n", i, i*4+result, paddr_read(i*4+result, 4));
 			}
+		} else {
+			printf("parse expression fail\n");
 		}
 	}
 	return 0;
@@ -102,9 +110,29 @@ static int cmd_x(char *args) {
 static int cmd_p(char *args) {
 	bool success = true;
 	bool *ptr_success = &success;
-	expr(args, ptr_success);
+	word_t result = expr(args, ptr_success);
 	if(success == false) {
 		printf("try again\n");
+	} else {
+		printf("%u (%x)\n", result, result);
+	}
+	return 0;
+}
+
+// set watchpoint
+static int cmd_w(char *args) {
+	set_new_wp(args);
+	return 0;
+}
+
+// delete watchpoint
+static int cmd_d(char *args) {
+	char *N_str = strtok(NULL," ");
+	if (N_str==NULL) {
+		printf("require an arguments N\n");
+	}else {
+		int N_num = (int)atoi(N_str);
+		delete_wp(N_num);
 	}
 	return 0;
 }
@@ -118,9 +146,11 @@ static struct {
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
 	{ "si", "Execute N instruction(s) and stop, default N = 1", cmd_si },
-	{ "info", "Print register status(r), print watch point messages", cmd_info },
+	{ "info", "Print register status(r), print watch point messages(w)", cmd_info },
 	{ "x", "Scan the memory from the given expression in heximal for N times of 4 bytes", cmd_x },
 	{ "p", "Print the expression's result", cmd_p },
+	{ "w", "Set a watchpoint for given expression", cmd_w },
+	{ "d", "Delete a watchpoint for given watchpoint number N", cmd_d },
 
   /* TODO: Add more commands */
 

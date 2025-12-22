@@ -31,5 +31,12 @@ void isa_reg_display() {
 }
 
 word_t isa_reg_str2val(const char *s, bool *success) {
-  return 0;
+	for(int i=0; i<MUXDEF(CONFIG_RVE, 16, 32); i++) {
+		if (strcmp(reg_name(i), s) == 0) {
+			*success = true;
+			return gpr(i);
+		}
+	}
+	*success = false;
+	return 0;
 }
