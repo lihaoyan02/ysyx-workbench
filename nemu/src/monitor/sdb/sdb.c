@@ -88,7 +88,7 @@ static int cmd_x(char *args) {
 		printf("require 2 arguments N and EXPR\n");
 	}else {
 		unsigned int N_num = (unsigned int)atoi(N_str);
-		bool success;
+		bool success = true;
 		word_t result = expr(expression, &success);
 		if(success) {
 			for(paddr_t i = 0; i != N_num; i++) {
