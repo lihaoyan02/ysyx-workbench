@@ -94,6 +94,8 @@ static int cmd_x(char *args) {
 			for(paddr_t i = 0; i != N_num; i++) {
 				printf("%d : 0x%08X\n", i, paddr_read(i*4+result, 4));
 			}
+		} else {
+			printf("parse expression fail\n");
 		}
 	}
 	return 0;
