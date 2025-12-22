@@ -107,6 +107,7 @@ bool scan_wp_diff() {
 		assert(success==true);
 		if (current->pre_result != new_result) {
 			current->pre_result = new_result; 
+			printf("watchpoint [%d] triggerd\n", current->NO);
 			return true;
 		} else {
 			return false;
@@ -136,6 +137,6 @@ void print_wp_info() {
 		printf("NO watchpoint\n");
 	}
 	for(WP* current = head; current != NULL; current = current->next) {
-		printf("[%d] : %s\n", current->NO, current->e_str);
+		printf("[%d] : %s = %u (0x%x)\n", current->NO, current->e_str, current->pre_result, current->pre_result);
 	}
 }
