@@ -34,7 +34,9 @@ void test_expr() {
 		printf("%d\n",linenum);
 		linenum++;
 		result = expr(expression,&success);
-		if (result!=exp_result) { failtimes++;}
+		if (result!=exp_result) { 
+			failtimes++;
+		}
 	}
 	fclose(fp);
 	printf("test fail = %d\n",failtimes);
