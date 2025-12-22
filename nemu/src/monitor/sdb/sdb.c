@@ -92,7 +92,7 @@ static int cmd_x(char *args) {
 		word_t result = expr(expression, &success);
 		if(success) {
 			for(paddr_t i = 0; i != N_num; i++) {
-				printf("%d : 0x%08X\n", i, paddr_read(i*4+result, 4));
+				printf("[%d] 0x%08X : 0x%08X\n", i, i*4+result, paddr_read(i*4+result, 4));
 			}
 		} else {
 			printf("parse expression fail\n");
