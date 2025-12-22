@@ -130,3 +130,12 @@ void delete_wp(int N) {
 	}
 	printf("no such watchpoint\n");
 }
+
+void print_wp_info() {
+	if( head == NULL) {
+		printf("NO watchpoint\n");
+	}
+	for(WP* current = head; current != NULL; current = current->next) {
+		printf("[%d] : %s\n", current->NO, current->e_str);
+	}
+}

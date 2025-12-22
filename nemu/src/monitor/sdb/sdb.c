@@ -26,6 +26,7 @@ void init_regex();
 void init_wp_pool();
 void set_new_wp(char *e);
 void delete_wp(int N);
+void print_wp_info();
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
@@ -76,6 +77,8 @@ static int cmd_info(char *args) {
 		printf("An argument r or w is required\n");
 	} else if(strcmp(arg, "r") == 0) {
 		isa_reg_display();
+	} else if (strcmp(arg, "w") == 0) {
+		print_wp_info();
 	} else {
 		printf("Invalid argument\n");
 	}
@@ -143,7 +146,7 @@ static struct {
   { "c", "Continue the execution of the program", cmd_c },
   { "q", "Exit NEMU", cmd_q },
 	{ "si", "Execute N instruction(s) and stop, default N = 1", cmd_si },
-	{ "info", "Print register status(r), print watch point messages", cmd_info },
+	{ "info", "Print register status(r), print watch point messages(w)", cmd_info },
 	{ "x", "Scan the memory from the given expression in heximal for N times of 4 bytes", cmd_x },
 	{ "p", "Print the expression's result", cmd_p },
 	{ "w", "Set a watchpoint for given expression", cmd_w },
