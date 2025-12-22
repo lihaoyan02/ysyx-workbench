@@ -116,7 +116,11 @@ bool scan_wp_diff() {
 
 void set_new_wp(char *e) {
 	WP* new_watchpoint = new_wp(e);
-	printf("watchpoint [%d] set successfully\n", new_watchpoint->NO);
+	if(new_watchpoint != NULL) {
+		printf("watchpoint [%d] set successfully\n", new_watchpoint->NO);
+	} else {
+		printf("watchpoint set fail\n");
+	}
 }
 
 void delete_wp(int N) {
