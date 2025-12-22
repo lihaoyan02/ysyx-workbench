@@ -114,7 +114,7 @@ static int cmd_p(char *args) {
 	if(success == false) {
 		printf("try again\n");
 	} else {
-		printf("%u\n", result);
+		printf("%u (%x)\n", result, result);
 	}
 	return 0;
 }
