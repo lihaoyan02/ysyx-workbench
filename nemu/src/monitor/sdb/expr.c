@@ -249,7 +249,7 @@ static int op_hirc(int expr) {
 
 static int find_main_op(int p, int q, bool* success) {
 	int musk = 0;
-	int main_op = 0;
+	int main_op = -1;
 	int op_hirc_level = 0;
 	for(int i=q; i>=p; i--) {
 		switch (tokens[i].type) {
@@ -288,7 +288,7 @@ static int find_main_op(int p, int q, bool* success) {
 				}
 		}
 	}
-	if(main_op == 0) {
+	if(main_op == -1) {
 		printf("Invalid format\n");
 		*success = false;
 	}
