@@ -24,6 +24,8 @@ static int is_batch_mode = false;
 
 void init_regex();
 void init_wp_pool();
+void set_new_wp(char *e);
+void delete_wp(int N);
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 static char* rl_gets() {
@@ -114,6 +116,24 @@ static int cmd_p(char *args) {
 	return 0;
 }
 
+// set watchpoint
+static int cmd_w(char *args) {
+	set_new_wp(args);
+	return 0;
+}
+
+// delete watchpoint
+static int cmd_d(char *args) {
+	char *N_str = strtok(NULL," ");
+	if (N_str==NULL) {
+		printf("require an arguments N\n");
+	}else {
+		int N_num = (int)atoi(N_str);
+		delete_wp(N_num);
+	}
+	return 0;
+}
+
 static struct {
   const char *name;
   const char *description;
@@ -126,6 +146,8 @@ static struct {
 	{ "info", "Print register status(r), print watch point messages", cmd_info },
 	{ "x", "Scan the memory from the given expression in heximal for N times of 4 bytes", cmd_x },
 	{ "p", "Print the expression's result", cmd_p },
+	{ "w", "Set a watchpoint for given expression", cmd_w },
+	{ "d", "Delete a watchpoint for given watchpoint number N", cmd_d },
 
   /* TODO: Add more commands */
 
