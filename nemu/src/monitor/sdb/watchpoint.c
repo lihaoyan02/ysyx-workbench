@@ -109,8 +109,6 @@ bool scan_wp_diff() {
 			current->pre_result = new_result; 
 			printf("watchpoint [%d] triggerd\n", current->NO);
 			return true;
-		} else {
-			return false;
 		}
 	}
 	return false;
