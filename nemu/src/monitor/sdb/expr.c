@@ -368,8 +368,8 @@ word_t expr(char *e, bool *success) {
   /* TODO: Insert codes to evaluate the expression. */
 	word_t expr_result = eval(0, nr_token-1, success);
 	if(*success==true) {
-		printf("%d\n", expr_result);
+		printf("%u\n", expr_result);
 		return expr_result;
 	}
-  return 0;
+	return 0;
 }
