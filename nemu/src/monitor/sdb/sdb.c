@@ -83,15 +83,16 @@ static int cmd_info(char *args) {
 // scan memeory
 static int cmd_x(char *args) {
 	char *N_str = strtok(NULL," ");
-	char *expr = strtok(NULL," ");
-	if ((N_str==NULL) || (expr==NULL)) {
+	char *expression = strtok(NULL," ");
+	if ((N_str==NULL) || (expression==NULL)) {
 		printf("require 2 arguments N and EXPR\n");
 	}else {
 		unsigned int N_num = (unsigned int)atoi(N_str);
-		if((expr[0]=='0') && (expr[1]=='x')) {
-			paddr_t val = strtoul(expr, NULL, 16);
+		bool success;
+		word_t result = expr(expression, &success);
+		if(success) {
 			for(paddr_t i = 0; i != N_num; i++) {
-				printf("%d : 0x%08X\n", i, paddr_read(i*4+val, 4));
+				printf("%d : 0x%08X\n", i, paddr_read(i*4+result, 4));
 			}
 		}
 	}
@@ -102,9 +103,11 @@ static int cmd_x(char *args) {
 static int cmd_p(char *args) {
 	bool success = true;
 	bool *ptr_success = &success;
-	expr(args, ptr_success);
+	word_t result = expr(args, ptr_success);
 	if(success == false) {
 		printf("try again\n");
+	} else {
+		printf("%u\n", result);
 	}
 	return 0;
 }
