@@ -1,12 +1,51 @@
-VERILATOR_FLAGS = -cc --exe --trace-fst --build -Wall
-VERILATOR_INPUT = vsrc/top.v csrc/tb.cpp
+TOPNAME = top
+NXDC_FILES = constr/top.nxdc
+INC_PATH ?=
+
+VERILATOR = verilator
+VERILATOR_CFLAGS += -MMD -cc --build \
+				-O3 --x-assign fast --x-initial fast --noassert
+BUILD_DIR = ./build
+OBJ_DIR = $(BUILD_DIR)/obj_dir
+BIN = $(BUILD_DIR)/$(TOPNAME)
+
+$(shell mkdir -p $(BUILD_DIR))
+
+# constraint file
+SRC_AUTO_BIND = $(abspath $(BUILD_DIR)/auto_bind.cpp)
+$(SRC_AUTO_BIND): $(NXDC_FILES)
+	python3 $(NVBOARD_HOME)/scripts/auto_pin_bind.py $^ $@
+
+# project source
+VSRCS = vsrc/light.v
+CSRCS = csrc/light_tb.cpp
+CSRCS += $(SRC_AUTO_BIND)
+# $(NVBOARD_ARCHIVE)
+
+# rules for NVBoard
+include $(NVBOARD_HOME)/scripts/nvboard.mk
+
+# rules for verilator
+INCFLAGS = $(addprefix -I, $(INC_PATH))
+CXXFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\""
 
 all: sim
 	@echo "Write this Makefile by your self."
 
-sim:
+$(BIN): $(VSRCS) $(CSRCS) $(NVBOARD_ARCHIVE) 
+	@rm -rf $(OBJ_DIR)
+	$(VERILATOR) $(VERILATOR_CFLAGS) \
+		--top-module $(TOPNAME) $^ \
+		$(addprefix -CFLAGS , $(CXXFLAGS)) $(addprefix -LDFLAGS , $(LDFLAGS)) \
+		--Mdir $(OBJ_DIR) --exe -o $(abspath $(BIN))
+
+run: $(BIN)
+	@$^
+
+clean:
+	rm -rf $(BUILD_DIR)
+sim: $(BIN) 
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
-	verilator $(VERILATOR_FLAGS) $(VERILATOR_INPUT)
 	@echo "Write this Makefile by your self."
 
 include ../Makefile
