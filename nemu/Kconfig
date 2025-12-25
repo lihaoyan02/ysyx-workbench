@@ -1,11 +1,5 @@
 mainmenu "NEMU Configuration Menu"
 
-config WATCHPOINT
-	bool "enable watchpoint"
-	default y
-	help
-		set this to enable watchpoint scan for each execution
-
 choice
   prompt "Base ISA"
   default ISA_riscv
@@ -114,6 +108,12 @@ config CC_OPT
   default "-O2" if CC_O2
   default "-O3" if CC_O3
   default "none"
+
+config WATCHPOINT
+	bool "Enable watchpoint"
+	default y
+	help
+		set this to enable watchpoint scan for each execution
 
 config CC_LTO
   depends on !TARGET_AM
