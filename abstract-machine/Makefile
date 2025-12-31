@@ -151,7 +151,6 @@ endif
 image: image-dep
 archive: $(ARCHIVE)
 image-dep: $(IMAGE).elf
-override ARGS += -b
 .PHONY: image image-dep archive run
 
 ### Force to rebuild a rule
