@@ -4,7 +4,7 @@
 
 #include <verilated.h>
 #include <Vtop.h>
-//#include "verilated_fst_c.h"
+#include "verilated_vcd_c.h"
 
 
 static uint8_t pmem[1000];
@@ -33,10 +33,10 @@ int main(int argc, char **argv){
 	contextp->commandArgs(argc, argv);
 	Vtop* const top= new Vtop{contextp};
 	
-	//Verilated::traceEverOn(true);
-	//VerilatedFstC* tfp = new VerilatedFstC;
-	//top->trace(tfp, 1);
-	//tfp->open("obj_dir/wave.fst");
+	Verilated::traceEverOn(true);
+	VerilatedVcdC* tfp = new VerilatedVcdC;
+	top->trace(tfp, 99);
+	tfp->open("build/wave.vcd");
 	memcpy(pmem, img, sizeof(img));	
 	int cnt=0;
 	top->rst = 1;
@@ -50,7 +50,7 @@ int main(int argc, char **argv){
 		cnt++; 
 		printf("pc = %x \n",top->pc);
 	}
-	//tfp->close();
+	tfp->close();
 	//delete top
 	return 0;
 }
