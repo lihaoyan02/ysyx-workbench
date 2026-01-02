@@ -11,7 +11,7 @@ always @(*) begin
 	case (wb_ctrl)
 		WB_IDLE: wb_data = {DATA_WIDTH{1'b0}};
 		WB_ALU: wb_data =  alu_out;
-		WB_PC: wb_data = pc + 1;
+		WB_PC: wb_data = pc + 4;
 		default: wb_data = {DATA_WIDTH{1'b0}};
 	endcase
 end

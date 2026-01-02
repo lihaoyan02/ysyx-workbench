@@ -12,7 +12,7 @@ always @(posedge clk) begin
 	else if(j_pc)
 		pc <= j_pc_addr;
 	else
-		pc <= pc + 1;
+		pc <= pc + 4;
 end
 
 assign inst_fetch = inst;
