@@ -14,6 +14,48 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
 }
 
 int sprintf(char *out, const char *fmt, ...) {
+	char *start = out;
+	va_list ap;
+	va_start(ap, fmt);
+	while (*fmt) {
+		if (*fmt == '%') {
+			fmt++;
+			switch (*fmt++) {
+				case 's':
+					char *str = va_arg(ap, char *);
+					while (*str) {
+						*out = *str;
+						out++;
+						str++;
+					}
+					break;
+				case 'd':
+					int value = va_arg(ap, int);
+					if (value < 0) {
+						*out++ = '-';
+						value = -value;
+					}
+					char buffer[32];
+					char *ptr = buffer;
+					do {
+						*ptr++ = '0' + (value % 10);
+						value /= 10;
+					} while (value > 0);
+					while (buffer != ptr) {
+						*out++ = *--ptr;
+					}
+					break;
+				case '%':
+					*out++ = '%';
+					break;
+			}
+		}else {
+			*out++ = *fmt++;
+		}
+	}
+	*out = '\0';
+	va_end(ap);
+	return out - start;
   panic("Not implemented");
 }
 

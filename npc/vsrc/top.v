@@ -1,0 +1,76 @@
+module top #(INST_WIDTH = 32, DATA_WIDTH = 32) (
+	input clk,
+	input rst,
+  input [INST_WIDTH-1:0] inst,
+  output [INST_WIDTH-1:0] pc
+);
+
+wire j_pc, wb_en, imm_sel;
+wire [DATA_WIDTH-1:0] alu_out;
+wire [INST_WIDTH-1:0] inst_fetch;
+wire [DATA_WIDTH-1:0] imm;
+wire [4:0] rd;
+wire [4:0] rs1;
+wire [4:0] rs2;
+
+wire [2:0] alu_ctrl;
+wire [2:0] wb_ctrl;
+
+wire [DATA_WIDTH-1:0] wb_data;
+wire [DATA_WIDTH-1:0] srcval1;
+wire [DATA_WIDTH-1:0] srcval2;
+
+
+	IFU u_IFU (
+		.clk(clk),
+		.rst(rst),
+		.inst(inst),
+		.j_pc(j_pc),
+		.j_pc_addr(alu_out),
+		.pc(pc),
+		.inst_fetch(inst_fetch)
+	);
+
+	IDU u_IDU (
+		.inst_fetch(inst_fetch),
+		.imm(imm),
+		.rd(rd),
+		.rs1(rs1),
+		.rs2(rs2),
+		.alu_ctrl(alu_ctrl),
+		.imm_sel(imm_sel),
+		.wb_ctrl(wb_ctrl),
+		.wb_en(wb_en),
+		.j_pc(j_pc)
+	);
+
+	RegisterFile u_gpr (
+		.clk(clk),
+		.rst(rst),
+		.wen(wb_en),
+		.wdata(wb_data),
+		.waddr(rd),
+		.raddr1(rs1),
+		.raddr2(rs2),
+		.rdata1(srcval1),
+		.rdata2(srcval2)
+	);
+
+	EXU u_EXU (
+		.imm_sel(imm_sel),
+		.alu_ctrl(alu_ctrl),
+		.srcval1(srcval1),
+		.srcval2(srcval2),
+		.immval(imm),
+		.alu_out(alu_out)
+	);
+
+	WBU u_WBU (
+		.alu_out(alu_out),
+		.wb_ctrl(wb_ctrl),
+		.pc(pc),
+		.wb_data(wb_data)
+	);
+	
+endmodule
+
