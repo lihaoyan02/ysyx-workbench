@@ -51,9 +51,9 @@ int main(int argc, char **argv){
 	top->rst = 0;
 	while(cnt<=10){
 		top->inst = pmem_read(top->pc, 4);
-		eval_dump(top, tfp);
+		//eval_dump(top, tfp);
 		single_cycle(top, tfp);
-		eval_dump(top, tfp);
+		//eval_dump(top, tfp);
 		cnt++; 
 		printf("pc = %x \n",top->pc);
 	}
