@@ -45,8 +45,10 @@ int main(int argc, char **argv){
 	while(cnt<=10){
 		top->inst = pmem_read(top->pc, 4);
 		top->eval();
+	  tfp->dump(cnt*2);
 		single_cycle(top);
 		top->eval();
+	  tfp->dump(cnt*2+1);
 		cnt++; 
 		printf("pc = %x \n",top->pc);
 	}
