@@ -31,8 +31,8 @@ $(BIN): $(VSRCS) $(CSRCS)
 	@rm -rf $(OBJ_DIR)
 	$(VERILATOR) $(VERILATOR_CFLAGS) \
 		--top-module $(TOPNAME) $^ \
-	#	$(addprefix -CFLAGS , $(CXXFLAGS)) $(addprefix -LDFLAGS , $(LDFLAGS)) 
 		--Mdir $(OBJ_DIR) --exe -o $(abspath $(BIN))
+	#	$(addprefix -CFLAGS , $(CXXFLAGS)) $(addprefix -LDFLAGS , $(LDFLAGS)) 
 
 run: $(BIN)
 	@$^
