@@ -23,10 +23,17 @@ static uint32_t pmem_read(uint32_t addr, int len) {
 	}
 }
 
-static void single_cycle(Vtop * top) { 
-	top->clk = 0; top->eval();
-	top->clk = 1; top->eval();
+static void eval_dump(Vtop * top, VerilatedVcdC* tfp) {
+	static int time_rcd = 0;
+	top->eval();
+	tfp->dump(time_rcd++);
 }
+
+static void single_cycle(Vtop * top, VerilatedVcdC* tfp) { 
+	top->clk = 0; eval_dump(top, tfp);
+	top->clk = 1; eval_dump(top, tfp);
+}
+
 int main(int argc, char **argv){
 
 	VerilatedContext* const contextp = new VerilatedContext;
@@ -40,15 +47,13 @@ int main(int argc, char **argv){
 	memcpy(pmem, img, sizeof(img));	
 	int cnt=0;
 	top->rst = 1;
-	single_cycle(top);
+	single_cycle(top, tfp);
 	top->rst = 0;
 	while(cnt<=10){
 		top->inst = pmem_read(top->pc, 4);
-		top->eval();
-	  tfp->dump(cnt*2);
-		single_cycle(top);
-		top->eval();
-	  tfp->dump(cnt*2+1);
+		eval_dump(top, tfp);
+		single_cycle(top, tfp);
+		eval_dump(top, tfp);
 		cnt++; 
 		printf("pc = %x \n",top->pc);
 	}
