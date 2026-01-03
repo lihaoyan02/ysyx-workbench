@@ -64,7 +64,7 @@ extern void npctrap(int a0) {
 	if(a0==0) {
 		printf("\033[32mGOOD TRAP\033[0m\n");
 	} else {
-		printf("\033[31mBAD TRAP\033[0m\n");
+		printf("\033[31mBAD TRAP a0 = %d\033[0m\n",a0);
 	}
 }
 
