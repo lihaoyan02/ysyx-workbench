@@ -117,10 +117,10 @@ int main(int argc, char **argv){
 //	test_fun();
 	while(!contextp->gotFinish() && end_flag == 0){
 		top->inst = pmem_read(top->pc, 4);
-	//	printf("pc = %x \n",top->pc);
+		printf("pc = %x \n",top->pc);
 		single_cycle(top, tfp);
 	}
-	//printf("finished at pc = %x \n",top->pc-4);
+	printf("finished at pc = %x \n",top->pc-4);
 	tfp->close();
 	//delete top
 	return 0;
