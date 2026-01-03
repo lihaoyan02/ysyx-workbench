@@ -43,8 +43,6 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 					imm = imm_I;
 					wb_en = 1'b1;
 					wb_ctrl = WB_ALU;
-					j_pc = 1'b0;
-					ebreak_flag = 1'b0;
 				end
 				else
 					$finish;
@@ -57,43 +55,24 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 					wb_en = 1;
 					wb_ctrl = WB_PC;
 					j_pc = 1;
-					ebreak_flag = 0;
 				end
 				else
 					$finish;
 			end
-			7'b0110111: begin
-				alu_ctrl = ALU_IDLE;
-				imm_sel = 1'b0;
+			7'b0110111: begin //lui
 				imm = imm_U;
 				wb_en = 1;
 				wb_ctrl = WB_IMM;
-				j_pc = 0;
-				ebreak_flag = 0;
 			end
 			7'b1110011: begin //ebreak
 				if(imm_I == 32'b1 && rs1 == 0 && 
 					funct3 == 3'b0 && rd == 5'b0) begin
-					alu_ctrl = ALU_IDLE;
-					imm_sel = 1'b0;
-					imm = {DATA_WIDTH{1'b0}};
-					wb_en = 0;
-					wb_ctrl = WB_IDLE;
-					j_pc = 0;
 					ebreak_flag = 1;
 				end
 				else
 					$finish;
 			end
-			default: begin
-				alu_ctrl = ALU_IDLE;
-				imm_sel = 1'b0;
-				imm = {DATA_WIDTH{1'b0}}; 
-				wb_en = 0;
-				wb_ctrl = WB_IDLE;
-				j_pc = 0;
-				ebreak_flag = 0;
-			end
+			default: ;
 		endcase
 	end
 
