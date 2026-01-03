@@ -87,7 +87,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 			end
 			7'b0000011: begin //lw
 				case (funct3)
-					3'b010: begin
+					3'b010,3'b100: begin
 						alu_ctrl = ALU_ADD;
 						imm_sel = 1'b1;
 						imm = imm_I;
