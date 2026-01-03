@@ -8,7 +8,7 @@
 #include <Vtop__Dpi.h>
 #include "verilated_vcd_c.h"
 
-#define MEM_MAX_2_28 1<<30
+#define MEM_MAX_2_28 1<<30 
 
 static uint8_t pmem[MEM_MAX_2_28];
 static int end_flag = 0;
