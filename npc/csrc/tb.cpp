@@ -85,9 +85,9 @@ int load_mem(){
 	int count = file_size / sizeof(uint8_t);
 	//read to the memory
 	size_t n = fread(pmem, sizeof(uint8_t), MEM_MAX_2_28, file);
-	//if(n != count){
-		//printf("read error or file truncated!\n"); 
-	//}
+	if(n != count){
+		printf("read error or file truncated!\n"); 
+	}
 	fclose(file);
 	//pmem_write(0x228, 0x00100073, 0b1111);
 	pmem_write(0x1220, 0x00100073, 0b1111);
@@ -121,9 +121,9 @@ int main(int argc, char **argv){
 	while(!contextp->gotFinish() && end_flag == 0){
 		top->inst = pmem_read(top->pc, 4);
 		printf("pc = %x \n",top->pc);
-		if(top->pc==0x19c){
-			break;
-		}
+	//	if(top->pc==0x19c){
+		//	break;
+		//}
 		single_cycle(top, tfp);
 	}
 	printf("finished at pc = %x \n",top->pc-4);
