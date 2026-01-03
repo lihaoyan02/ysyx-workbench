@@ -14,7 +14,7 @@ static uint8_t pmem[MEM_MAX_2_28];
 static int end_flag = 0;
 static const uint32_t img[] = {
 	0x01400513, 0x010000e7, 0x00c000e7, 0x00100073,
-	0x00a50513, 0x00008067 //0x00008067
+	0x00a50513, 0xff410113, 0x00008067 //0x00008067
 };
 
 extern "C" int pmem_read(int raddr, int len) {
@@ -104,9 +104,9 @@ int main(int argc, char **argv){
 	top->trace(tfp, 99);
 	tfp->open("build/wave.vcd");
 
-	//memcpy(pmem, img, sizeof(img));	
+	memcpy(pmem, img, sizeof(img));	
 	int result =0;
-	result = load_mem();
+	//result = load_mem();
 	if(result!=0){
 		printf("fail to load mem\n");
 		return 1;
