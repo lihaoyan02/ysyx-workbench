@@ -28,7 +28,6 @@ wire [DATA_WIDTH-1:0] srcval2;
 	IFU u_IFU (
 		.clk(clk),
 		.rst(rst),
-		.inst(inst),
 		.j_pc(j_pc),
 		.j_pc_addr(alu_out),
 		.pc(pc),
