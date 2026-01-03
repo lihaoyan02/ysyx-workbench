@@ -12,7 +12,7 @@ static uint8_t pmem[1000];
 static int end_flag = 0;
 static const uint32_t img[] = {
 	0x01400513, 0x010000e7, 0x00c000e7, 0x00100073,
-	0x00a50513, 0x00009067 //0x00008067
+	0x00a50513, 0x00008067 //0x00008067
 };
 
 static uint32_t pmem_read(uint32_t addr, int len) {
