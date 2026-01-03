@@ -79,7 +79,7 @@ int load_mem(){
 	fseek(file, 0, SEEK_END);
 	long file_size = ftell(file);
 	fseek(file, 0, SEEK_SET);
-	int count = file_size / sizeof(uint32_t);
+	int count = file_size / sizeof(uint8_t);
 	//read to the memory
 	size_t n = fread(pmem, sizeof(uint8_t), MEM_MAX_2_28, file);
 	if(n != count){
