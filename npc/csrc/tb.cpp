@@ -61,10 +61,10 @@ int main(int argc, char **argv){
 	top->rst = 0;
 	while(!contextp->gotFinish() && end_flag == 0){
 		top->inst = pmem_read(top->pc, 4);
-		single_cycle(top, tfp);
 		printf("pc = %x \n",top->pc);
+		single_cycle(top, tfp);
 	}
-	printf("finished at pc = %x \n",top->pc);
+	printf("finished at pc = %x \n",top->pc-4);
 	tfp->close();
 	//delete top
 	return 0;
