@@ -5,7 +5,9 @@ module top #(INST_WIDTH = 32, DATA_WIDTH = 32) (
   output [INST_WIDTH-1:0] pc
 );
 
-wire j_pc, wb_en, imm_sel;
+import "DPI-C" function void npctrap(int a0);
+
+wire j_pc, wb_en, imm_sel, ebreak_flag;
 wire [DATA_WIDTH-1:0] alu_out;
 wire [INST_WIDTH-1:0] inst_fetch;
 wire [DATA_WIDTH-1:0] imm;
@@ -41,6 +43,7 @@ wire [DATA_WIDTH-1:0] srcval2;
 		.imm_sel(imm_sel),
 		.wb_ctrl(wb_ctrl),
 		.wb_en(wb_en),
+		.ebreak_flag(ebreak_flag),
 		.j_pc(j_pc)
 	);
 
@@ -72,5 +75,10 @@ wire [DATA_WIDTH-1:0] srcval2;
 		.wb_data(wb_data)
 	);
 	
+always @(*) begin
+	if(ebreak_flag)
+		npctrap(u_gpr.rf[10]);
+end
+
 endmodule
 
