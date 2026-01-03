@@ -13,15 +13,17 @@ module IDU #(INST_WIDTH = 32, REGADDR_WIDTH = 5, DATA_WIDTH = 32) (
 );
 localparam ALU_IDLE = 3'b000, ALU_ADD = 3'b001;
 localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010, 
-	WB_IMM = 3'b011;
+	WB_IMM = 3'b011, WB_MEM = 3'b100;
 
 
 	wire [6:0] opcode;
 	wire [2:0] funct3;
+	wire [6:0] funct7;
 	wire [31:0] imm_I;
 	wire [31:0] imm_U;
 	assign opcode = inst_fetch[6:0];
 	assign funct3 = inst_fetch[14:12];
+	assign funct7 = inst_fetch[31:25];
 	assign imm_I = {{20{inst_fetch[31]}},inst_fetch[31:20]};
 	assign imm_U = {inst_fetch[31:12], 12'b0};
 
@@ -63,6 +65,28 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 				imm = imm_U;
 				wb_en = 1;
 				wb_ctrl = WB_IMM;
+			end
+			7'b0110011: begin //add
+				if(funct3==3'b0 && funct7 == 7'b0) begin
+					alu_ctrl = ALU_ADD;
+					imm_sel = 1'b0;
+					wb_en = 1'b1;
+					wb_ctrl = WB_ALU;
+				end
+				else
+					$finish;
+			end
+			7'b0000011: begin
+				case (funct3)
+					3'b010: begin
+						alu_ctrl = ALU_ADD;
+						imm_sel = 1'b1;
+						imm = imm_I;
+						wb_en = 1'b1;
+						wb_ctrl = WB_MEM;
+					end
+					default: $finish;
+				endcase
 			end
 			7'b1110011: begin //ebreak
 				if(imm_I == 32'b1 && rs1 == 0 && 

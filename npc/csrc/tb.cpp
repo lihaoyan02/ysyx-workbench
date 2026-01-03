@@ -15,8 +15,8 @@ static const uint32_t img[] = {
 	0x00a50513, 0x00008067 //0x00008067
 };
 
-static uint32_t pmem_read(uint32_t addr, int len) {
-	uint8_t* paddr = pmem + addr;
+extern uint32_t pmem_read(uint32_t raddr, int len) {
+	uint8_t* paddr = pmem + raddr;
 	switch (len) {
 		case 1: return *(uint8_t  *)paddr;
 		case 2: return *(uint16_t *)paddr;
@@ -24,6 +24,20 @@ static uint32_t pmem_read(uint32_t addr, int len) {
 		default: assert(0);
 	}
 }	
+
+extern void pmem_write(uint32_t waddr, uint32_t wdata, char wmask) {
+	uint8_t* paddr = pmem + (waddr & ~0x3u);
+	switch (wmask) {
+		case 0x1: *paddr = (uint8_t)wdata; break;
+		case 0x3: *(uint16_t *)paddr = (uint16_t)wdata; break;
+		case 0x15: *(uint32_t *)paddr = wdata; break;
+		default: assert(0);
+	}
+}
+
+void test_fun() {
+	printf("0x01400513=0x%08x\n 0x0513=0x%08x\n 0x13=0x%08x\n",pmem_read(0,4), pmem_read(0,2), pmem_read(0,1));
+}
 
 static void eval_dump(Vtop* top, VerilatedVcdC* tfp) {
 	static int time_step = 0;
@@ -59,6 +73,7 @@ int main(int argc, char **argv){
 	top->rst = 1;
 	single_cycle(top, tfp);
 	top->rst = 0;
+	test_fun();
 	while(!contextp->gotFinish() && end_flag == 0){
 		top->inst = pmem_read(top->pc, 4);
 		printf("pc = %x \n",top->pc);
