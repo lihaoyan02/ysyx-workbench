@@ -27,7 +27,7 @@ extern uint32_t pmem_read(uint32_t raddr, int len) {
 
 extern void pmem_write(uint32_t waddr, uint32_t wdata, char wmask) {
 	uint8_t* paddr = pmem + (waddr & ~0x3u);
-	printf("%x",wmask);
+	printf("%x\n",wmask);
 	switch (wmask) {
 		case 0x1: *paddr = (uint8_t)wdata; break;
 		case 0x3: *(uint16_t *)paddr = (uint16_t)wdata; break;
