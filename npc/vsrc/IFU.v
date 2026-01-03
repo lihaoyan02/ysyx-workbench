@@ -15,8 +15,8 @@ always @(posedge clk) begin
 		pc <= pc + 4;
 end
 
-always @(posedge clk) begin
-	inst_fetch <= inst;
+always @(*) begin
+	inst_fetch = inst;
 end
 //assign inst_fetch = inst;
 
