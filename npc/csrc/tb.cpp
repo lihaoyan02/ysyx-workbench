@@ -70,7 +70,7 @@ extern void npctrap(int a0) {
 
 int load_mem(){
 	FILE *file;
-	file = fopen("./logisim-bin/sum.bin","rb");
+	file = fopen("./logisim-bin/mem.bin","rb");
 	if(file==NULL){
 		printf("fail to open the file\n");
 		return 1;
@@ -86,7 +86,8 @@ int load_mem(){
 		printf("read error or file truncated!\n"); 
 	}
 	fclose(file);
-	pmem_write(0x228, 0x00100073, 0b1111);
+	//pmem_write(0x228, 0x00100073, 0b1111);
+	pmem_write(0x1220, 0x00100073, 0b1111);
 	return 0;
 }
 
