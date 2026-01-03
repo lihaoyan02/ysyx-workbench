@@ -31,7 +31,7 @@ extern void pmem_write(uint32_t waddr, uint32_t wdata, char wmask) {
 	switch (wmask) {
 		case 0x1: *paddr = (uint8_t)wdata; break;
 		case 0x3: *(uint16_t *)paddr = (uint16_t)wdata; break;
-		case 0x15: *(uint32_t *)paddr = wdata; break;
+		case 0xf: *(uint32_t *)paddr = wdata; break;
 		default: assert(0);
 	}
 }
