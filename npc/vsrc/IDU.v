@@ -48,7 +48,7 @@ import "DPI-C" function void npctrap();
 				else
 					$fatal("Illegal instruction: inst = 0x%08x\n", inst_fetch);
 			end
-			7'b1110011: begin
+			7'b1110011: begin //ebreak
 				if(imm_I == 12'b1 && rs1 == 0 && funct3 == 3'b0 && rd == 5'b0) begin
 					npctrap();
 					alu_ctrl = 3'b000;
