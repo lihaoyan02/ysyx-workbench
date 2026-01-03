@@ -121,6 +121,9 @@ int main(int argc, char **argv){
 	while(!contextp->gotFinish() && end_flag == 0){
 		top->inst = pmem_read(top->pc, 4);
 		printf("pc = %x \n",top->pc);
+		if(top->pc==0x19c){
+			break;
+		}
 		single_cycle(top, tfp);
 	}
 	printf("finished at pc = %x \n",top->pc-4);
