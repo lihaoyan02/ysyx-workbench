@@ -36,11 +36,11 @@ extern void pmem_write(uint32_t waddr, uint32_t wdata, char wmask) {
 }
 
 void test_fun() {
-	pmem_write(0,0x01400513,0b1111);
+	pmem_write(0,0x01400513u,0b1111u);
 	printf("0x01400513=0x%08x\n 0x0513=0x%08x\n 0x13=0x%08x\n",pmem_read(0,4), pmem_read(0,2), pmem_read(0,1));
-	pmem_write(0,0x0513,0b11);
+	pmem_write(0,0x0513u,0b11u);
 	printf("0x01400513=0x%08x\n 0x0513=0x%08x\n 0x13=0x%08x\n",pmem_read(0,4), pmem_read(0,2), pmem_read(0,1));
-	pmem_write(0,0x13,0b1);
+	pmem_write(0,0x13u,0b1u);
 	printf("0x01400513=0x%08x\n 0x0513=0x%08x\n 0x13=0x%08x\n",pmem_read(0,4), pmem_read(0,2), pmem_read(0,1));
 }
 
