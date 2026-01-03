@@ -71,6 +71,7 @@ wire [DATA_WIDTH-1:0] srcval2;
 	WBU u_WBU (
 		.alu_out(alu_out),
 		.wb_ctrl(wb_ctrl),
+		.imm(imm),
 		.pc(pc),
 		.wb_data(wb_data)
 	);
