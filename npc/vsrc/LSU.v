@@ -26,7 +26,10 @@ always @(*) begin
 			rdata_word = pmem_read(raddr, 4); //lw
 			case (lsu_ctrl)
 				3'b010: rdata = rdata_word; //lw
-				3'b100: rdata = {24'b0, rdata_word[7:0]}; //lbu 
+				3'b100: rdata = raddr[1:0]==2'b00 ? {24'b0, rdata_word[7:0]} :
+												raddr[1:0]==2'b01 ? {24'b0, rdata_word[15:8]} :
+												raddr[1:0]==2'b10 ? {24'b0, rdata_word[23:16]} :
+												raddr[1:0]==2'b11 ? {24'b0, rdata_word[31:24]} : 32'b0; //lbu 
 				default: $finish;
 			endcase
 		end
