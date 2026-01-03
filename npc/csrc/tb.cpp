@@ -54,10 +54,10 @@ static void eval_dump(Vtop* top, VerilatedVcdC* tfp) {
 }
 
 static void single_cycle(Vtop * top, VerilatedVcdC* tfp) { 
-	//top->clk = 0; eval_dump(top, tfp);
-	//top->clk = 1; eval_dump(top, tfp);
-	top->clk = 0; top->eval();
-	top->clk = 1; top->eval();
+	top->clk = 0; eval_dump(top, tfp);
+	top->clk = 1; eval_dump(top, tfp);
+	//top->clk = 0; top->eval();
+	//top->clk = 1; top->eval();
 }
 
 extern void npctrap(int a0) {
