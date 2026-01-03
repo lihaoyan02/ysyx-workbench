@@ -104,9 +104,9 @@ int main(int argc, char **argv){
 	top->trace(tfp, 99);
 	tfp->open("build/wave.vcd");
 
-	memcpy(pmem, img, sizeof(img));	
+	//memcpy(pmem, img, sizeof(img));	
 	int result =0;
-	//result = load_mem();
+	result = load_mem();
 	if(result!=0){
 		printf("fail to load mem\n");
 		return 1;
