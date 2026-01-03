@@ -4,10 +4,12 @@
 
 #include <verilated.h>
 #include <Vtop.h>
+#include <Vtop__Dpi.h>
 #include "verilated_vcd_c.h"
 
 
 static uint8_t pmem[1000];
+static int end_flag = 0;
 static const uint32_t img[] = {
 	0x01400513, 0x010000e7, 0x00c000e7, 0x00c00067,
 	0x00a50513, 0x00008067
@@ -29,11 +31,15 @@ static void eval_dump(Vtop* top, VerilatedVcdC* tfp) {
 	tfp->dump(time_step++);
 }
 
-
 static void single_cycle(Vtop * top, VerilatedVcdC* tfp) { 
 	top->clk = 0; eval_dump(top, tfp);
 	top->clk = 1; eval_dump(top, tfp);
 }
+
+extern void npctrap() {
+	end_flag = 1;
+}
+
 int main(int argc, char **argv){
 
 	VerilatedContext* const contextp = new VerilatedContext;
@@ -49,7 +55,7 @@ int main(int argc, char **argv){
 	top->rst = 1;
 	single_cycle(top, tfp);
 	top->rst = 0;
-	while(cnt<=10){
+	while(cnt<=10 && end_flag == 0){
 		top->inst = pmem_read(top->pc, 4);
 		single_cycle(top, tfp);
 		cnt++; 
