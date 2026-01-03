@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <assert.h>
 
@@ -7,15 +8,16 @@
 #include <Vtop__Dpi.h>
 #include "verilated_vcd_c.h"
 
+#define MEM_MAX_2_28 1<<28
 
-static uint8_t pmem[1000];
+static uint8_t pmem[MEM_MAX_2_28];
 static int end_flag = 0;
 static const uint32_t img[] = {
 	0x01400513, 0x010000e7, 0x00c000e7, 0x00100073,
 	0x00a50513, 0x00008067 //0x00008067
 };
 
-extern uint32_t pmem_read(uint32_t raddr, int len) {
+extern "C" int pmem_read(int raddr, int len) {
 	uint8_t* paddr = pmem + raddr;
 	switch (len) {
 		case 1: return *(uint8_t  *)paddr;
@@ -25,9 +27,8 @@ extern uint32_t pmem_read(uint32_t raddr, int len) {
 	}
 }	
 
-extern void pmem_write(uint32_t waddr, uint32_t wdata, char wmask) {
+extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 	uint8_t* paddr = pmem + (waddr & ~0x3u);
-	printf("%x\n",wmask);
 	switch (wmask) {
 		case 0x1: *paddr = (uint8_t)wdata; break;
 		case 0x3: *(uint16_t *)paddr = (uint16_t)wdata; break;
@@ -52,8 +53,10 @@ static void eval_dump(Vtop* top, VerilatedVcdC* tfp) {
 }
 
 static void single_cycle(Vtop * top, VerilatedVcdC* tfp) { 
-	top->clk = 0; eval_dump(top, tfp);
-	top->clk = 1; eval_dump(top, tfp);
+	//top->clk = 0; eval_dump(top, tfp);
+	//top->clk = 1; eval_dump(top, tfp);
+	top->clk = 0; top->eval();
+	top->clk = 1; top->eval();
 }
 
 extern void npctrap(int a0) {
@@ -63,6 +66,28 @@ extern void npctrap(int a0) {
 	} else {
 		printf("\033[31mBAD TRAP\033[0m\n");
 	}
+}
+
+int load_mem(){
+	FILE *file;
+	file = fopen("./logisim-bin/sum.bin","rb");
+	if(file==NULL){
+		printf("fail to open the file\n");
+		return 1;
+	}
+	//obtain the file size
+	fseek(file, 0, SEEK_END);
+	long file_size = ftell(file);
+	fseek(file, 0, SEEK_SET);
+	int count = file_size / sizeof(uint32_t);
+	//read to the memory
+	size_t n = fread(pmem, sizeof(uint8_t), MEM_MAX_2_28, file);
+	if(n != count){
+		printf("read error or file truncated!\n"); 
+	}
+	fclose(file);
+	pmem_write(0x228, 0x00100073, 0b1111);
+	return 0;
 }
 
 int main(int argc, char **argv){
@@ -75,11 +100,19 @@ int main(int argc, char **argv){
 	VerilatedVcdC* tfp = new VerilatedVcdC;
 	top->trace(tfp, 99);
 	tfp->open("build/wave.vcd");
-	memcpy(pmem, img, sizeof(img));	
+
+	//memcpy(pmem, img, sizeof(img));	
+	int result =0;
+	result = load_mem();
+	if(result!=0){
+		printf("fail to load mem\n");
+		return 1;
+	}
+
 	top->rst = 1;
 	single_cycle(top, tfp);
 	top->rst = 0;
-	test_fun();
+//	test_fun();
 	while(!contextp->gotFinish() && end_flag == 0){
 		top->inst = pmem_read(top->pc, 4);
 		printf("pc = %x \n",top->pc);

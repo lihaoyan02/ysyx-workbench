@@ -5,23 +5,28 @@ module LSU #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
 	input [DATA_WIDTH-1:0] wdata,
 	input [ADDR_WIDTH-1:0] waddr,
 	input [ADDR_WIDTH-1:0] raddr,
-	output [DATA_WIDTH-1:0] rdata
+	output reg [DATA_WIDTH-1:0] rdata
 );
-import "DPI-C" function uint32_t pmem_read(input uint32_t raddr, int len);
-import "DPI-C" function void pmem_write(input uint32_t waddr, input uint32_t wdata, int len);
+import "DPI-C" function int pmem_read(int raddr, int len);
+import "DPI-C" function void pmem_write(int waddr, int wdata, byte wmask);
+
+reg [DATA_WIDTH-1:0] rdata_word;
 
 always @(*) begin
 	rdata = 32'b0;
 	if(lsu_en) begin
-		if (wen) begin
+		if (wen) begin // write enable : store data
 			case (lsu_ctrl)
-				3'b010: pmem_write(waddr, wdata, 8'b1111);
+				3'b010: pmem_write(waddr, wdata, 8'b1111); //sw
+				3'b000: pmem_write(waddr, wdata, 8'b1); //sb
 				default: $finish;
 			endcase
 		end
-		else begin
+		else begin // read enable : load data
+			rdata_word = pmem_read(raddr, 4); //lw
 			case (lsu_ctrl)
-				3'b010: rdata = pmem_read(raddr, 4);
+				3'b010: rdata = rdata_word; //lw
+				3'b100: rdata = {24'b0, rdata_word[7:0]}; //lbu 
 				default: $finish;
 			endcase
 		end

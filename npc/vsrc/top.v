@@ -7,16 +7,18 @@ module top #(INST_WIDTH = 32, DATA_WIDTH = 32) (
 
 import "DPI-C" function void npctrap(int a0);
 
-wire j_pc, wb_en, imm_sel, ebreak_flag;
+wire j_pc, wb_en, imm_sel, ebreak_flag, lsu_en, lsu_wen;
 wire [DATA_WIDTH-1:0] alu_out;
 wire [INST_WIDTH-1:0] inst_fetch;
 wire [DATA_WIDTH-1:0] imm;
+wire [DATA_WIDTH-1:0] rdata;
 wire [4:0] rd;
 wire [4:0] rs1;
 wire [4:0] rs2;
 
 wire [2:0] alu_ctrl;
 wire [2:0] wb_ctrl;
+wire [2:0] lsu_ctrl;
 
 wire [DATA_WIDTH-1:0] wb_data;
 wire [DATA_WIDTH-1:0] srcval1;
@@ -43,6 +45,9 @@ wire [DATA_WIDTH-1:0] srcval2;
 		.imm_sel(imm_sel),
 		.wb_ctrl(wb_ctrl),
 		.wb_en(wb_en),
+		.lsu_en(lsu_en),
+		.lsu_wen(lsu_wen),
+		.lsu_ctrl(lsu_ctrl),
 		.ebreak_flag(ebreak_flag),
 		.j_pc(j_pc)
 	);
@@ -68,8 +73,20 @@ wire [DATA_WIDTH-1:0] srcval2;
 		.alu_out(alu_out)
 	);
 
+	LSU u_LSU (
+		.lsu_en(lsu_en),
+		.wen(lsu_wen),
+		.lsu_ctrl(lsu_ctrl),
+		.wdata(srcval2),
+		.waddr(alu_out),
+
+		.raddr(alu_out),
+		.rdata(rdata)
+	);
+
 	WBU u_WBU (
 		.alu_out(alu_out),
+		.mem_out(rdata),
 		.wb_ctrl(wb_ctrl),
 		.imm(imm),
 		.pc(pc),
