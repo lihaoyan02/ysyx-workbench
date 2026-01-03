@@ -20,7 +20,7 @@ static const uint32_t img[] = {
 extern "C" int pmem_read(int raddr, int len) {
 	uint8_t* paddr = pmem + ((unsigned)raddr & ~0x3u);
 	if(((unsigned)raddr & ~0x3u)>=MEM_MAX_2_28) {
-	printf("addr = %d\n",((unsigned)raddr & ~0x3u));
+	printf("addr = %u\n",((unsigned)raddr & ~0x3u));
 	}
 	switch (len) {
 		case 1: return *(uint8_t  *)paddr;
