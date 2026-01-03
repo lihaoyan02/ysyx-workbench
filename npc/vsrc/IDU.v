@@ -65,7 +65,6 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010;
 				wb_en = 0;
 				wb_ctrl = WB_IDLE;
 				j_pc = 0;
-				$fatal("Illegal instruction: inst = 0x%08x\n", inst_fetch);
 			end
 		endcase
 	end
