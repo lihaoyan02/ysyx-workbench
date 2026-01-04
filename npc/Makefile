@@ -1,11 +1,12 @@
 TOPNAME = top
 NXDC_FILES = constr/top.nxdc
-INC_PATH ?=
+NPC_DIR := $(NPC_HOME)
+INC_PATH = $(NPC_DIR)/include
 
 VERILATOR = verilator
 VERILATOR_CFLAGS += -MMD -cc --build \
 				-O3 --x-assign fast --x-initial fast --trace-vcd 
-BUILD_DIR = ./build
+BUILD_DIR = $(NPC_DIR)/build
 OBJ_DIR = $(BUILD_DIR)/obj_dir
 BIN = $(BUILD_DIR)/$(TOPNAME)
 
@@ -13,7 +14,7 @@ $(shell mkdir -p $(BUILD_DIR))
 
 # project source
 VSRCS = $(wildcard vsrc/*.v)
-CSRCS = csrc/tb.cpp
+CSRCS = $(wildcard csrc/*.cpp)
 # CSRCS += $(SRC_AUTO_BIND)
 # $(NVBOARD_ARCHIVE)
 
@@ -22,7 +23,7 @@ CSRCS = csrc/tb.cpp
 
 # rules for verilator
 INCFLAGS = $(addprefix -I, $(INC_PATH))
-CXXFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\""
+CXXFLAGS += $(INCFLAGS)
 
 all: sim
 	@echo "Write this Makefile by your self."
@@ -31,11 +32,14 @@ $(BIN): $(VSRCS) $(CSRCS)
 	@rm -rf $(OBJ_DIR)
 	$(VERILATOR) $(VERILATOR_CFLAGS) \
 		--top-module $(TOPNAME) $^ \
+		$(addprefix -CFLAGS , $(CXXFLAGS)) \
 		--Mdir $(OBJ_DIR) --exe -o $(abspath $(BIN))
-	#	$(addprefix -CFLAGS , $(CXXFLAGS)) $(addprefix -LDFLAGS , $(LDFLAGS)) 
+	#	$(addprefix -LDFLAGS , $(LDFLAGS)) 
 
+# image file
+IMG ?=
 run: $(BIN)
-	@$^
+	@$^ $(IMG)
 
 clean:
 	rm -rf $(BUILD_DIR)
