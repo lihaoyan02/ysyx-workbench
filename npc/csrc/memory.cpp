@@ -5,15 +5,18 @@
 
 static uint8_t pmem[MEM_MAX];
 
-extern "C" int pmem_read(int raddr, int len) {
+extern "C" int pmem_read(int raddr) {
 	if(in_mem((uint32_t)raddr)) {
 		uint8_t* paddr = pmem + ((unsigned)raddr & ~0x3u) - MEM_BASE;
+		return *(uint32_t *)paddr;
+		/*
 		switch (len) {
 			case 1: return *(uint8_t  *)paddr;
 			case 2: return *(uint16_t *)paddr;
 			case 4: return *(uint32_t *)paddr;
 			default: assert(0);
 		}
+		*/
 	} else {
 		printf("illegal access for pmem\n");
 		assert(0);

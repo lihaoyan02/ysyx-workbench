@@ -7,7 +7,7 @@ module LSU #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
 	input [ADDR_WIDTH-1:0] raddr,
 	output reg [DATA_WIDTH-1:0] rdata
 );
-import "DPI-C" function int pmem_read(int raddr, int len);
+import "DPI-C" function int pmem_read(int raddr);
 import "DPI-C" function void pmem_write(int waddr, int wdata, byte wmask);
 
 reg [DATA_WIDTH-1:0] rdata_word;
@@ -23,7 +23,7 @@ always @(*) begin
 			endcase
 		end
 		else begin // read enable : load data
-			rdata_word = pmem_read(raddr, 4); //lw
+			rdata_word = pmem_read(raddr); //lw
 			case (lsu_ctrl)
 				3'b010: rdata = rdata_word; //lw
 				3'b100: rdata = raddr[1:0]==2'b00 ? {24'b0, rdata_word[7:0]} :

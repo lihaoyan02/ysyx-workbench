@@ -1,6 +1,6 @@
 TOPNAME = top
 NXDC_FILES = constr/top.nxdc
-NPC_DIR := $(shell pwd)
+NPC_DIR := $(NPC_HOME)
 INC_PATH = $(NPC_DIR)/include
 
 VERILATOR = verilator

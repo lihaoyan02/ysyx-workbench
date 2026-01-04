@@ -7,10 +7,10 @@ module IFU #(INST_WIDTH = 32, ADDR_WIDTH = 32)(
 	output reg [INST_WIDTH-1:0] inst_fetch
 );
 
-import "DPI-C" function int pmem_read(int raddr, int len);
+import "DPI-C" function int pmem_read(int raddr);
 
 always @(posedge clk) begin
-	if (rst) pc <= {ADDR_WIDTH{1'b0}}; 
+	if (rst) pc <= 32'h80000000;//{ADDR_WIDTH{1'b0}}; 
 	else if(j_pc)
 		pc <= j_pc_addr;
 	else
@@ -18,7 +18,10 @@ always @(posedge clk) begin
 end
 
 always @(*) begin
-	inst_fetch = pmem_read(pc, 4);
+	if (rst)
+		inst_fetch = 32'b0;
+	else
+		inst_fetch = pmem_read(pc);
 end
 //assign inst_fetch = inst;
 
