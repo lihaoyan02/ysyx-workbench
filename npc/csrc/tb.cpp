@@ -1,44 +1,19 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <assert.h>
+#include <memory.h>
 
 #include <verilated.h>
 #include <Vtop.h>
-#include <Vtop__Dpi.h>
 #include "verilated_vcd_c.h"
 
-#define MEM_MAX_2_28 1<<30 
-
-static uint8_t pmem[MEM_MAX_2_28];
 static int end_flag = 0;
 static const uint32_t img[] = {
 	0x01400513, 0x010000e7, 0x00c000e7, 0x00100073,
 	0x00a50513, 0xff410113, 0x00008067 //0x00008067
 };
 
-extern "C" int pmem_read(int raddr, int len) {
-	uint8_t* paddr = pmem + ((unsigned)raddr & ~0x3u);
-	if(((unsigned)raddr & ~0x3u)>=MEM_MAX_2_28) {
-	printf("addr = %x\n",((unsigned)raddr & ~0x3u));
-	}
-	switch (len) {
-		case 1: return *(uint8_t  *)paddr;
-		case 2: return *(uint16_t *)paddr;
-		case 4: return *(uint32_t *)paddr;
-		default: assert(0);
-	}
-}	
 
-extern "C" void pmem_write(int waddr, int wdata, char wmask) {
-	uint8_t* paddr = pmem + (unsigned)waddr;
-	switch (wmask) {
-		case 0x1: *(uint8_t *)paddr = (uint8_t)wdata; break;
-		case 0x3: *(uint16_t *)paddr = (uint16_t)wdata; break;
-		case 0xf: *(uint32_t *)paddr = wdata; break;
-		default: assert(0);
-	}
-}
 
 void test_fun() {
 	pmem_write(0,0x01400513u,0b1111u);
@@ -62,7 +37,7 @@ static void single_cycle(Vtop * top, VerilatedVcdC* tfp) {
 	//top->clk = 1; top->eval();
 }
 
-extern void npctrap(int a0) {
+extern "C" void npctrap(int a0) {
 	end_flag = 1;
 	if(a0==0) {
 		printf("\033[32mGOOD TRAP\033[0m\n");
@@ -71,29 +46,6 @@ extern void npctrap(int a0) {
 	}
 }
 
-int load_mem(){
-	FILE *file;
-	file = fopen("./logisim-bin/mem.bin","rb");
-	if(file==NULL){
-		printf("fail to open the file\n");
-		return 1;
-	}
-	//obtain the file size
-	fseek(file, 0, SEEK_END);
-	long file_size = ftell(file);
-	fseek(file, 0, SEEK_SET);
-	int count = file_size / sizeof(uint8_t);
-	//read to the memory
-	size_t n = fread(pmem, sizeof(uint8_t), MEM_MAX_2_28, file);
-	if(n != count){
-		printf("read error or file truncated!\n"); 
-	}
-	fclose(file);
-	//pmem_write(0x228, 0x00100073, 0b1111);
-	pmem_write(0x1220, 0x00100073, 0b1111);
-	//printf("0x1220 = %08x\n",pmem_read(0x1220,4)); 
-	return 0;
-}
 
 int main(int argc, char **argv){
 
