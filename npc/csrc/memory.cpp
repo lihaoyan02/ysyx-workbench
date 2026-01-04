@@ -26,9 +26,9 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 	}
 }
 
-int load_mem(){
+int load_mem(const char *img){
 	FILE *file;
-	file = fopen("./logisim-bin/mem.bin","rb");
+	file = fopen(img,"rb");
 	if(file==NULL){
 		printf("fail to open the file\n");
 		return 1;

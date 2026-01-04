@@ -36,8 +36,10 @@ $(BIN): $(VSRCS) $(CSRCS)
 		--Mdir $(OBJ_DIR) --exe -o $(abspath $(BIN))
 	#	$(addprefix -LDFLAGS , $(LDFLAGS)) 
 
+# image file
+IMG ?=
 run: $(BIN)
-	@$^
+	@$^ $(IMG)
 
 clean:
 	rm -rf $(BUILD_DIR)
