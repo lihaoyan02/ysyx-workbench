@@ -1,4 +1,4 @@
-module RegisterFile #(ADDR_WIDTH = 5, DATA_WIDTH = 32, REG_NUM = 32) (
+module RegisterFile #(ADDR_WIDTH = 5, DATA_WIDTH = 32, REG_NUM = 16) (
 	input clk,
 	input rst,
 	input wen,
@@ -11,7 +11,7 @@ module RegisterFile #(ADDR_WIDTH = 5, DATA_WIDTH = 32, REG_NUM = 32) (
 	output [DATA_WIDTH-1:0] rdata2
 );
 integer i = 0;
-	reg [DATA_WIDTH-1:0] rf [2**ADDR_WIDTH-1:0];
+	reg [DATA_WIDTH-1:0] rf [15:0];
 	always @(posedge clk) begin
 		if(rst) begin
 			for (i=0; i<REG_NUM; i = i+1) begin
@@ -19,10 +19,10 @@ integer i = 0;
 			end
 		end 
 		else if(wen) 
-			rf[waddr] <= wdata;
+			rf[waddr[3:0]] <= wdata;
 	end
 
-assign rdata1 = (raddr1==0) ? {DATA_WIDTH{1'b0}} : rf[raddr1];
-assign rdata2 = (raddr2==0) ? {DATA_WIDTH{1'b0}} : rf[raddr2];
+assign rdata1 = (raddr1==0) ? {DATA_WIDTH{1'b0}} : rf[raddr1[3:0]];
+assign rdata2 = (raddr2==0) ? {DATA_WIDTH{1'b0}} : rf[raddr2[3:0]];
 
 endmodule

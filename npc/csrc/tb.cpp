@@ -30,9 +30,9 @@ static void single_cycle(Vtop * top, VerilatedVcdC* tfp) {
 extern "C" void npctrap(int a0) {
 	end_flag = 1;
 	if(a0==0) {
-		printf("\033[32mGOOD TRAP\033[0m\n");
+		printf("\033[32mHIT GOOD TRAP\033[0m\n");
 	} else {
-		printf("\033[31mBAD TRAP a0 = %d\033[0m\n",a0);
+		printf("\033[31mHIT BAD TRAP a0 = %d\033[0m\n",a0);
 	}
 }
 
