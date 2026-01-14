@@ -6,6 +6,15 @@
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
 int printf(const char *fmt, ...) {
+	char out[128];
+	va_list ap;
+	va_start(ap, fmt);
+	int ret = sprintf(out, fmt, ap);
+	va_end(ap);
+	for (const char *p = out; *p; p++) {
+		putch(*p);
+	}
+	return ret;
   panic("Not implemented");
 }
 
