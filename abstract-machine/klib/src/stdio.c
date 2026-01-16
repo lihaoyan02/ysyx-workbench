@@ -6,17 +6,20 @@
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
 int printf(const char *fmt, ...) {
+	char out[128];
+	va_list ap;
+	va_start(ap, fmt);
+	int ret = vsprintf(out, fmt, ap);
+	va_end(ap);
+	for (const char *p = out; *p; p++) {
+		putch(*p);
+	}
+	return ret;
   panic("Not implemented");
 }
 
 int vsprintf(char *out, const char *fmt, va_list ap) {
-  panic("Not implemented");
-}
-
-int sprintf(char *out, const char *fmt, ...) {
 	char *start = out;
-	va_list ap;
-	va_start(ap, fmt);
 	while (*fmt) {
 		if (*fmt == '%') {
 			fmt++;
@@ -54,8 +57,17 @@ int sprintf(char *out, const char *fmt, ...) {
 		}
 	}
 	*out = '\0';
-	va_end(ap);
 	return out - start;
+
+  panic("Not implemented");
+}
+
+int sprintf(char *out, const char *fmt, ...) {
+	va_list ap;
+	va_start(ap, fmt);
+	int ret = vsprintf(out, fmt, ap);
+	va_end(ap);
+	return ret;
   panic("Not implemented");
 }
 
