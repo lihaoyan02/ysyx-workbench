@@ -9,7 +9,7 @@ int printf(const char *fmt, ...) {
 	char out[128];
 	va_list ap;
 	va_start(ap, fmt);
-	int ret = sprintf(out, fmt, ap);
+	int ret = vsprintf(out, fmt, ap);
 	va_end(ap);
 	for (const char *p = out; *p; p++) {
 		putch(*p);
@@ -19,13 +19,7 @@ int printf(const char *fmt, ...) {
 }
 
 int vsprintf(char *out, const char *fmt, va_list ap) {
-  panic("Not implemented");
-}
-
-int sprintf(char *out, const char *fmt, ...) {
 	char *start = out;
-	va_list ap;
-	va_start(ap, fmt);
 	while (*fmt) {
 		if (*fmt == '%') {
 			fmt++;
@@ -63,8 +57,17 @@ int sprintf(char *out, const char *fmt, ...) {
 		}
 	}
 	*out = '\0';
-	va_end(ap);
 	return out - start;
+
+  panic("Not implemented");
+}
+
+int sprintf(char *out, const char *fmt, ...) {
+	va_list ap;
+	va_start(ap, fmt);
+	int ret = vsprintf(out, fmt, ap);
+	va_end(ap);
+	return ret;
   panic("Not implemented");
 }
 
