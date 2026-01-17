@@ -23,13 +23,26 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
 	while (*fmt) {
 		if (*fmt == '%') {
 			fmt++;
+			char pad = ' ';
+			int width = 0;
+
+			if (*fmt == '0') {
+				pad = '0';
+				fmt++;
+			}
+			while (*fmt >= '0' && *fmt <= '9') {
+				width = width*10 + (*fmt - '0');
+				fmt++;
+			}
 			switch (*fmt++) {
+				case 'c':
+					char charct = va_arg(ap, int);
+					*out++ = charct;
+					break;
 				case 's':
 					char *str = va_arg(ap, char *);
 					while (*str) {
-						*out = *str;
-						out++;
-						str++;
+						*out++ = *str++;
 					}
 					break;
 				case 'd':
@@ -44,13 +57,40 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
 						*ptr++ = '0' + (value % 10);
 						value /= 10;
 					} while (value > 0);
+
+					int len = ptr - buffer;
+					while(len < width) {
+						*out++ = pad;
+						width--;
+					}
 					while (buffer != ptr) {
 						*out++ = *--ptr;
+					}
+					break;
+				case 'x':
+				case 'X':
+					unsigned int valuex = va_arg(ap, unsigned int);
+					char bufferx[32];
+					char *ptrx = bufferx;
+					char base = (*(fmt-1) == 'X') ? 'A' : 'a'; 
+					do {
+						int d = valuex & 0xf;
+						*ptrx++ = (d<10) ? ('0' + d) : (base + d - 10);
+						valuex >>= 4;
+					} while(valuex);
+					int lenx = ptrx - bufferx;
+					while(lenx < width) {
+						*out++ = pad; 
+						width--;
+					}
+					while (bufferx != ptrx) {
+						*out++ = *--ptrx; 
 					}
 					break;
 				case '%':
 					*out++ = '%';
 					break;
+				default: panic("Not implemented"); 
 			}
 		}else {
 			*out++ = *fmt++;
