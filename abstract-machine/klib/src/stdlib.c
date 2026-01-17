@@ -37,9 +37,12 @@ void *malloc(size_t size) {
   //   panic() -> putchar() -> (glibc) -> malloc() -> panic()
 #if !(defined(__ISA_NATIVE__) && defined(__NATIVE_USE_KLIB__))
 	size = ROUNDUP(size, 8);
-	void* ptr = (void*)addr;
+	if(addr + size > (uintptr_t)heap.end) {
+		return NULL;
+	}
+	void* ret = (void*)addr;
 	addr += size;
-	return ptr;
+	return ret;
   panic("Not implemented");
 #endif
   return NULL;
