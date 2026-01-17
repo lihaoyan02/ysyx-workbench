@@ -27,12 +27,12 @@ void __am_gpu_fbdraw(AM_GPU_FBDRAW_T *ctl) {
 	uint32_t y = ctl->y;
 	uint32_t w = ctl->w;
 	uint32_t h = ctl->h;
-	uint32_t width = inw(VGACTL_ADDR);
+	uint32_t width = inl(VGACTL_ADDR)>>16;
 	uint32_t pos = y * width + x;
 	uintptr_t fb = (uintptr_t)FB_ADDR + pos*4;
 	for(int i=0; i<h; i++) {
 		for(int j=0; j<w; j++) {
-			outl(fb+i*width+j, ((uint32_t *)ctl->pixels)[i*w+j]);
+			outl(fb+i*width+j, ((uint32_t *)ctl->pixels)[i+j*h]);
 		}
 	}
   if (ctl->sync) {
