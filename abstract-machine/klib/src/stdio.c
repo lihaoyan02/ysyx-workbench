@@ -24,12 +24,14 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
 		if (*fmt == '%') {
 			fmt++;
 			switch (*fmt++) {
+				case 'c':
+					char charct = va_arg(ap, int);
+					*out++ = charct;
+					break;
 				case 's':
 					char *str = va_arg(ap, char *);
 					while (*str) {
-						*out = *str;
-						out++;
-						str++;
+						*out++ = *str++;
 					}
 					break;
 				case 'd':
@@ -51,6 +53,7 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
 				case '%':
 					*out++ = '%';
 					break;
+				default: panic("Not implemented"); 
 			}
 		}else {
 			*out++ = *fmt++;
