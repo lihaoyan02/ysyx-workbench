@@ -17,7 +17,9 @@ extern "C" int pmem_read(int raddr) {
 			default: assert(0);
 		}
 		*/
-	} else {
+	} else if (raddr == 0xa0000048){
+			
+	}else {
 		printf("illegal access for pmem\n");
 		assert(0);
 	}
@@ -32,6 +34,8 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 			case 0xf: *(uint32_t *)paddr = wdata; break;
 			default: assert(0);
 		}
+	} else if (waddr == 0xa00003f8){
+		putchar(wdata);
 	} else {
 		printf("illegal access for pmem\n");
 		assert(0);
