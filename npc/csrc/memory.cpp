@@ -34,7 +34,7 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 			case 0xf: *(uint32_t *)paddr = wdata; break;
 			default: assert(0);
 		}
-	} else if (waddr == 0xa00003f8){
+	} else if (waddr == 0x10000000){
 		putchar(wdata);
 	} else {
 		printf("illegal access for pmem\n");

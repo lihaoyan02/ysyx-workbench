@@ -71,7 +71,7 @@ int main(int argc, char **argv){
 	single_cycle(top, tfp);
 	top->rst = 0;
 	while(!contextp->gotFinish() && end_flag == 0){
-		printf("pc = %x \n",top->pc);
+		//printf("pc = %x \n",top->pc);
 		single_cycle(top, tfp);
 	}
 	printf("finished at pc = %x \n",top->pc-4);
