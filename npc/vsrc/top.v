@@ -74,6 +74,7 @@ wire [DATA_WIDTH-1:0] srcval2;
 
 	LSU u_LSU (
 		.lsu_en(lsu_en),
+		.clk(clk),
 		.wen(lsu_wen),
 		.lsu_ctrl(lsu_ctrl),
 		.wdata(srcval2),
