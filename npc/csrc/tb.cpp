@@ -21,10 +21,10 @@ static void eval_dump(Vtop* top, VerilatedVcdC* tfp) {
 }
 
 static void single_cycle(Vtop * top, VerilatedVcdC* tfp) { 
-	top->clk = 0; eval_dump(top, tfp);
-	top->clk = 1; eval_dump(top, tfp);
-	//top->clk = 0; top->eval();
-	//top->clk = 1; top->eval();
+	//top->clk = 0; eval_dump(top, tfp);
+	//top->clk = 1; eval_dump(top, tfp);
+	top->clk = 0; top->eval();
+	top->clk = 1; top->eval();
 }
 
 extern "C" void npctrap(int a0) {
@@ -71,7 +71,7 @@ int main(int argc, char **argv){
 	single_cycle(top, tfp);
 	top->rst = 0;
 	while(!contextp->gotFinish() && end_flag == 0){
-		printf("pc = %x \n",top->pc);
+		//printf("pc = %x \n",top->pc);
 		single_cycle(top, tfp);
 	}
 	printf("finished at pc = %x \n",top->pc-4);

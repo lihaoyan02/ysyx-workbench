@@ -30,9 +30,33 @@ uint64_t g_nr_guest_inst = 0;
 static uint64_t g_timer = 0; // unit: us
 static bool g_print_step = false;
 
+// iringbuf
+#define IRING_SIZE 16
+static char iringbuf[IRING_SIZE][128];
+static int iring_ptr = 0;
+
 void device_update();
 
 bool scan_wp_diff();
+
+//iringbuf function
+static void iringbuf_push(char *ibuf) {
+	if (++iring_ptr >= IRING_SIZE) {
+		iring_ptr = 0;	
+	}
+	memcpy(iringbuf[iring_ptr], ibuf, 128);
+}
+static void iringbuf_print() {
+	for(int i=0; i<IRING_SIZE; i++) {
+		if(iringbuf[i][0] != '\0') {
+			if(i == iring_ptr) {
+				printf("--> %s \n", iringbuf[i]);
+			} else {
+				printf("    %s \n", iringbuf[i]);
+			}
+		}
+	}
+}
 
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
@@ -40,6 +64,8 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #endif
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
+	// iringtrace
+	iringbuf_push(_this->logbuf);
 	// scan watchpoint
 #ifdef CONFIG_WATCHPOINT
 	if(scan_wp_diff()) {
@@ -130,6 +156,7 @@ void cpu_exec(uint64_t n) {
            (nemu_state.halt_ret == 0 ? ANSI_FMT("HIT GOOD TRAP", ANSI_FG_GREEN) :
             ANSI_FMT("HIT BAD TRAP", ANSI_FG_RED))),
           nemu_state.halt_pc);
+			iringbuf_print();
       // fall through
     case NEMU_QUIT: statistic();
   }

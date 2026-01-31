@@ -1,5 +1,6 @@
 module LSU #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
 	input lsu_en,
+	input clk,
 	input wen,
 	input [2:0] lsu_ctrl,
 	input [DATA_WIDTH-1:0] wdata,
@@ -12,8 +13,7 @@ import "DPI-C" function void pmem_write(int waddr, int wdata, byte wmask);
 
 reg [DATA_WIDTH-1:0] rdata_word;
 
-always @(*) begin
-	rdata = 32'b0;
+always @(posedge clk) begin
 	if(lsu_en) begin
 		if (wen) begin // write enable : store data
 			case (lsu_ctrl)
@@ -22,7 +22,14 @@ always @(*) begin
 				default: $finish;
 			endcase
 		end
-		else begin // read enable : load data
+	end
+end
+
+always @(*) begin
+	rdata = 32'b0;
+	rdata_word = 32'b0;
+	if(lsu_en) begin
+		if (~wen) begin // write enable : store data
 			rdata_word = pmem_read(raddr); //lw
 			case (lsu_ctrl)
 				3'b010: rdata = rdata_word; //lw
@@ -35,5 +42,6 @@ always @(*) begin
 		end
 	end
 end
+
 
 endmodule
