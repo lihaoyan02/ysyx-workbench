@@ -157,6 +157,20 @@ config ITRACE_COND
   string "Only trace instructions when the condition is true"
   default "true"
 
+config MTRACE
+	depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
+	bool "Enable memory tracer"
+	default y
+
+config MTRACE_START
+	depends on MTRACE
+	hex "memory trace left range (unit: addr of memory)"
+	default 0x0 
+
+config MTRACE_END
+	depends on MTRACE
+	hex "memory trace right range (unit: addr of memory)"
+	default 0x80000000
 
 config DIFFTEST
   depends on TARGET_NATIVE_ELF
