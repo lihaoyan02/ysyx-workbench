@@ -7,7 +7,7 @@
 #include "verilated_vcd_c.h"
 
 void init_monitor(int, char *[]); 
-static int end_flag = 0;
+int is_exit_status_bad();
 
 
 static void eval_dump(Vtop* top, VerilatedVcdC* tfp) {
@@ -24,12 +24,8 @@ static void single_cycle(Vtop * top, VerilatedVcdC* tfp) {
 }
 
 extern "C" void npctrap(int a0) {
-	end_flag = 1;
-	if(a0==0) {
-		printf("\033[32mHIT GOOD TRAP\033[0m\n");
-	} else {
-		printf("\033[31mHIT BAD TRAP a0 = %d\033[0m\n",a0);
-	}
+	npc_state.state = NPC_END;
+	npc_state.halt_ret = a0;
 }
 
 
@@ -67,14 +63,19 @@ int main(int argc, char **argv){
 	top->rst = 1;
 	single_cycle(top, tfp);
 	top->rst = 0;
-	while(!contextp->gotFinish() && end_flag == 0){
+	while(!contextp->gotFinish() && npc_state.state == NPC_RUNNING){
 		printf("pc = %x \n",top->pc);
 		single_cycle(top, tfp);
 	}
 	printf("finished at pc = %x \n",top->pc-4);
+	if(npc_state.halt_ret==0) {
+		printf("\033[32mHIT GOOD TRAP\033[0m\n");
+	} else {
+		printf("\033[31mHIT BAD TRAP a0 = %d\033[0m\n",npc_state.halt_ret);
+	}
 	tfp->close();
 	//delete top
 	delete top;
 	delete contextp;
-	return 0;
+	return is_exit_status_bad();
 }

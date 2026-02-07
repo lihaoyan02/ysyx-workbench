@@ -3,6 +3,18 @@
 
 #include <common.h>
 
+// ----------- state ----------- 
+
+enum { NPC_RUNNING, NPC_QUIT, NPC_STOP, NPC_END };
+
+typedef struct {
+	int state;
+	uint32_t halt_pc;
+	uint32_t halt_ret;
+} NPCState;
+
+extern NPCState npc_state; 
+
 // ----------- log -----------
 #define ANSI_FG_BLACK   "\33[1;30m"
 #define ANSI_FG_RED     "\33[1;31m"
