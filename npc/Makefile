@@ -14,7 +14,8 @@ $(shell mkdir -p $(BUILD_DIR))
 
 # project source
 VSRCS = $(wildcard vsrc/*.v)
-CSRCS = $(wildcard csrc/*.cpp)
+CSRCS := $(wildcard csrc/*.cpp)
+CSRCS += $(wildcard csrc/**/*.cpp)
 # CSRCS += $(SRC_AUTO_BIND)
 # $(NVBOARD_ARCHIVE)
 

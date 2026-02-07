@@ -1,12 +1,12 @@
-#include <stdio.h>
-#include <stdint.h>
 #include <stdlib.h>
+#include <common.h>
 #include <memory.h>
 
 #include <verilated.h>
 #include <Vtop.h>
 #include "verilated_vcd_c.h"
 
+void init_monitor(int, char *[]); 
 static int end_flag = 0;
 static const uint32_t img[] = {
 	0x01400513, 0x010000e7, 0x00c000e7, 0x00100073,
@@ -39,22 +39,23 @@ extern "C" void npctrap(int a0) {
 
 int main(int argc, char **argv){
 
+	init_monitor(argc, argv);
+	/*
 	const char* imgfile = NULL;
 	if(argc == 1) {
 		imgfile = NULL;
 	} else if(argc == 2) {
 		imgfile = argv[1];
-		int result =0;
+		long result =0;
 		result = load_mem(imgfile);
 		if(result!=0){
-			printf("fail to load mem\n");
-			return 1;
+			printf("The image is %s, size = %ld\n", imgfile, result);
 		}
 	} else {
 		printf("too many arguments\n");
 		return 1;
 	}
-
+ */
 	VerilatedContext* const contextp = new VerilatedContext;
 	contextp->commandArgs(argc, argv);
 	Vtop* const top= new Vtop{contextp};

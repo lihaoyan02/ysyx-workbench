@@ -1,8 +1,8 @@
 #include <memory.h>
 #include <assert.h>
-#include <stdio.h>
 #include <Vtop__Dpi.h>
 #include <chrono>
+#include <common.h>
 
 static uint8_t pmem[MEM_MAX];
 static uint32_t rtc_port[2];
@@ -67,26 +67,26 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 	}
 }
 
-int load_mem(const char *img){
+long load_mem(const char *img){
 	FILE *file;
 	file = fopen(img,"rb");
-	if(file==NULL){
-		printf("fail to open the file\n");
-		return 1;
-	}
+	Assert(file, "Can not open '%s'", img);
+
 	//obtain the file size
 	fseek(file, 0, SEEK_END);
 	long file_size = ftell(file);
+
+	Log("The image is %s, size = %ld", img, file_size);
+
 	fseek(file, 0, SEEK_SET);
 	int count = file_size / sizeof(uint8_t);
 	//read to the memory
-	size_t n = fread(pmem, sizeof(uint8_t), MEM_MAX, file);
-	if(n != count){
-		printf("read error or file truncated!\n"); 
-	}
+	size_t n = fread(pmem, file_size, 1, file);
+	assert(n == 1);
+
 	fclose(file);
 	//pmem_write(0x228, 0x00100073, 0b1111);
 	//pmem_write(0x1220, 0x00100073, 0b1111);
 	//printf("0x1220 = %08x\n",pmem_read(0x1220,4)); 
-	return 0;
+	return file_size;
 }
