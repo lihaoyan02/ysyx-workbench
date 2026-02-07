@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include <common.h>
 #include <memory.h>
 
@@ -8,8 +7,9 @@
 
 void init_monitor(int, char *[]); 
 int is_exit_status_bad();
+void sdb_mainloop();
 
-
+/*
 static void eval_dump(Vtop* top, VerilatedVcdC* tfp) {
 	static int time_step = 0;
 	top->eval();
@@ -26,13 +26,14 @@ static void single_cycle(Vtop * top, VerilatedVcdC* tfp) {
 extern "C" void npctrap(int a0) {
 	npc_state.state = NPC_END;
 	npc_state.halt_ret = a0;
+	npc_state.halt_pc = top->pc;
 }
-
+*/
 
 int main(int argc, char **argv){
 
 	init_monitor(argc, argv);
-
+/*
 	VerilatedContext* const contextp = new VerilatedContext;
 	contextp->commandArgs(argc, argv);
 	Vtop* const top= new Vtop{contextp};
@@ -62,5 +63,7 @@ int main(int argc, char **argv){
 	//delete top
 	delete top;
 	delete contextp;
+	*/
+	sdb_mainloop();
 	return is_exit_status_bad();
 }

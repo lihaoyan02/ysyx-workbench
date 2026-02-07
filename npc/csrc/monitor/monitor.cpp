@@ -3,6 +3,7 @@
 
 void init_log(const char *log_file); 
 void init_mem();
+void init_cpu();
 
 static void welcome() {
 	Log("Trace: %s", MUXDEF(CONFIG_TRACE, ANSI_FMT("ON", ANSI_FG_GREEN), ANSI_FMT("OFF", ANSI_FG_RED)));
@@ -61,6 +62,9 @@ void init_monitor(int argc, char *argv[]) {
 
 	/* Initialize memory. */
 	init_mem();
+
+	/* Initialize memory. */
+	init_cpu();
 
 	/* Load the image to memory. This will overwrite the built-in image. */
 	long img_size = load_img();
