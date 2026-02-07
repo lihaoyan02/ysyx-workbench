@@ -67,6 +67,15 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 	}
 }
 
+static const uint32_t default_img[] = {
+	0x01400513, 0x010000e7, 0x00c000e7, 0x00100073,
+	0x00a50513, 0xff410113, 0x00008067
+};
+
+void init_mem() {
+	memcpy(pmem, default_img, sizeof(default_img));
+}
+
 long load_mem(const char *img){
 	FILE *file;
 	file = fopen(img,"rb");

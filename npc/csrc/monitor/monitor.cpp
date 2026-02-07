@@ -2,6 +2,7 @@
 #include <getopt.h>
 
 void init_log(const char *log_file); 
+void init_mem();
 
 static void welcome() {
 	Log("Trace: %s", MUXDEF(CONFIG_TRACE, ANSI_FMT("ON", ANSI_FG_GREEN), ANSI_FMT("OFF", ANSI_FG_RED)));
@@ -59,7 +60,7 @@ void init_monitor(int argc, char *argv[]) {
 	init_log(log_file);
 
 	/* Initialize memory. */
-	//init_mem();
+	init_mem();
 
 	/* Load the image to memory. This will overwrite the built-in image. */
 	long img_size = load_img();
