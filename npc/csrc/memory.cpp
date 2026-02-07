@@ -1,8 +1,7 @@
 #include <memory.h>
-#include <assert.h>
-#include <stdio.h>
 #include <Vtop__Dpi.h>
 #include <chrono>
+#include <common.h>
 
 static uint8_t pmem[MEM_MAX];
 static uint32_t rtc_port[2];
@@ -67,26 +66,39 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 	}
 }
 
-int load_mem(const char *img){
+static const uint32_t default_img[] = {
+//	0x00028823, // sb  zero,16(t0) 
+	//0x0102c503, // lbu a0,16(t0)
+	0x00100073, // ebreak 
+	0xdeadbeef, // some data
+	//0x01400513, 0x010000e7, 0x00c000e7, 0x00100073,
+	//0x00a50513, 0xff410113, 0x00008067
+};
+
+void init_mem() {
+	memcpy(pmem, default_img, sizeof(default_img));
+}
+
+long load_mem(const char *img){
 	FILE *file;
 	file = fopen(img,"rb");
-	if(file==NULL){
-		printf("fail to open the file\n");
-		return 1;
-	}
+	Assert(file, "Can not open '%s'", img);
+
 	//obtain the file size
 	fseek(file, 0, SEEK_END);
 	long file_size = ftell(file);
+
+	Log("The image is %s, size = %ld", img, file_size);
+
 	fseek(file, 0, SEEK_SET);
 	int count = file_size / sizeof(uint8_t);
 	//read to the memory
-	size_t n = fread(pmem, sizeof(uint8_t), MEM_MAX, file);
-	if(n != count){
-		printf("read error or file truncated!\n"); 
-	}
+	size_t n = fread(pmem, file_size, 1, file);
+	assert(n == 1);
+
 	fclose(file);
 	//pmem_write(0x228, 0x00100073, 0b1111);
 	//pmem_write(0x1220, 0x00100073, 0b1111);
 	//printf("0x1220 = %08x\n",pmem_read(0x1220,4)); 
-	return 0;
+	return file_size;
 }
