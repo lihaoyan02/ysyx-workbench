@@ -1,5 +1,4 @@
 #include <memory.h>
-#include <assert.h>
 #include <Vtop__Dpi.h>
 #include <chrono>
 #include <common.h>
@@ -73,7 +72,7 @@ static const uint32_t default_img[] = {
 };
 
 void init_mem() {
-	memcpy(&pmem[0x80000000], default_img, sizeof(default_img));
+	memcpy(pmem, default_img, sizeof(default_img));
 }
 
 long load_mem(const char *img){
