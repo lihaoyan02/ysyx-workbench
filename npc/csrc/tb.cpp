@@ -32,22 +32,7 @@ extern "C" void npctrap(int a0) {
 int main(int argc, char **argv){
 
 	init_monitor(argc, argv);
-	/*
-	const char* imgfile = NULL;
-	if(argc == 1) {
-		imgfile = NULL;
-	} else if(argc == 2) {
-		imgfile = argv[1];
-		long result =0;
-		result = load_mem(imgfile);
-		if(result!=0){
-			printf("The image is %s, size = %ld\n", imgfile, result);
-		}
-	} else {
-		printf("too many arguments\n");
-		return 1;
-	}
- */
+
 	VerilatedContext* const contextp = new VerilatedContext;
 	contextp->commandArgs(argc, argv);
 	Vtop* const top= new Vtop{contextp};
