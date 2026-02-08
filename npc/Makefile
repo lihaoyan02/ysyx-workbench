@@ -59,4 +59,6 @@ run: run-env
 clean:
 	rm -rf $(BUILD_DIR)
 
+# Include rules for menuconfig
+include $(NPC_HOME)/scripts/config.mk
 include ../Makefile
