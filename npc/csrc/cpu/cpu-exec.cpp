@@ -44,8 +44,6 @@ extern "C" void npctrap(int a0) {
 	npc_state.halt_pc = top->pc;
 }
 
-
-
 static void execute(uint64_t n) {
 	for (;n > 0; n --) {
 		single_cycle(top, tfp);

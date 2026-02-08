@@ -10,3 +10,5 @@
 !.gitignore
 !README.md
 build/
+include/config 
+include/generated
