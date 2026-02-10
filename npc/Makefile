@@ -34,7 +34,7 @@ override ARGS ?= --log=$(BUILD_DIR)/npc-log.txt
 IMG ?=
 NPC_EXEC := $(BIN) $(ARGS) $(IMG)
 
-
+LDFLAGS = -lreadline -lhistory
 
 all: run-env
 	@echo "Building NPC"
@@ -44,8 +44,8 @@ $(BIN): $(VSRCS) $(CSRCS)
 	$(VERILATOR) $(VERILATOR_CFLAGS) \
 		--top-module $(TOPNAME) $^ \
 		$(addprefix -CFLAGS , $(CXXFLAGS)) \
-		--Mdir $(OBJ_DIR) --exe -o $(abspath $(BIN))
-	#	$(addprefix -LDFLAGS , $(LDFLAGS)) 
+		--Mdir $(OBJ_DIR) --exe -o $(abspath $(BIN)) \
+		$(addprefix -LDFLAGS , $(LDFLAGS)) 
 
 run-env: $(BIN)
 

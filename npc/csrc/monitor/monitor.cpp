@@ -4,6 +4,7 @@
 void init_log(const char *log_file); 
 void init_mem();
 void init_cpu();
+void sdb_set_batch_mode();
 
 static void welcome() {
 	Log("Trace: %s", MUXDEF(CONFIG_TRACE, ANSI_FMT("ON", ANSI_FG_GREEN), ANSI_FMT("OFF", ANSI_FG_RED)));
@@ -30,7 +31,7 @@ static long load_img() {
 
 static int parse_args(int argc, char *argv[]) {
 	const struct option table[] = {
-		//{"batch"    , no_argument      , NULL, 'b'},
+		{"batch"    , no_argument      , NULL, 'b'},
 		{"log"      , required_argument, NULL, 'l'},
 		{"help"     , no_argument      , NULL, 'h'},
 		{0          , 0                , NULL,  0 },
@@ -38,7 +39,7 @@ static int parse_args(int argc, char *argv[]) {
 	int o;
 	while ( (o = getopt_long(argc, argv, "-hl:", table, NULL)) != -1) {
 		switch (o) {
-			 //case 'b': sdb_set_batch_mode(); break;
+			 case 'b': sdb_set_batch_mode(); break;
 			 case 'l': log_file = optarg; break;
 			 case 1: img_file = optarg; return 0;
 			 default:
