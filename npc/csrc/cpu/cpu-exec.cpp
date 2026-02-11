@@ -59,6 +59,7 @@ extern "C" void npctrap(int a0) {
 
 static void exec_once(Decode *s) {
 	s->pc = top->pc;	
+	printf("222\n");
 	single_cycle();
 	s->dnpc = top->pc;
 #ifdef CONFIG_ITRACE
