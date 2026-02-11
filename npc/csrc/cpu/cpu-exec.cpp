@@ -1,13 +1,24 @@
 #include <common.h>
 #include <memory.h> 
+#include <decode.h>
 
 #include <verilated.h>
 #include <Vtop.h>
+#include <Vtop__Dpi.h>
 #include "verilated_vcd_c.h"
+
+#define MAX_INST_TO_PRINT 10
 
 VerilatedContext* contextp = NULL;
 Vtop* top = NULL;
 VerilatedVcdC* tfp = NULL;
+
+static bool g_print_step = false;
+
+static void trace_and_difftest(Decode *_this) {
+	if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
+
+}
 
 static void single_cycle(Vtop * top, VerilatedVcdC* tfp) {
 	//top->clk = 0; eval_dump(top, tfp);
@@ -44,9 +55,34 @@ extern "C" void npctrap(int a0) {
 	npc_state.halt_pc = top->pc;
 }
 
+static void exec_once(Decode *s) {
+	s->pc = top->pc;	
+	single_cycle(top, tfp);
+	s->dnpc = top->pc;
+#ifdef CONFIG_ITRACE
+	char *p = s->logbuf;
+	p += snprintf(p, sizeof(s->logbuf), "0x%08x:", s->pc);
+	int ilen = s->snpc - s->pc;
+	int i;
+	uint32_t inst32 = read_inst();
+	uint8_t *inst = (uint8_t *)&inst32;
+	for (i = ilen - 1; i >= 0; i --) {
+		p += snprintf(p, 4, " %02x", inst[i]);
+	}
+	memset(p, ' ', 1);
+	p += 1;
+
+	//void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
+	//disassemble(p, s->logbuf + sizeof(s->logbuf) - p, s->pc, (uint8_t *)&top->inst_fetch, ilen);
+#endif
+}
+
+
 static void execute(uint64_t n) {
+	Decode s;
 	for (;n > 0; n --) {
-		single_cycle(top, tfp);
+		exec_once(&s);
+		trace_and_difftest(&s);
 		if (npc_state.state != NPC_RUNNING) break;
 	}
 }
@@ -55,6 +91,7 @@ static void statistic() {
 }
 
 void cpu_exec(uint64_t n) {
+	g_print_step = (n < MAX_INST_TO_PRINT);
 	switch (npc_state.state) {
 		case NPC_END: case NPC_QUIT:
 			printf("Program execution has ended. To restart the program, exit NPC and run again.\n");

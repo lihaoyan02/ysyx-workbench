@@ -23,6 +23,11 @@ always @(*) begin
 	else
 		inst_fetch = pmem_read(pc);
 end
-//assign inst_fetch = inst;
+
+function int read_inst();
+	return inst_fetch;
+endfunction
+
+export "DPI-C" function read_inst;
 
 endmodule
