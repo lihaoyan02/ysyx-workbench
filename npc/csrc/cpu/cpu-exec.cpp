@@ -61,6 +61,7 @@ static void exec_once(Decode *s) {
 	s->pc = top->pc;	
 	printf("222\n");
 	single_cycle();
+	printf("222\n");
 	s->dnpc = top->pc;
 #ifdef CONFIG_ITRACE
 	char *p = s->logbuf;
