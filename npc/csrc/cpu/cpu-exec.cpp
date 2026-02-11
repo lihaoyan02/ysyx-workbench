@@ -43,7 +43,7 @@ void init_cpu() {
 	 top->rst = 0;
 }
 
-static void eval_dump(Vtop* top, VerilatedVcdC* tfp) {
+static void eval_dump() {
 	static int time_step = 0;
 	top->eval();
 	tfp->dump(time_step++);
