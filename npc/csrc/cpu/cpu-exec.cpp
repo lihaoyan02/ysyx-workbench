@@ -9,6 +9,8 @@
 
 #define MAX_INST_TO_PRINT 10
 
+extern "C" int read_inst();
+
 VerilatedContext* contextp = NULL;
 Vtop* top = NULL;
 VerilatedVcdC* tfp = NULL;
