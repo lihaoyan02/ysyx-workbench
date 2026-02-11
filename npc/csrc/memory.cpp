@@ -69,7 +69,7 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 static const uint32_t default_img[] = {
 //	0x00028823, // sb  zero,16(t0) 
 	//0x0102c503, // lbu a0,16(t0)
-	0x01400513,
+	0x01400113,
 	0x00100073, // ebreak 
 	0xdeadbeef, // some data
 	//0x01400513, 0x010000e7, 0x00c000e7, 0x00100073,
