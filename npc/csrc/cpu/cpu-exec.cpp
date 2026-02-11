@@ -77,6 +77,7 @@ static void exec_once(Decode *s) {
 	}
 	memset(p, ' ', 1);
 	p += 1;
+	printf("p=%s",p);
 
 	//void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
 	//disassemble(p, s->logbuf + sizeof(s->logbuf) - p, s->pc, (uint8_t *)&top->inst_fetch, ilen);
