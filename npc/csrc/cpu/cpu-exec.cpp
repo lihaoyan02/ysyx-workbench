@@ -17,6 +17,7 @@ VerilatedVcdC* tfp = NULL;
 static bool g_print_step = false;
 
 static void trace_and_difftest(Decode *_this) {
+	printf("111\n");
 	if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
 
 }
