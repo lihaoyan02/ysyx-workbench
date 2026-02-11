@@ -34,9 +34,9 @@ void init_cpu() {
 	top= new Vtop{contextp};
 
 	Verilated::traceEverOn(true);
-	tfp = new VerilatedVcdC;
-	 top->trace(tfp, 99);
-	 tfp->open("build/wave.vcd");
+	//tfp = new VerilatedVcdC;
+	 //top->trace(tfp, 99);
+	 //tfp->open("build/wave.vcd");
 
 	 top->rst = 1;
 	 single_cycle();
@@ -117,6 +117,6 @@ void cpu_exec(uint64_t n) {
 										tfp->close();
 										delete top;
 										delete contextp;
-										delete tfp;
+										//delete tfp;
 	}
 }
