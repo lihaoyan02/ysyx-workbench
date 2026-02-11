@@ -33,7 +33,7 @@ void init_cpu() {
 	//contextp->commandArgs(argc, argv);
 	top= new Vtop{contextp};
 
-	Verilated::traceEverOn(true);
+	//Verilated::traceEverOn(true);
 	//tfp = new VerilatedVcdC;
 	 //top->trace(tfp, 99);
 	 //tfp->open("build/wave.vcd");
