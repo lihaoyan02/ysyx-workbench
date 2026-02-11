@@ -87,7 +87,7 @@ static void execute(uint64_t n) {
 	Decode s;
 	for (;n > 0; n --) {
 		exec_once(&s);
-	//	trace_and_difftest(&s);
+		trace_and_difftest(&s);
 		if (npc_state.state != NPC_RUNNING) break;
 	}
 }
