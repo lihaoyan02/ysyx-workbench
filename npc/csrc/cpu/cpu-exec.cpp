@@ -64,21 +64,18 @@ static void exec_once(Decode *s) {
 	char *p = s->logbuf;
 	p += snprintf(p, sizeof(s->logbuf), "0x%08x:", s->pc);
 	int ilen = 4;
-	printf("%d",ilen);
 	int i;
 	// dpi
 	const svScope scope = svGetScopeFromName("TOP.top.u_IFU");
 	assert(scope);
 	svSetScope(scope);
 	uint32_t inst32 = read_inst();
-	printf("inst32 = %x\n",inst32);
 	uint8_t *inst = (uint8_t *)&inst32;
 	for (i = ilen - 1; i >= 0; i --) {
 		p += snprintf(p, 4, " %02x", inst[i]);
 	}
 	memset(p, ' ', 1);
 	p += 1;
-	printf("p=%s",p);
 
 	//void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
 	//disassemble(p, s->logbuf + sizeof(s->logbuf) - p, s->pc, (uint8_t *)&top->inst_fetch, ilen);
