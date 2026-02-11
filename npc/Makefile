@@ -4,7 +4,7 @@ NPC_DIR := $(NPC_HOME)
 INC_PATH = $(NPC_DIR)/include
 
 VERILATOR = verilator
-VERILATOR_CFLAGS += -MMD -cc --build \
+VERILATOR_CFLAGS += -MMD -cc --build -sv\
 				-O3 --x-assign fast --x-initial fast --trace-vcd 
 BUILD_DIR = $(NPC_DIR)/build
 OBJ_DIR = $(BUILD_DIR)/obj_dir
