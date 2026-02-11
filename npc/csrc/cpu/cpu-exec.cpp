@@ -66,9 +66,9 @@ static void exec_once(Decode *s) {
 	int ilen = s->snpc - s->pc;
 	int i;
 	// dpi
-	//const svScope scope = svGetScopeFromName("Top.top");
-	//assert(scope);
-	//svSetScope(scope);
+	const svScope scope = svGetScopeFromName("Top.top");
+	assert(scope);
+	svSetScope(scope);
 	uint32_t inst32 = read_inst();
 	uint8_t *inst = (uint8_t *)&inst32;
 	for (i = ilen - 1; i >= 0; i --) {
