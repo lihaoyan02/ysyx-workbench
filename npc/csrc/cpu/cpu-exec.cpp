@@ -21,7 +21,7 @@ static void trace_and_difftest(Decode *_this) {
 
 }
 
-static void single_cycle(Vtop * top, VerilatedVcdC* tfp) {
+static void single_cycle() {
 	//top->clk = 0; eval_dump(top, tfp);
 	//top->clk = 1; eval_dump(top, tfp);
 	top->clk = 0; top->eval();
@@ -39,7 +39,7 @@ void init_cpu() {
 	 tfp->open("build/wave.vcd");
 
 	 top->rst = 1;
-	 single_cycle(top, tfp);
+	 single_cycle();
 	 top->rst = 0;
 }
 
@@ -58,7 +58,7 @@ extern "C" void npctrap(int a0) {
 
 static void exec_once(Decode *s) {
 	s->pc = top->pc;	
-	single_cycle(top, tfp);
+	single_cycle();
 	s->dnpc = top->pc;
 #ifdef CONFIG_ITRACE
 	char *p = s->logbuf;
