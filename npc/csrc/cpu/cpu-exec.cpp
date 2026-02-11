@@ -117,5 +117,6 @@ void cpu_exec(uint64_t n) {
 										tfp->close();
 										delete top;
 										delete contextp;
+										delete tfp;
 	}
 }
