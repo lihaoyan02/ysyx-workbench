@@ -10,7 +10,7 @@ module IFU #(INST_WIDTH = 32, ADDR_WIDTH = 32)(
 import "DPI-C" function int pmem_read(int raddr);
 
 always @(posedge clk) begin
-	if (rst) pc <= 32'h80000000;//{ADDR_WIDTH{1'b0}}; 
+	if (rst) pc <= 32'h80000000 - 4;//{ADDR_WIDTH{1'b0}}; 
 	else if(j_pc)
 		pc <= j_pc_addr;
 	else

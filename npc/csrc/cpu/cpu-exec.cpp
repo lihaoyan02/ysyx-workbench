@@ -41,7 +41,6 @@ void init_cpu() {
 	 top->rst = 1;
 	 single_cycle();
 	 top->rst = 0;
-	 top->eval();
 }
 
 static void eval_dump() {
@@ -62,7 +61,6 @@ static void exec_once(Decode *s) {
 	assert(scope);
 	svSetScope(scope);
 
-	uint32_t inst32 = read_inst();
 	s->pc = top->pc;	
 	single_cycle();
 	s->dnpc = top->pc;
@@ -72,6 +70,7 @@ static void exec_once(Decode *s) {
 	int ilen = 4;
 	int i;
 	// dpi
+	uint32_t inst32 = read_inst();
 	uint8_t *inst = (uint8_t *)&inst32;
 	for (i = ilen - 1; i >= 0; i --) {
 		p += snprintf(p, 4, " %02x", inst[i]);
