@@ -64,6 +64,7 @@ static void exec_once(Decode *s) {
 	char *p = s->logbuf;
 	p += snprintf(p, sizeof(s->logbuf), "0x%08x:", s->pc);
 	int ilen = s->snpc - s->pc;
+	printf("%d",ilen);
 	int i;
 	// dpi
 	const svScope scope = svGetScopeFromName("TOP.top.u_IFU");
