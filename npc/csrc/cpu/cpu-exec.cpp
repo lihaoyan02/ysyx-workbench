@@ -41,6 +41,7 @@ void init_cpu() {
 	 top->rst = 1;
 	 single_cycle();
 	 top->rst = 0;
+	 top->eval();
 }
 
 static void eval_dump() {

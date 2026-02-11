@@ -18,9 +18,9 @@ always @(posedge clk) begin
 end
 
 always @(*) begin
-	//if (rst)
-		//inst_fetch = 32'b0;
-	//else
+	if (rst)
+		inst_fetch = 32'b0;
+	else
 		inst_fetch = pmem_read(pc);
 end
 
