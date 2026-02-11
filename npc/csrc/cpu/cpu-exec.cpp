@@ -5,11 +5,10 @@
 #include <verilated.h>
 #include <Vtop.h>
 #include <Vtop__Dpi.h>
+#include "svdpi.h"
 #include "verilated_vcd_c.h"
 
 #define MAX_INST_TO_PRINT 10
-
-extern "C" int read_inst();
 
 VerilatedContext* contextp = NULL;
 Vtop* top = NULL;
@@ -66,6 +65,10 @@ static void exec_once(Decode *s) {
 	p += snprintf(p, sizeof(s->logbuf), "0x%08x:", s->pc);
 	int ilen = s->snpc - s->pc;
 	int i;
+	// dpi
+	const svScope scope = svGetScopeFromName("Top.top");
+	assert(scope);
+	svSetScope(scope);
 	uint32_t inst32 = read_inst();
 	uint8_t *inst = (uint8_t *)&inst32;
 	for (i = ilen - 1; i >= 0; i --) {
