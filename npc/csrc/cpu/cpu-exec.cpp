@@ -59,9 +59,7 @@ extern "C" void npctrap(int a0) {
 
 static void exec_once(Decode *s) {
 	s->pc = top->pc;	
-	printf("222\n");
 	single_cycle();
-	printf("222\n");
 	s->dnpc = top->pc;
 #ifdef CONFIG_ITRACE
 	char *p = s->logbuf;
@@ -77,6 +75,7 @@ static void exec_once(Decode *s) {
 	for (i = ilen - 1; i >= 0; i --) {
 		p += snprintf(p, 4, " %02x", inst[i]);
 	}
+	printf("111");
 	memset(p, ' ', 1);
 	p += 1;
 
