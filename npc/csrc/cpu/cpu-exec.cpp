@@ -70,7 +70,7 @@ static void exec_once(Decode *s) {
 	assert(scope);
 	svSetScope(scope);
 	uint32_t inst32 = read_inst();
-	printf("inst32 = %b\n",inst32);
+	printf("inst32 = %x\n",inst32);
 	uint8_t *inst = (uint8_t *)&inst32;
 	for (i = ilen - 1; i >= 0; i --) {
 		p += snprintf(p, 4, " %02x", inst[i]);
