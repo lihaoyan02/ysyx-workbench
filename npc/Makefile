@@ -28,8 +28,9 @@ CSRCS = $(filter-out $(SRCS-BLACKLIST-y),$(CSRCS-y))
 # include $(NVBOARD_HOME)/scripts/nvboard.mk
 
 # rules for verilator
-INCFLAGS = $(addprefix -I , $(INC_PATH))
-CXXFLAGS += "$(INCFLAGS)"
+INCFLAGS = $(addprefix -I, $(INC_PATH))
+CXXFLAGS += $(INCFLAGS)
+CXXFLAGS += -g
 
 # Some convenient rules 
 
@@ -49,7 +50,7 @@ $(BIN): $(VSRCS) $(CSRCS)
 	@rm -rf $(OBJ_DIR)
 	$(VERILATOR) $(VERILATOR_CFLAGS) \
 		--top-module $(TOPNAME) $^ \
-		-CFLAGS $(CXXFLAGS) \
+		$(addprefix -CFLAGS , $(CXXFLAGS)) \
 		--Mdir $(OBJ_DIR) --exe -o $(abspath $(BIN)) \
 		$(addprefix -LDFLAGS , $(LDFLAGS)) 
 
@@ -61,6 +62,9 @@ run: run-env
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 	@echo "Write this Makefile by your self."
 	$(NPC_EXEC)
+
+gdb: run-env
+	gdb -s $(BIN) --args $(NPC_EXEC)
 
 clean:
 	rm -rf $(BUILD_DIR)
