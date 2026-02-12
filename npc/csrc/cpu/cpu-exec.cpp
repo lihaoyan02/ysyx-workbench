@@ -21,11 +21,13 @@ static void trace_and_difftest(Decode *_this) {
 
 }
 
-static void single_cycle() {
+static void single_cycle(Decode *s) {
 	//top->clk = 0; eval_dump(top, tfp);
 	//top->clk = 1; eval_dump(top, tfp);
 	top->clk = 0; top->eval();
+	s->inst = read_inst();
 	top->clk = 1; top->eval();
+	s->dnpc = top->pc;
 }
 
 void init_cpu() {
@@ -38,10 +40,11 @@ void init_cpu() {
 	 //top->trace(tfp, 99);
 	 //tfp->open("build/wave.vcd");
 
-	 top->rst = 1;
-	 single_cycle();
-	 top->rst = 0;
-	 top->eval();
+	top->rst = 1;
+	top->clk = 0; top->eval();
+	top->clk = 1; top->eval();
+	top->rst = 0;
+	top->eval();
 }
 
 static void eval_dump() {
@@ -63,24 +66,22 @@ static void exec_once(Decode *s) {
 	svSetScope(scope);
 
 	s->pc = top->pc;	
-	single_cycle();
-	s->dnpc = top->pc;
+	single_cycle(s);
 #ifdef CONFIG_ITRACE
 	char *p = s->logbuf;
-	p += snprintf(p, sizeof(s->logbuf), "0x%08x:", top->pc);
+	p += snprintf(p, sizeof(s->logbuf), "0x%08x:", s->pc);
 	int ilen = 4;
 	int i;
 	// dpi
-	uint32_t inst32 = read_inst();
-	uint8_t *inst = (uint8_t *)&inst32;
+	uint8_t *inst = (uint8_t *)&s->inst;
 	for (i = ilen - 1; i >= 0; i --) {
 		p += snprintf(p, 4, " %02x", inst[i]);
 	}
 	memset(p, ' ', 1);
 	p += 1;
 
-	//void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
-	//disassemble(p, s->logbuf + sizeof(s->logbuf) - p, s->pc, (uint8_t *)&top->inst_fetch, ilen);
+	void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
+	disassemble(p, s->logbuf + sizeof(s->logbuf) - p, s->pc, (uint8_t *)&s->inst, ilen);
 #endif
 }
 

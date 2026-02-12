@@ -1,3 +1,6 @@
+
+include $(NPC_HOME)/include/config/auto.conf
+include $(NPC_HOME)/include/config/auto.conf.cmd
 TOPNAME = top
 NXDC_FILES = constr/top.nxdc
 NPC_DIR := $(NPC_HOME)
@@ -12,9 +15,12 @@ BIN = $(BUILD_DIR)/$(TOPNAME)
 
 $(shell mkdir -p $(BUILD_DIR))
 
+include $(NPC_HOME)/csrc/utils/filelist.mk
 # project source
 VSRCS = $(wildcard vsrc/*.v)
-CSRCS = $(shell find csrc -name "*.cpp" -type f)
+CSRCS-y = $(shell find csrc -name "*.cpp" -type f)
+CSRCS-y += $(shell find csrc -name "*.c" -type f)
+CSRCS = $(filter-out $(SRCS-BLACKLIST-y),$(CSRCS-y))
 # CSRCS += $(SRC_AUTO_BIND)
 # $(NVBOARD_ARCHIVE)
 
@@ -22,8 +28,8 @@ CSRCS = $(shell find csrc -name "*.cpp" -type f)
 # include $(NVBOARD_HOME)/scripts/nvboard.mk
 
 # rules for verilator
-INCFLAGS = $(addprefix -I, $(INC_PATH))
-CXXFLAGS += $(INCFLAGS)
+INCFLAGS = $(addprefix -I , $(INC_PATH))
+CXXFLAGS += "$(INCFLAGS)"
 
 # Some convenient rules 
 
@@ -43,7 +49,7 @@ $(BIN): $(VSRCS) $(CSRCS)
 	@rm -rf $(OBJ_DIR)
 	$(VERILATOR) $(VERILATOR_CFLAGS) \
 		--top-module $(TOPNAME) $^ \
-		$(addprefix -CFLAGS , $(CXXFLAGS)) \
+		-CFLAGS $(CXXFLAGS) \
 		--Mdir $(OBJ_DIR) --exe -o $(abspath $(BIN)) \
 		$(addprefix -LDFLAGS , $(LDFLAGS)) 
 
