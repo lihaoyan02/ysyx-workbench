@@ -25,8 +25,8 @@ static void single_cycle(Decode *s) {
 	//top->clk = 0; eval_dump(top, tfp);
 	//top->clk = 1; eval_dump(top, tfp);
 	top->clk = 0; top->eval();
-	s->inst = read_inst();
 	top->clk = 1; top->eval();
+	s->inst = read_inst();
 	s->dnpc = top->pc;
 }
 
@@ -69,7 +69,7 @@ static void exec_once(Decode *s) {
 	single_cycle(s);
 #ifdef CONFIG_ITRACE
 	char *p = s->logbuf;
-	p += snprintf(p, sizeof(s->logbuf), "0x%08x:", s->pc);
+	p += snprintf(p, sizeof(s->logbuf), "0x%08x:", s->dnpc);
 	int ilen = 4;
 	int i;
 	// dpi
@@ -81,7 +81,7 @@ static void exec_once(Decode *s) {
 	p += 1;
 
 	void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
-	disassemble(p, s->logbuf + sizeof(s->logbuf) - p, s->pc, (uint8_t *)&s->inst, ilen);
+	disassemble(p, s->logbuf + sizeof(s->logbuf) - p, s->dnpc, (uint8_t *)&s->inst, ilen);
 #endif
 }
 
