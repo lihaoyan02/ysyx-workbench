@@ -67,7 +67,7 @@ static void exec_once(Decode *s) {
 	s->dnpc = top->pc;
 #ifdef CONFIG_ITRACE
 	char *p = s->logbuf;
-	p += snprintf(p, sizeof(s->logbuf), "0x%08x:", s->pc);
+	p += snprintf(p, sizeof(s->logbuf), "0x%08x:", top->pc);
 	int ilen = 4;
 	int i;
 	// dpi
