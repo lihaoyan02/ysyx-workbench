@@ -60,6 +60,7 @@ void init_disasm() {
 	cs_insn *insn;
 	size_t count = cs_disasm_dl(handle, code, nbyte, pc, 0, &insn);
   assert(count == 1);
+	printf("111\n");
   int ret = snprintf(str, size, "%s", insn->mnemonic);
   if (insn->op_str[0] != '\0') {
     snprintf(str + ret, size - ret, "\t%s", insn->op_str);
