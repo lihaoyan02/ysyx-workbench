@@ -81,7 +81,6 @@ static void exec_once(Decode *s) {
 	p += 1;
 
 	void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
-	printf("%d\n",s->logbuf + sizeof(s->logbuf) - p);
 	disassemble(p, s->logbuf + sizeof(s->logbuf) - p, s->pc, (uint8_t *)&s->inst, ilen);
 #endif
 }
