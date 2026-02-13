@@ -1,6 +1,6 @@
 
-include $(NPC_HOME)/include/config/auto.conf
-include $(NPC_HOME)/include/config/auto.conf.cmd
+-include $(NPC_HOME)/include/config/auto.conf
+-include $(NPC_HOME)/include/config/auto.conf.cmd
 TOPNAME = top
 NXDC_FILES = constr/top.nxdc
 NPC_DIR := $(NPC_HOME)
@@ -30,7 +30,7 @@ CSRCS = $(filter-out $(SRCS-BLACKLIST-y),$(CSRCS-y))
 # rules for verilator
 INCFLAGS = $(addprefix -I, $(INC_PATH))
 CXXFLAGS += $(INCFLAGS)
-CXXFLAGS += -g
+CXXFLAGS += $(if $(CONFIG_CC_DEBUG),-g,)
 
 # Some convenient rules 
 

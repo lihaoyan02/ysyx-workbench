@@ -14,6 +14,7 @@ VerilatedContext* contextp = NULL;
 Vtop* top = NULL;
 VerilatedVcdC* tfp = NULL;
 
+uint64_t g_nr_guest_inst = 0;
 static bool g_print_step = false;
 
 static void trace_and_difftest(Decode *_this) {
@@ -90,6 +91,7 @@ static void execute(uint64_t n) {
 	Decode s;
 	for (;n > 0; n --) {
 		exec_once(&s);
+		g_nr_guest_inst ++;
 		trace_and_difftest(&s);
 		if (npc_state.state != NPC_RUNNING) break;
 	}
