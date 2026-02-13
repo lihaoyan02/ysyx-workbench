@@ -1,23 +1,17 @@
 #include <common.h>
 #include <memory.h> 
 #include <decode.h>
-
-#include <verilated.h>
-#include <Vtop.h>
-#include <Vtop__Dpi.h>
-#include "svdpi.h"
-#include "verilated_vcd_c.h"
+#include <core.h>
 
 #define MAX_INST_TO_PRINT 10
-
-VerilatedContext* contextp = NULL;
-Vtop* top = NULL;
-VerilatedVcdC* tfp = NULL;
 
 uint64_t g_nr_guest_inst = 0;
 static bool g_print_step = false;
 
 static void trace_and_difftest(Decode *_this) {
+#ifdef CONFIG_ITRACE
+	log_write("%s\n", _this->logbuf);
+#endif
 	if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
 
 }
@@ -27,7 +21,7 @@ static void single_cycle(Decode *s) {
 	//top->clk = 1; eval_dump(top, tfp);
 	top->clk = 0; top->eval();
 	top->clk = 1; top->eval();
-	s->inst = read_inst();
+	s->inst = core_read_inst();
 	s->dnpc = top->pc;
 }
 
@@ -62,10 +56,6 @@ extern "C" void npctrap(int a0) {
 }
 
 static void exec_once(Decode *s) {
-	const svScope scope = svGetScopeFromName("TOP.top.u_IFU");
-	assert(scope);
-	svSetScope(scope);
-
 	s->pc = top->pc;	
 	single_cycle(s);
 #ifdef CONFIG_ITRACE
@@ -120,8 +110,6 @@ void cpu_exec(uint64_t n) {
 					npc_state.halt_pc);
 		case NPC_QUIT: statistic();
 										//tfp->close();
-										delete top;
-										delete contextp;
 										//delete tfp;
 	}
 }
