@@ -4,6 +4,8 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
+uint32_t expr(char *e, bool *success);
+
 static int is_batch_mode = false;
 
 static char* rl_gets() {
@@ -64,7 +66,7 @@ static int cmd_x(char *args) {
 		uint32_t result = expr(expression, &success);
 		if(success) {
 			for(uint32_t i = 0; i != N_num; i++) {
-				printf("[%d] 0x%08X : 0x%08X\n", i, i*4+result, pmem_read(i*4+result,4));
+				printf("[%d] 0x%08X : 0x%08X\n", i, ((i*4+result) & ~0x3u), pmem_read(i*4+result));
 			}
 		}else {
 			printf("parse expression fail\n");
