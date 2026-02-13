@@ -22,7 +22,8 @@ static void single_cycle(Decode *s) {
 	top->clk = 0; top->eval();
 	top->clk = 1; top->eval();
 	s->inst = core_read_inst();
-	s->dnpc = top->pc;
+	s->pc = top->pc;
+	s->dnpc = core_read_dnpc(); 
 }
 
 void init_cpu() {
@@ -56,11 +57,10 @@ extern "C" void npctrap(int a0) {
 }
 
 static void exec_once(Decode *s) {
-	s->pc = top->pc;	
 	single_cycle(s);
 #ifdef CONFIG_ITRACE
 	char *p = s->logbuf;
-	p += snprintf(p, sizeof(s->logbuf), "0x%08x:", s->dnpc);
+	p += snprintf(p, sizeof(s->logbuf), "0x%08x:", s->pc);
 	int ilen = 4;
 	int i;
 	// dpi
@@ -72,7 +72,7 @@ static void exec_once(Decode *s) {
 	p += 1;
 
 	void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
-	disassemble(p, s->logbuf + sizeof(s->logbuf) - p, s->dnpc, (uint8_t *)&s->inst, ilen);
+	disassemble(p, s->logbuf + sizeof(s->logbuf) - p, s->pc, (uint8_t *)&s->inst, ilen);
 #endif
 }
 

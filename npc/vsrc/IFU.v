@@ -38,4 +38,11 @@ endfunction
 
 export "DPI-C" function read_inst;
 
+function int read_dnpc();
+	return next_pc;
+endfunction
+
+export "DPI-C" function read_dnpc;
+
+
 endmodule
