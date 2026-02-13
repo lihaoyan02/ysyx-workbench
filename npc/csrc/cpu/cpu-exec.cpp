@@ -18,6 +18,9 @@ uint64_t g_nr_guest_inst = 0;
 static bool g_print_step = false;
 
 static void trace_and_difftest(Decode *_this) {
+#ifdef CONFIG_ITRACE
+	log_write("%s\n", _this->logbuf);
+#endif
 	if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
 
 }
