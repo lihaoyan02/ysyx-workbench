@@ -8,6 +8,8 @@ uint32_t expr(char *e, bool *success);
 
 static int is_batch_mode = false;
 
+void init_regex();
+
 static char* rl_gets() {
 	static char *line_read = NULL;
 
@@ -169,4 +171,10 @@ void sdb_mainloop() {
 
 		if (i == NR_CMD) { printf("Unknow command '%s'\n", cmd); }
 	}
+}
+
+void init_sdb() {
+	/* Compile the regular expressions. */
+	init_regex();
+
 }
