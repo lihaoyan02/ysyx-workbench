@@ -2,6 +2,7 @@
 #include <memory.h> 
 #include <decode.h>
 #include <core.h>
+#include <reg.h>
 
 #define MAX_INST_TO_PRINT 10
 
@@ -88,7 +89,12 @@ static void execute(uint64_t n) {
 }
 
 static void statistic() {
-	Log("total guest instructions = %u", g_nr_guest_inst);
+	Log("total guest instructions = %lu", g_nr_guest_inst);
+}
+
+void assert_fail_msg() {
+	reg_display();
+	statistic();
 }
 
 void cpu_exec(uint64_t n) {
