@@ -13,14 +13,15 @@
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
 
-#include <isa.h>
+#include <memory.h>
+#include <debug.h>
+#include <reg.h>
 
 /* We use the POSIX regex functions to process regular expressions.
  * Type 'man regex' for more information about POSIX regex functions.
  */
 #include <regex.h>
 
-word_t vaddr_read(vaddr_t addr, int len);
 
 enum {
   TK_NOTYPE = 256, TK_NUM, TK_HNUM, TK_EQ, TK_NEQ, TK_AND, DEREF, TK_REG, TK_INV
@@ -153,22 +154,23 @@ static bool make_token(char *e) {
 						tokens[nr_token].str[substr_len] = '\0';	
 						nr_token++;
 						break;
-					case TK_HNUM:
+					case TK_HNUM: {
 						tokens[nr_token].type = TK_NUM; 
 						char hnum_str[32];
-						paddr_t num_ext;
+						uint32_t num_ext;
 						strncpy(hnum_str, substr_start, substr_len);
 						hnum_str[substr_len] = '\0';
 						num_ext = strtoul(hnum_str, NULL, 16);
 						sprintf(tokens[nr_token].str, "%u", num_ext);
 						nr_token++;
 						break;
-					case TK_REG:
+					}
+					case TK_REG: {
 						bool success;
 						char reg_str[32];
 						strncpy(reg_str, substr_start, substr_len);
 						reg_str[substr_len] = '\0'; 
-						word_t regval = isa_reg_str2val(reg_str+1, &success); 
+						uint32_t regval = reg_str2val(reg_str+1, &success); 
 						if(success) {
 							tokens[nr_token].type = TK_NUM;
 							sprintf(tokens[nr_token].str, "%u", regval);
@@ -177,6 +179,7 @@ static bool make_token(char *e) {
 							return false;
 						}
 						break;
+					}
           default: ;
         }
         break;
@@ -257,30 +260,6 @@ static int find_main_op(int p, int q, bool* success) {
 				break;
 			case '(': musk--;
 				break;
-			/*case '+':
-				if(musk == 0) {
-					return i;
-				}
-				break;
-			case '-':
-				if (musk == 0) {
-					if(is_operator(tokens[i-1].type)) {
-						return i-1;
-					} else {
-						return i;
-					}
-				}
-				break;
-			case '*':
-				if (musk == 0 && main_op ==0) {
-					main_op = i;
-				}
-				break;
-			case '/':
-				if (musk == 0 && main_op ==0) {
-					main_op = i;
-				}
-				break; */
 			default: 
 				if(op_hirc(tokens[i].type) > op_hirc_level && musk == 0) {
 					op_hirc_level = op_hirc(tokens[i].type);
@@ -292,11 +271,10 @@ static int find_main_op(int p, int q, bool* success) {
 		printf("Invalid format\n");
 		*success = false;
 	}
-	//assert(main_op!=0);
 	return main_op;
 }
 
-static word_t eval(int p, int q, bool* success) {
+static uint32_t eval(int p, int q, bool* success) {
 	if (p > q) {
 		panic("Invalid format at position %d", q);
 		/* bad */
@@ -319,11 +297,11 @@ static word_t eval(int p, int q, bool* success) {
 		if(*success == false) {
 			return 1;
 		}
-		word_t val1 =0;
+		uint32_t val1 =0;
 		if(op!=p) {
 			val1 = eval(p, op - 1, success);
 		}
-		word_t val2 = eval(op + 1, q, success);
+		uint32_t val2 = eval(op + 1, q, success);
 
 		switch (tokens[op].type) {
 			case '+': return val1 + val2;
@@ -341,7 +319,7 @@ static word_t eval(int p, int q, bool* success) {
 			case TK_NEQ: return val1 != val2;
 			case TK_AND: return val1 && val2;
 			case TK_INV: return -val2;
-			case DEREF: return vaddr_read(val2, 4);
+			case DEREF: return pmem_read(val2);
 			default: assert(0);
 		}
 	}
@@ -350,7 +328,7 @@ static word_t eval(int p, int q, bool* success) {
 	}
 }
 
-word_t expr(char *e, bool *success) {
+uint32_t expr(char *e, bool *success) {
   if (!make_token(e)) {
     *success = false;
     return 0;
@@ -366,7 +344,7 @@ word_t expr(char *e, bool *success) {
 	}
 
   /* TODO: Insert codes to evaluate the expression. */
-	word_t expr_result = eval(0, nr_token-1, success);
+	uint32_t expr_result = eval(0, nr_token-1, success);
 	if(*success==true) {
 		return expr_result;
 	}

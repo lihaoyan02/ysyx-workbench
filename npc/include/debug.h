@@ -21,7 +21,6 @@
 		} \
 	} while (0)
 
+#define panic(format, ...) Assert(0, format, ## __VA_ARGS__)
 
-			//extern void assert_fail_msg();
-			//assert_fail_msg();
 #endif
