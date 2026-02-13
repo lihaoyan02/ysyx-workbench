@@ -11,11 +11,41 @@ static bool g_print_step = false;
 
 bool scan_wp_diff();
 
+/*-------iringbuf----------*/
+#ifdef CONFIG_IRINGTRACE
+#define IRING_SIZE 16
+static char iringbuf[IRING_SIZE][128]; 
+static int iring_ptr = 0;
+
+static void iringbuf_push(char *ibuf) {
+	if (++iring_ptr >= IRING_SIZE) {
+		iring_ptr = 0; 
+	}
+	memcpy(iringbuf[iring_ptr], ibuf, 128);
+}
+static void iringbuf_print() {
+	for(int i=0; i<IRING_SIZE; i++) {
+		if(iringbuf[i][0] != '\0') {
+			if(i == iring_ptr) {
+				printf("--> %s \n", iringbuf[i]);
+			} else {
+				printf("    %s \n", iringbuf[i]);
+			}
+		}
+	}
+}
+#endif
+
 static void trace_and_difftest(Decode *_this) {
 #ifdef CONFIG_ITRACE
 	log_write("%s\n", _this->logbuf);
 #endif
+
 	if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
+
+#ifdef CONFIG_IRINGTRACE
+	iringbuf_push(_this->logbuf);
+#endif
 
 #ifdef CONFIG_WATCHPOINT
 	if(scan_wp_diff()) {
@@ -122,6 +152,7 @@ void cpu_exec(uint64_t n) {
 			Log("npc: %s at pc = 0x%08x", (npc_state.halt_ret==0 ? ANSI_FMT("HIT GOOD TRAP", ANSI_FG_GREEN) :
 					ANSI_FMT("HIT BAD TRAP", ANSI_FG_RED)),
 					npc_state.halt_pc);
+			iringbuf_print();
 		case NPC_QUIT: statistic();
 	}
 }
