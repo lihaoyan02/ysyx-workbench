@@ -75,6 +75,19 @@ static int cmd_x(char *args) {
 	return 0;
 }
 
+/*---------print expression---------*/
+static int cmd_p(char *args) {
+	bool success = true;
+	bool *ptr_success = &success;
+	uint32_t result = expr(args, ptr_success);
+	if(success == false) {
+		printf("try again\n");
+	} else {
+		 printf("%u (%x)\n", result, result);
+	}
+	return 0;
+}
+
 void sdb_set_batch_mode() {
 	is_batch_mode = true;
 }
@@ -95,6 +108,8 @@ static struct {
 	{ "q", "Exit npc", cmd_q },
 	{ "si", "Execute N instruction(s) and stop, default N = 1", cmd_si },
 	{ "info", "Print register status(r), print watch point messages(w)", cmd_info },
+	{ "x", "Scan the memory from the given expression in heximal for N times of 4 bytes", cmd_x },
+	{ "p", "Print the expression's result", cmd_p },
 
 };
 
