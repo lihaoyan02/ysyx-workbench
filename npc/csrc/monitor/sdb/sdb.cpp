@@ -27,7 +27,7 @@ static int cmd_q(char *args) {
 	return -1; 
 }
 
-// single execution
+/*--------single execution------------*/
 static int cmd_si(char *args) {
 	char *N_str = strtok(NULL, " ");
 	int N_num = 1;
@@ -35,6 +35,19 @@ static int cmd_si(char *args) {
 		N_num = atoi(N_str);
 	}
 	cpu_exec(N_num);
+	return 0;
+}
+
+/*---------print program status------------*/
+static int cmd_info(char *args) {
+	char *arg = strtok(NULL," ");
+	if (arg == NULL) {
+		printf("An argument r or w is required\n");
+	} else if(strcmp(arg, "r") == 0) {
+	//	reg_display();//TODO
+	} else {
+		printf("Invalid argument\n");
+	}
 	return 0;
 }
 
@@ -57,6 +70,7 @@ static struct {
 	{ "c", "Continue the execution of the program", cmd_c },
 	{ "q", "Exit npc", cmd_q },
 	{ "si", "Execute N instruction(s) and stop, default N = 1", cmd_si },
+	{ "info", "Print register status(r), print watch point messages(w)", cmd_info },
 
 };
 
