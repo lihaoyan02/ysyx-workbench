@@ -110,8 +110,6 @@ void cpu_exec(uint64_t n) {
 					npc_state.halt_pc);
 		case NPC_QUIT: statistic();
 										//tfp->close();
-										delete top;
-										delete contextp;
 										//delete tfp;
 	}
 }
