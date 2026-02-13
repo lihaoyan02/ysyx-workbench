@@ -1,5 +1,6 @@
 #include <common.h>
 
+extern uint64_t g_nr_guest_inst;
 
 FILE *log_fp = NULL;
 void init_log(const char *log_file) { 
@@ -10,4 +11,9 @@ void init_log(const char *log_file) {
 		log_fp = fp; 
 	}
 	Log("Log is written to %s", log_file ? log_file : "stdout");
+}
+
+bool log_enable() {
+	return MUXDEF(CONFIG_TRACE, (g_nr_guest_inst >= CONFIG_TRACE_START) &&
+			(g_nr_guest_inst <= CONFIG_TRACE_END), false);
 }

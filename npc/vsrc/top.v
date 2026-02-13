@@ -1,7 +1,6 @@
 module top #(INST_WIDTH = 32, DATA_WIDTH = 32) (
 	input clk,
 	input rst,
-  input [INST_WIDTH-1:0] inst,
   output [INST_WIDTH-1:0] pc
 );
 

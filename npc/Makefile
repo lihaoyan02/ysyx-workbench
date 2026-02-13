@@ -1,3 +1,6 @@
+
+-include $(NPC_HOME)/include/config/auto.conf
+-include $(NPC_HOME)/include/config/auto.conf.cmd
 TOPNAME = top
 NXDC_FILES = constr/top.nxdc
 NPC_DIR := $(NPC_HOME)
@@ -12,9 +15,12 @@ BIN = $(BUILD_DIR)/$(TOPNAME)
 
 $(shell mkdir -p $(BUILD_DIR))
 
+include $(NPC_HOME)/csrc/utils/filelist.mk
 # project source
 VSRCS = $(wildcard vsrc/*.v)
-CSRCS = $(shell find csrc -name "*.cpp" -type f)
+CSRCS-y = $(shell find csrc -name "*.cpp" -type f)
+CSRCS-y += $(shell find csrc -name "*.c" -type f)
+CSRCS = $(filter-out $(SRCS-BLACKLIST-y),$(CSRCS-y))
 # CSRCS += $(SRC_AUTO_BIND)
 # $(NVBOARD_ARCHIVE)
 
@@ -24,6 +30,7 @@ CSRCS = $(shell find csrc -name "*.cpp" -type f)
 # rules for verilator
 INCFLAGS = $(addprefix -I, $(INC_PATH))
 CXXFLAGS += $(INCFLAGS)
+CXXFLAGS += $(if $(CONFIG_CC_DEBUG),-g,)
 
 # Some convenient rules 
 
@@ -55,6 +62,9 @@ run: run-env
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 	@echo "Write this Makefile by your self."
 	$(NPC_EXEC)
+
+gdb: run-env
+	gdb -s $(BIN) --args $(NPC_EXEC)
 
 clean:
 	rm -rf $(BUILD_DIR)

@@ -1,19 +1,34 @@
 #include <common.h>
 #include <memory.h> 
+#include <decode.h>
 
 #include <verilated.h>
 #include <Vtop.h>
+#include <Vtop__Dpi.h>
+#include "svdpi.h"
 #include "verilated_vcd_c.h"
+
+#define MAX_INST_TO_PRINT 10
 
 VerilatedContext* contextp = NULL;
 Vtop* top = NULL;
 VerilatedVcdC* tfp = NULL;
 
-static void single_cycle(Vtop * top, VerilatedVcdC* tfp) {
+uint64_t g_nr_guest_inst = 0;
+static bool g_print_step = false;
+
+static void trace_and_difftest(Decode *_this) {
+	if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
+
+}
+
+static void single_cycle(Decode *s) {
 	//top->clk = 0; eval_dump(top, tfp);
 	//top->clk = 1; eval_dump(top, tfp);
 	top->clk = 0; top->eval();
 	top->clk = 1; top->eval();
+	s->inst = read_inst();
+	s->dnpc = top->pc;
 }
 
 void init_cpu() {
@@ -21,17 +36,19 @@ void init_cpu() {
 	//contextp->commandArgs(argc, argv);
 	top= new Vtop{contextp};
 
-	Verilated::traceEverOn(true);
-	tfp = new VerilatedVcdC;
-	 top->trace(tfp, 99);
-	 tfp->open("build/wave.vcd");
+	//Verilated::traceEverOn(true);
+	//tfp = new VerilatedVcdC;
+	 //top->trace(tfp, 99);
+	 //tfp->open("build/wave.vcd");
 
-	 top->rst = 1;
-	 single_cycle(top, tfp);
-	 top->rst = 0;
+	top->rst = 1;
+	top->clk = 0; top->eval();
+	top->clk = 1; top->eval();
+	top->rst = 0;
+	top->eval();
 }
 
-static void eval_dump(Vtop* top, VerilatedVcdC* tfp) {
+static void eval_dump() {
 	static int time_step = 0;
 	top->eval();
 	tfp->dump(time_step++);
@@ -44,9 +61,38 @@ extern "C" void npctrap(int a0) {
 	npc_state.halt_pc = top->pc;
 }
 
+static void exec_once(Decode *s) {
+	const svScope scope = svGetScopeFromName("TOP.top.u_IFU");
+	assert(scope);
+	svSetScope(scope);
+
+	s->pc = top->pc;	
+	single_cycle(s);
+#ifdef CONFIG_ITRACE
+	char *p = s->logbuf;
+	p += snprintf(p, sizeof(s->logbuf), "0x%08x:", s->dnpc);
+	int ilen = 4;
+	int i;
+	// dpi
+	uint8_t *inst = (uint8_t *)&s->inst;
+	for (i = ilen - 1; i >= 0; i --) {
+		p += snprintf(p, 4, " %02x", inst[i]);
+	}
+	memset(p, ' ', 1);
+	p += 1;
+
+	void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
+	disassemble(p, s->logbuf + sizeof(s->logbuf) - p, s->dnpc, (uint8_t *)&s->inst, ilen);
+#endif
+}
+
+
 static void execute(uint64_t n) {
+	Decode s;
 	for (;n > 0; n --) {
-		single_cycle(top, tfp);
+		exec_once(&s);
+		g_nr_guest_inst ++;
+		trace_and_difftest(&s);
 		if (npc_state.state != NPC_RUNNING) break;
 	}
 }
@@ -55,6 +101,7 @@ static void statistic() {
 }
 
 void cpu_exec(uint64_t n) {
+	g_print_step = (n < MAX_INST_TO_PRINT);
 	switch (npc_state.state) {
 		case NPC_END: case NPC_QUIT:
 			printf("Program execution has ended. To restart the program, exit NPC and run again.\n");
@@ -72,8 +119,9 @@ void cpu_exec(uint64_t n) {
 					ANSI_FMT("HIT BAD TRAP", ANSI_FG_RED)),
 					npc_state.halt_pc);
 		case NPC_QUIT: statistic();
-										tfp->close();
+										//tfp->close();
 										delete top;
 										delete contextp;
+										//delete tfp;
 	}
 }

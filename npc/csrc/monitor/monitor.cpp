@@ -4,6 +4,7 @@
 void init_log(const char *log_file); 
 void init_mem();
 void init_cpu();
+void init_disasm();
 void sdb_set_batch_mode();
 
 static void welcome() {
@@ -69,6 +70,8 @@ void init_monitor(int argc, char *argv[]) {
 
 	/* Load the image to memory. This will overwrite the built-in image. */
 	long img_size = load_img();
+
+	IFDEF(CONFIG_ITRACE, init_disasm());
 
 	/* Display welcome message. */
 	welcome();
