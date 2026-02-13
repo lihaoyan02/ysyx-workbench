@@ -152,7 +152,7 @@ void cpu_exec(uint64_t n) {
 			Log("npc: %s at pc = 0x%08x", (npc_state.halt_ret==0 ? ANSI_FMT("HIT GOOD TRAP", ANSI_FG_GREEN) :
 					ANSI_FMT("HIT BAD TRAP", ANSI_FG_RED)),
 					npc_state.halt_pc);
-			iringbuf_print();
+			IFDEF(CONFIG_IRINGTRACE, iringbuf_print()); 
 		case NPC_QUIT: statistic();
 	}
 }
