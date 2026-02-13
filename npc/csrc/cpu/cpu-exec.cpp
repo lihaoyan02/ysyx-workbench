@@ -88,6 +88,7 @@ static void execute(uint64_t n) {
 }
 
 static void statistic() {
+	Log("total guest instructions = %u", g_nr_guest_inst);
 }
 
 void cpu_exec(uint64_t n) {
@@ -109,7 +110,5 @@ void cpu_exec(uint64_t n) {
 					ANSI_FMT("HIT BAD TRAP", ANSI_FG_RED)),
 					npc_state.halt_pc);
 		case NPC_QUIT: statistic();
-										//tfp->close();
-										//delete tfp;
 	}
 }
