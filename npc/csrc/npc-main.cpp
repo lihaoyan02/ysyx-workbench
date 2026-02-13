@@ -1,10 +1,6 @@
 #include <common.h>
 #include <memory.h>
 
-#include <verilated.h>
-#include <Vtop.h>
-#include "verilated_vcd_c.h"
-
 void init_monitor(int, char *[]); 
 int is_exit_status_bad();
 void sdb_mainloop();
