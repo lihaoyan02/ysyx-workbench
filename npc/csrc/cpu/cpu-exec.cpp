@@ -9,12 +9,19 @@
 uint64_t g_nr_guest_inst = 0;
 static bool g_print_step = false;
 
+bool scan_wp_diff();
+
 static void trace_and_difftest(Decode *_this) {
 #ifdef CONFIG_ITRACE
 	log_write("%s\n", _this->logbuf);
 #endif
 	if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
 
+#ifdef CONFIG_WATCHPOINT
+	if(scan_wp_diff()) {
+		npc_state.state = npc_state.state != NPC_END ? NPC_STOP : NPC_END;
+	}
+#endif
 }
 
 static void single_cycle(Decode *s) {

@@ -9,6 +9,10 @@ uint32_t expr(char *e, bool *success);
 static int is_batch_mode = false;
 
 void init_regex();
+void init_wp_pool();
+void set_new_wp(char *e);
+void delete_wp(int N);
+void print_wp_info();
 
 static char* rl_gets() {
 	static char *line_read = NULL;
@@ -50,6 +54,8 @@ static int cmd_info(char *args) {
 		printf("An argument r or w is required\n");
 	} else if(strcmp(arg, "r") == 0) {
 		reg_display();
+	} else if (strcmp(arg, "w") == 0) {
+		print_wp_info();
 	} else {
 		printf("Invalid argument\n");
 	}
@@ -90,6 +96,24 @@ static int cmd_p(char *args) {
 	return 0;
 }
 
+/*--------set watchpoint---------*/
+static int cmd_w(char *args) {
+	set_new_wp(args);
+	return 0;
+}
+
+/*--------delete watchpoint---------*/
+static int cmd_d(char *args) {
+	char *N_str = strtok(NULL," ");
+	if (N_str==NULL) {
+		printf("require an arguments N\n");
+	}else {
+		int N_num = (int)atoi(N_str);
+		delete_wp(N_num);
+	}
+	return 0;
+}
+
 void sdb_set_batch_mode() {
 	is_batch_mode = true;
 }
@@ -100,6 +124,7 @@ static int cmd_c(char *args) {
 }
 
 static int cmd_help(char *args); 
+
 static struct {
 	const char *name;
 	const char *description;
@@ -112,6 +137,8 @@ static struct {
 	{ "info", "Print register status(r), print watch point messages(w)", cmd_info },
 	{ "x", "Scan the memory from the given expression in heximal for N times of 4 bytes", cmd_x },
 	{ "p", "Print the expression's result", cmd_p },
+	{ "w", "Set a watchpoint for given expression", cmd_w },
+	{ "d", "Delete a watchpoint for given watchpoint number N", cmd_d },
 
 };
 
@@ -177,4 +204,6 @@ void init_sdb() {
 	/* Compile the regular expressions. */
 	init_regex();
 
+	/* Initialize the watchpoint pool. */
+	init_wp_pool();
 }
