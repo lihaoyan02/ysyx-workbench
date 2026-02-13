@@ -16,4 +16,6 @@ static inline const char* reg_name(int idx) {
 
 void reg_display();
 
+uint32_t reg_str2val(const char *s, bool *success);
+
 #endif

@@ -12,3 +12,19 @@ void reg_display() {
 	}
 	printf("\n");
 }
+
+uint32_t reg_str2val(const char *s, bool *success) {
+	if(strcmp("pc", s)==0) {
+		*success = true;
+		return top->pc;
+	}
+	for(int i=0; i<16; i++) {
+		if (strcmp(reg_name(i), s) == 0) {
+			*success = true;
+			return core_read_reg(i);
+		}
+	}
+	*success = false;
+	return 0;
+}
+

@@ -2,18 +2,56 @@
 #include <memory.h> 
 #include <decode.h>
 #include <core.h>
+#include <reg.h>
 
 #define MAX_INST_TO_PRINT 10
 
 uint64_t g_nr_guest_inst = 0;
 static bool g_print_step = false;
 
+bool scan_wp_diff();
+
+/*-------iringbuf----------*/
+#ifdef CONFIG_IRINGTRACE
+#define IRING_SIZE 16
+static char iringbuf[IRING_SIZE][128]; 
+static int iring_ptr = 0;
+
+static void iringbuf_push(char *ibuf) {
+	if (++iring_ptr >= IRING_SIZE) {
+		iring_ptr = 0; 
+	}
+	memcpy(iringbuf[iring_ptr], ibuf, 128);
+}
+static void iringbuf_print() {
+	for(int i=0; i<IRING_SIZE; i++) {
+		if(iringbuf[i][0] != '\0') {
+			if(i == iring_ptr) {
+				printf("--> %s \n", iringbuf[i]);
+			} else {
+				printf("    %s \n", iringbuf[i]);
+			}
+		}
+	}
+}
+#endif
+
 static void trace_and_difftest(Decode *_this) {
 #ifdef CONFIG_ITRACE
 	log_write("%s\n", _this->logbuf);
 #endif
+
 	if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
 
+#ifdef CONFIG_IRINGTRACE
+	iringbuf_push(_this->logbuf);
+#endif
+
+#ifdef CONFIG_WATCHPOINT
+	if(scan_wp_diff()) {
+		npc_state.state = npc_state.state != NPC_END ? NPC_STOP : NPC_END;
+	}
+#endif
 }
 
 static void single_cycle(Decode *s) {
@@ -22,7 +60,8 @@ static void single_cycle(Decode *s) {
 	top->clk = 0; top->eval();
 	top->clk = 1; top->eval();
 	s->inst = core_read_inst();
-	s->dnpc = top->pc;
+	s->pc = top->pc;
+	s->dnpc = core_read_dnpc(); 
 }
 
 void init_cpu() {
@@ -56,11 +95,10 @@ extern "C" void npctrap(int a0) {
 }
 
 static void exec_once(Decode *s) {
-	s->pc = top->pc;	
 	single_cycle(s);
 #ifdef CONFIG_ITRACE
 	char *p = s->logbuf;
-	p += snprintf(p, sizeof(s->logbuf), "0x%08x:", s->dnpc);
+	p += snprintf(p, sizeof(s->logbuf), "0x%08x:", s->pc);
 	int ilen = 4;
 	int i;
 	// dpi
@@ -72,7 +110,7 @@ static void exec_once(Decode *s) {
 	p += 1;
 
 	void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
-	disassemble(p, s->logbuf + sizeof(s->logbuf) - p, s->dnpc, (uint8_t *)&s->inst, ilen);
+	disassemble(p, s->logbuf + sizeof(s->logbuf) - p, s->pc, (uint8_t *)&s->inst, ilen);
 #endif
 }
 
@@ -88,6 +126,12 @@ static void execute(uint64_t n) {
 }
 
 static void statistic() {
+	Log("total guest instructions = %lu", g_nr_guest_inst);
+}
+
+void assert_fail_msg() {
+	reg_display();
+	statistic();
 }
 
 void cpu_exec(uint64_t n) {
@@ -108,8 +152,7 @@ void cpu_exec(uint64_t n) {
 			Log("npc: %s at pc = 0x%08x", (npc_state.halt_ret==0 ? ANSI_FMT("HIT GOOD TRAP", ANSI_FG_GREEN) :
 					ANSI_FMT("HIT BAD TRAP", ANSI_FG_RED)),
 					npc_state.halt_pc);
+			IFDEF(CONFIG_IRINGTRACE, iringbuf_print()); 
 		case NPC_QUIT: statistic();
-										//tfp->close();
-										//delete tfp;
 	}
 }

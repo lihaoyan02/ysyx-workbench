@@ -4,7 +4,15 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 
+uint32_t expr(char *e, bool *success);
+
 static int is_batch_mode = false;
+
+void init_regex();
+void init_wp_pool();
+void set_new_wp(char *e);
+void delete_wp(int N);
+void print_wp_info();
 
 static char* rl_gets() {
 	static char *line_read = NULL;
@@ -46,8 +54,62 @@ static int cmd_info(char *args) {
 		printf("An argument r or w is required\n");
 	} else if(strcmp(arg, "r") == 0) {
 		reg_display();
+	} else if (strcmp(arg, "w") == 0) {
+		print_wp_info();
 	} else {
 		printf("Invalid argument\n");
+	}
+	return 0;
+}
+
+/*---------scan memeory---------*/
+static int cmd_x(char *args) {
+	char *N_str = strtok(NULL," ");
+	char *expression = strtok(NULL," ");
+	if ((N_str==NULL) || (expression==NULL)) {
+		printf("require 2 arguments N and EXPR\n");
+	} else {
+		unsigned int N_num = (unsigned int)atoi(N_str);
+		bool success = true;
+		uint32_t result = expr(expression, &success);
+		if(success) {
+			for(uint32_t i = 0; i != N_num; i++) {
+				printf("[%d] 0x%08X : 0x%08X\n", i, ((i*4+result) & ~0x3u), pmem_read(i*4+result));
+			}
+		}else {
+			printf("parse expression fail\n");
+		}
+	}
+	return 0;
+}
+
+/*---------print expression---------*/
+static int cmd_p(char *args) {
+	bool success = true;
+	bool *ptr_success = &success;
+	uint32_t result = expr(args, ptr_success);
+	if(success == false) {
+		printf("try again\n");
+	} else {
+		 printf("%u (%x)\n", result, result);
+	}
+	return 0;
+}
+
+/*--------set watchpoint---------*/
+static int cmd_w(char *args) {
+	set_new_wp(args);
+	return 0;
+}
+
+/*--------delete watchpoint---------*/
+static int cmd_d(char *args) {
+	char *N_str = strtok(NULL," ");
+	if (N_str==NULL) {
+		printf("require an arguments N\n");
+	}else {
+		int N_num = (int)atoi(N_str);
+		delete_wp(N_num);
 	}
 	return 0;
 }
@@ -62,6 +124,7 @@ static int cmd_c(char *args) {
 }
 
 static int cmd_help(char *args); 
+
 static struct {
 	const char *name;
 	const char *description;
@@ -72,6 +135,10 @@ static struct {
 	{ "q", "Exit npc", cmd_q },
 	{ "si", "Execute N instruction(s) and stop, default N = 1", cmd_si },
 	{ "info", "Print register status(r), print watch point messages(w)", cmd_info },
+	{ "x", "Scan the memory from the given expression in heximal for N times of 4 bytes", cmd_x },
+	{ "p", "Print the expression's result", cmd_p },
+	{ "w", "Set a watchpoint for given expression", cmd_w },
+	{ "d", "Delete a watchpoint for given watchpoint number N", cmd_d },
 
 };
 
@@ -131,4 +198,12 @@ void sdb_mainloop() {
 
 		if (i == NR_CMD) { printf("Unknow command '%s'\n", cmd); }
 	}
+}
+
+void init_sdb() {
+	/* Compile the regular expressions. */
+	init_regex();
+
+	/* Initialize the watchpoint pool. */
+	init_wp_pool();
 }
