@@ -52,6 +52,27 @@ static int cmd_info(char *args) {
 	return 0;
 }
 
+/*---------scan memeory---------*/
+static int cmd_x(char *args) {
+	char *N_str = strtok(NULL," ");
+	char *expression = strtok(NULL," ");
+	if ((N_str==NULL) || (expression==NULL)) {
+		printf("require 2 arguments N and EXPR\n");
+	} else {
+		unsigned int N_num = (unsigned int)atoi(N_str);
+		bool success = true;
+		uint32_t result = expr(expression, &success);
+		if(success) {
+			for(uint32_t i = 0; i != N_num; i++) {
+				printf("[%d] 0x%08X : 0x%08X\n", i, i*4+result, pmem_read(i*4+result,4));
+			}
+		}else {
+			printf("parse expression fail\n");
+		}
+	}
+	return 0;
+}
+
 void sdb_set_batch_mode() {
 	is_batch_mode = true;
 }
