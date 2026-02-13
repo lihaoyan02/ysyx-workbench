@@ -11,6 +11,8 @@ extern VerilatedContext* contextp;
 extern Vtop* top;
 extern VerilatedVcdC* tfp; 
 
-int core_read_inst();
+uint32_t core_read_inst();
+
+uint32_t core_read_reg(uint32_t idx);
 
 #endif

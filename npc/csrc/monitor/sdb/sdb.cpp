@@ -1,5 +1,6 @@
 #include <memory.h>
 #include <cpu.h>
+#include <reg.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 
@@ -44,7 +45,7 @@ static int cmd_info(char *args) {
 	if (arg == NULL) {
 		printf("An argument r or w is required\n");
 	} else if(strcmp(arg, "r") == 0) {
-	//	reg_display();//TODO
+		reg_display();
 	} else {
 		printf("Invalid argument\n");
 	}

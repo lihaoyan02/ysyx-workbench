@@ -25,4 +25,10 @@ integer i = 0;
 assign rdata1 = (raddr1==0) ? {DATA_WIDTH{1'b0}} : rf[raddr1[3:0]];
 assign rdata2 = (raddr2==0) ? {DATA_WIDTH{1'b0}} : rf[raddr2[3:0]];
 
+function int read_reg(input int index);
+	return rf[index];
+endfunction
+
+export "DPI-C" function read_reg;
+
 endmodule

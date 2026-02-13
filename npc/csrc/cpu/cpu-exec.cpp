@@ -2,19 +2,9 @@
 #include <memory.h> 
 #include <decode.h>
 #include <core.h>
-/*
-#include <verilated.h>
-#include <Vtop.h>
-#include <Vtop__Dpi.h>
-#include "svdpi.h"
-#include "verilated_vcd_c.h"
-*/
+
 #define MAX_INST_TO_PRINT 10
-/*
-VerilatedContext* contextp = NULL;
-Vtop* top = NULL;
-VerilatedVcdC* tfp = NULL;
-*/
+
 uint64_t g_nr_guest_inst = 0;
 static bool g_print_step = false;
 
@@ -66,11 +56,6 @@ extern "C" void npctrap(int a0) {
 }
 
 static void exec_once(Decode *s) {
-	/*
-	const svScope scope = svGetScopeFromName("TOP.top.u_IFU");
-	assert(scope);
-	svSetScope(scope);
-*/
 	s->pc = top->pc;	
 	single_cycle(s);
 #ifdef CONFIG_ITRACE
