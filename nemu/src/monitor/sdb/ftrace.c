@@ -97,7 +97,7 @@ void ftrace_rcd(Decode *s) {
 				FPOOL* current_fp = pc_compare(s->pc);
 				sprintf(logbuf, "ret [%s]",current_fp->name);
 				if(stack_ptr == 0) panic("return before call\n");
-				fringbuf_push(TYPE_RET, s->dnpc, logbuf, --stack_ptr);
+				fringbuf_push(TYPE_RET, s->pc, logbuf, --stack_ptr);
 			}
 		}
 	}
