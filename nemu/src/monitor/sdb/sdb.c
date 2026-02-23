@@ -139,6 +139,7 @@ static int cmd_d(char *args) {
 
 /*----tracer info-------*/
 void iringbuf_print();
+void ftrace_print();
 static int cmd_t(char *args) {
 	char *arg = strtok(NULL," ");
 	if (arg == NULL) {
@@ -146,7 +147,7 @@ static int cmd_t(char *args) {
 	} else if(strcmp(arg, "i") == 0) {
 		iringbuf_print();
 	} else if (strcmp(arg, "f") == 0) {
-		iringbuf_print();
+		ftrace_print();
 	} else {
 		printf("Invalid argument\n");
 	}
