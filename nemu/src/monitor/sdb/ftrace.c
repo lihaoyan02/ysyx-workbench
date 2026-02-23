@@ -72,7 +72,7 @@ void ftrace_print() {
 		if(fringbuf[real_ptr].message[0] != '\0') {
 			printf("%s\t",fringbuf[real_ptr].pcbuf);
 			for(int j=0; j<fringbuf[real_ptr].num; j++) {
-				printf("\t");
+				printf(" ");
 			}
 			printf("%s\n",fringbuf[real_ptr].message);
 		}
