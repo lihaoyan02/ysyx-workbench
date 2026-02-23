@@ -93,7 +93,7 @@ void ftrace_rcd(Decode *s) {
 			if (((inst>>7) &0b11111) != 0b00000 && matched_fp->addr == s->dnpc) {
 				sprintf(logbuf, "call [%s@0x%08x]",matched_fp->name, matched_fp->addr);
 				fringbuf_push(TYPE_CALL, s->dnpc, logbuf, stack_ptr++);
-			} else if(((inst>>7) & 0b11111) == 0b00000 && matched_fp ==NULL){
+			} else if(((inst>>7) & 0b11111) == 0b00000 && matched_fp->addr != s->dnpc){
 				sprintf(logbuf, "ret [%s]",matched_fp->name);
 				if(stack_ptr == 0) panic("return before call\n");
 				fringbuf_push(TYPE_RET, s->dnpc, logbuf, stack_ptr--);
