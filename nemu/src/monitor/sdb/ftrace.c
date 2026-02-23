@@ -39,15 +39,13 @@ static void new_fp(char* name, vaddr_t addr, uint32_t size) {
 	head = new_func;
 }
 
-/*
-static void free_fp() {
+void free_fp() {
 	while(head != NULL) {
 		FPOOL *temp_to_free = head;
 		head = temp_to_free->next;
 		free(temp_to_free);
 	}
 }
-*/
 		
 static FPOOL* pc_compare(vaddr_t pc) {
 	for( FPOOL* current = head; current != NULL; current = current->next) {
