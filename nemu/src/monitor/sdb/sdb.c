@@ -137,6 +137,23 @@ static int cmd_d(char *args) {
 	return 0;
 }
 
+/*----tracer info-------*/
+void iringbuf_print();
+void ftrace_print();
+static int cmd_t(char *args) {
+	char *arg = strtok(NULL," ");
+	if (arg == NULL) {
+		printf("An argument i or f is required\n");
+	} else if(strcmp(arg, "i") == 0) {
+		iringbuf_print();
+	} else if (strcmp(arg, "f") == 0) {
+		ftrace_print();
+	} else {
+		printf("Invalid argument\n");
+	}
+	return 0;
+}
+
 static struct {
   const char *name;
   const char *description;
@@ -151,6 +168,7 @@ static struct {
 	{ "p", "Print the expression's result", cmd_p },
 	{ "w", "Set a watchpoint for given expression", cmd_w },
 	{ "d", "Delete a watchpoint for given watchpoint number N", cmd_d },
+	{ "t", "Print tracer info itrace(i) ftrace(f)", cmd_t },
 
   /* TODO: Add more commands */
 
