@@ -23,6 +23,7 @@ void init_difftest(char *ref_so_file, long img_size, int port);
 void init_device();
 void init_sdb();
 void init_disasm();
+void init_ftrace(unsigned char *buffer);
 
 static void welcome() {
   Log("Trace: %s", MUXDEF(CONFIG_TRACE, ANSI_FMT("ON", ANSI_FG_GREEN), ANSI_FMT("OFF", ANSI_FG_RED)));
@@ -69,7 +70,8 @@ static long load_img() {
 
 unsigned char *load_elf() {
   if (elf_file == NULL) {
-		panic("No image is given. Use the default build-in image.");
+		Log("No elf is given.\n");
+		return NULL;
   }
 
 	FILE *fp = fopen(elf_file, "rb");
@@ -141,6 +143,10 @@ void init_monitor(int argc, char *argv[]) {
 
   /* Initialize memory. */
   init_mem();
+
+	/* Initialize ftrace. */
+	unsigned char *buffer = load_elf();
+	init_ftrace(buffer);
 
   /* Initialize devices. */
   IFDEF(CONFIG_DEVICE, init_device());
