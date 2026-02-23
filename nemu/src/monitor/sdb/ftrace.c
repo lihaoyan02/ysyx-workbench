@@ -83,7 +83,7 @@ void ftrace_rcd(Decode *s) {
 	if(head == NULL) return;
 	uint32_t inst = s->isa.inst;
 	if ((inst & 0b1110111) == 0b1100111 ) {
-		FPOOL* matched_fp = pc_compare(s->dnpc);
+		FPOOL* matched_fp = pc_compare(s->pc);
 		char logbuf[128];
 		memset(logbuf, '\0', 128);
 		if(matched_fp == NULL) {
