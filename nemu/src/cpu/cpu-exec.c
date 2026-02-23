@@ -46,7 +46,7 @@ static void iringbuf_push(char *ibuf) {
 	}
 	memcpy(iringbuf[iring_ptr], ibuf, 128);
 }
-static void iringbuf_print() {
+void iringbuf_print() {
 	for(int i=0; i<IRING_SIZE; i++) {
 		if(iringbuf[i][0] != '\0') {
 			if(i == iring_ptr) {
