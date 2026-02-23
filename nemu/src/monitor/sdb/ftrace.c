@@ -9,7 +9,7 @@ enum inst_type{
 typedef struct func_pool {
 	struct func_pool *next;
 	
-	char* name;
+	char name[32];
 	vaddr_t addr;
 	uint32_t size;
 } FPOOL;
@@ -32,7 +32,7 @@ unsigned char *elf_buffer;
 
 static void new_fp(char* name, vaddr_t addr, uint32_t size) {
 	FPOOL* new_func = (FPOOL *)malloc(sizeof(FPOOL));
-	new_func->name = name;
+	sprintf(new_func->name,"%s",name);
 	new_func->addr = addr;
 	new_func->size = size;	
 	new_func->next = head;
