@@ -83,7 +83,7 @@ void ftrace_rcd(Decode *s) {
 	if(head == NULL) return;
 	uint32_t inst = s->isa.inst;
 	if ((inst & 0b1110111) == 0b1100111 ) {
-		FPOOL* matched_fp = pc_compare(s->pc);
+		FPOOL* matched_fp = pc_compare(s->dnpc);
 		char logbuf[128];
 		memset(logbuf, '\0', 128);
 		if(matched_fp == NULL) {
@@ -94,7 +94,8 @@ void ftrace_rcd(Decode *s) {
 				sprintf(logbuf, "call [%s@0x%08x]",matched_fp->name, matched_fp->addr);
 				fringbuf_push(TYPE_CALL, s->pc, logbuf, stack_ptr++);
 			} else if(((inst>>7) & 0b11111) == 0b00000 && matched_fp->addr != s->dnpc){
-				sprintf(logbuf, "ret [%s]",matched_fp->name);
+				FPOOL* current_fp = pc_compare(s->pc);
+				sprintf(logbuf, "ret [%s]",current_fp->name);
 				if(stack_ptr == 0) panic("return before call\n");
 				fringbuf_push(TYPE_RET, s->dnpc, logbuf, --stack_ptr);
 			}
