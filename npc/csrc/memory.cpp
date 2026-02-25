@@ -1,6 +1,7 @@
 #include <memory.h>
 #include <Vtop__Dpi.h>
 #include <common.h>
+#include <utils.h>
 
 static uint8_t pmem[MEM_MAX];
 uint32_t mmio_read(int addr);
@@ -9,7 +10,7 @@ void mmio_write(int addr, int data);
 extern "C" int pmem_read(int raddr) {
 	IFDEF(CONFIG_MTRACE,
 			if((unsigned)raddr >= CONFIG_MTRACE_START && (unsigned)raddr < CONFIG_MTRACE_END) {
-			printf("mtrace: R addr=0x%08x\n", raddr);
+			Log("mtrace: R addr=0x%08x\n", raddr);
 			}
 	);
 	if(in_mem((uint32_t)raddr)) {
