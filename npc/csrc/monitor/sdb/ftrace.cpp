@@ -111,7 +111,8 @@ void init_ftrace(unsigned char *buffer) {
 
 	if (memcmp(ehdr->e_ident, ELFMAG, SELFMAG) !=0) {
 		free(buffer);
-		Assert(memcmp(ehdr->e_ident, ELFMAG, SELFMAG) ==0, "no valid elf\n");
+		printf("no valid elf\n");
+		assert(memcmp(ehdr->e_ident, ELFMAG, SELFMAG) ==0);
 	}
 
 	// section header
