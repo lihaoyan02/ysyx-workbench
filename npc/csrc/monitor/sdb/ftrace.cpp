@@ -96,8 +96,7 @@ void ftrace_rcd(Decode *s) {
 			} else if((inst & 0b1111111) == 0b1100111 //jalr
 					&& ((inst>>7) & 0b11111) == 0b00000 
 					&& next_fp->addr != s->dnpc
-					//&& next_fp->name != current_fp->name
-					){
+					&& next_fp->name != current_fp->name){
 				sprintf(logbuf, "ret [%s]",current_fp->name);
 				if(stack_ptr == 0) panic("return before call\n");
 				fringbuf_push(TYPE_RET, s->pc, logbuf, --stack_ptr);
