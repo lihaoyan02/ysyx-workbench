@@ -1,34 +1,10 @@
 #include <memory.h>
 #include <Vtop__Dpi.h>
-//#include <chrono>
 #include <common.h>
 
 static uint8_t pmem[MEM_MAX];
 uint32_t mmio_read(int addr);
 void mmio_write(int addr, int data);
-/*
-static uint32_t rtc_port[2];
-static uint64_t boot_time = 0;
-
-static uint64_t get_time_internal() {
-	using namespace std::chrono;
-	return duration_cast<microseconds>(
-			steady_clock::now().time_since_epoch()
-			).count();
-}
-
-uint64_t get_time() {
-	if (boot_time == 0) boot_time = get_time_internal();
-	uint64_t now = get_time_internal();
-	return now - boot_time;
-}
-
-static void rtc_port_update() {
-	uint64_t us = get_time();
-	rtc_port[0] = (uint32_t)us;
-	rtc_port[1] = us >> 32;
-}
-*/
 
 extern "C" int pmem_read(int raddr) {
 	if(in_mem((uint32_t)raddr)) {
@@ -42,12 +18,7 @@ extern "C" int pmem_read(int raddr) {
 			default: assert(0);
 		}
 		*/
-	} /*else if (raddr == 0xa0000048) {
-		return rtc_port[0];
-	} else if (raddr == 0xa0000048+4) {
-		rtc_port_update();
-		return rtc_port[1];
-	}*/else {
+	} else {
 		IFDEF(CONFIG_DEVICE, return mmio_read(raddr));
 		printf("illegal access for pmem\n");
 		assert(0);
@@ -63,9 +34,7 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 			case 0xf: *(uint32_t *)paddr = wdata; break;
 			default: assert(0);
 		}
-	} /*else if (waddr == 0x10000000){
-		putchar((uint8_t)wdata);
-	} */else {
+	} else {
 		IFDEF(CONFIG_DEVICE, mmio_write(waddr, wdata); return);
 		printf("illegal access for pmem\n");
 		assert(0);
