@@ -81,18 +81,20 @@ void ftrace_rcd(Decode *s) {
 	if(head == NULL) return;
 	uint32_t inst = s->inst;
 	if ((inst & 0b1110111) == 0b1100111 ) {
-		FPOOL* matched_fp = pc_compare(s->dnpc);
+		// jal and jalr
+		FPOOL* next_fp = pc_compare(s->dnpc);
+		FPOOL* current_fp = pc_compare(s->pc);
 		char logbuf[128];
 		memset(logbuf, '\0', 128);
-		if(matched_fp == NULL) {
+		if(next_fp == NULL) {
 			sprintf(logbuf, "call/ret [???]");
 			fringbuf_push(TYPE_OTHER, s->pc, logbuf, stack_ptr);
 		} else {
-			if (((inst>>7) &0b11111) != 0b00000 && matched_fp->addr == s->dnpc) {
-				sprintf(logbuf, "call [%s@0x%08x]",matched_fp->name, matched_fp->addr);
+			if (((inst>>7) &0b11111) != 0b00000 && next_fp->addr == s->dnpc) {
+				sprintf(logbuf, "call [%s@0x%08x]",next_fp->name, next_fp->addr);
 				fringbuf_push(TYPE_CALL, s->pc, logbuf, stack_ptr++);
-			} else if(((inst>>7) & 0b11111) == 0b00000 && matched_fp->addr != s->dnpc){
-				FPOOL* current_fp = pc_compare(s->pc);
+			} else if(((inst>>7) & 0b11111) == 0b00000 && next_fp->addr != s->dnpc
+					&& next_fp->name != current_fp->name){
 				sprintf(logbuf, "ret [%s]",current_fp->name);
 				if(stack_ptr == 0) panic("return before call\n");
 				fringbuf_push(TYPE_RET, s->pc, logbuf, --stack_ptr);
