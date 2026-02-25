@@ -98,7 +98,7 @@ void ftrace_rcd(Decode *s) {
 					&& next_fp->addr != s->dnpc
 					&& next_fp->name != current_fp->name){
 				sprintf(logbuf, "ret [%s]",current_fp->name);
-				if(stack_ptr == 0) panic("return before call\n");
+				if(stack_ptr == 0) stack_ptr = 1;//panic("return before call\n");
 				fringbuf_push(TYPE_RET, s->pc, logbuf, --stack_ptr);
 			}
 		}
