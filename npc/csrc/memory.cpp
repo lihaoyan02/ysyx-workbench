@@ -4,6 +4,8 @@
 #include <common.h>
 
 static uint8_t pmem[MEM_MAX];
+uint32_t mmio_read(int addr);
+void mmio_write(int addr, int data);
 /*
 static uint32_t rtc_port[2];
 static uint64_t boot_time = 0;
