@@ -1,5 +1,5 @@
 #include <common.h>
-#include <cpu/decode.h>
+#include <decode.h>
 #include <elf.h>
 
 enum inst_type{
@@ -10,7 +10,7 @@ typedef struct func_pool {
 	struct func_pool *next;
 	
 	char name[32];
-	vaddr_t addr;
+	uint32_t addr;
 	uint32_t size;
 } FPOOL;
 
@@ -30,7 +30,7 @@ unsigned char *elf_buffer;
 
 
 
-static void new_fp(char* name, vaddr_t addr, uint32_t size) {
+static void new_fp(char* name, uint32_t addr, uint32_t size) {
 	FPOOL* new_func = (FPOOL *)malloc(sizeof(FPOOL));
 	sprintf(new_func->name,"%s",name);
 	new_func->addr = addr;
@@ -47,21 +47,22 @@ void free_fp() {
 	}
 }
 		
-static FPOOL* pc_compare(vaddr_t pc) {
+static FPOOL* pc_compare(uint32_t pc) {
 	for( FPOOL* current = head; current != NULL; current = current->next) {
-		if( pc >= current->addr && pc < current->addr + current->size) return current;
+		if( pc >= current->addr && pc < (current->addr + current->size)) return current;
 	}
 	return NULL;
 }
 
-static bool pc_compare_off(uint32_t pc) { 
+static bool pc_compare_off(uint32_t pc) {
 	for( FPOOL* current = head; current != NULL; current = current->next) {
 		if( pc == current->addr) return true;
 	}
 	return false;
 }
 
-static void fringbuf_push(enum inst_type type, vaddr_t pc, char* logbuf, int stack_num) {
+
+static void fringbuf_push(enum inst_type type, uint32_t pc, char* logbuf, int stack_num) {
 	fringbuf[fringbuf_ptr].type = type;
 	fringbuf[fringbuf_ptr].num = stack_num;
 	memcpy(fringbuf[fringbuf_ptr].message, logbuf, 128);
@@ -69,6 +70,13 @@ static void fringbuf_push(enum inst_type type, vaddr_t pc, char* logbuf, int sta
 	if(++fringbuf_ptr >= FRING_SIZE) {
 		fringbuf_ptr = 0;
 	}
+}
+
+void print_funct_info() {
+	for( FPOOL* current = head; current != NULL; current = current->next) {
+		printf("%s\n",current->name);
+	}
+	printf("\n");
 }
 
 void ftrace_print() {
@@ -86,14 +94,14 @@ void ftrace_print() {
 
 void ftrace_rcd(Decode *s) {
 	if(head == NULL) return;
-	uint32_t inst = s->isa.inst;
+	uint32_t inst = s->inst;
 	if ((inst & 0b1110111) == 0b1100111 ) {
 		// jal and jalr
 		FPOOL* next_fp = pc_compare(s->dnpc);
 		FPOOL* current_fp = pc_compare(s->pc);
 		char logbuf[128];
 		memset(logbuf, '\0', 128);
-		if(next_fp == NULL || current_fp == NULL) {
+		if(next_fp == NULL) {
 			sprintf(logbuf, "call/ret [???]");
 			fringbuf_push(TYPE_OTHER, s->pc, logbuf, stack_ptr);
 		} else {
@@ -105,7 +113,7 @@ void ftrace_rcd(Decode *s) {
 					&& next_fp->addr != s->dnpc
 					&& next_fp->name != current_fp->name){
 				sprintf(logbuf, "ret [%s]",current_fp->name);
-				if(stack_ptr == 0) panic("return before call\n");
+				if(stack_ptr == 0) panic("return before call\n");//stack_ptr = 1;//panic("return before call\n");
 				fringbuf_push(TYPE_RET, s->pc, logbuf, --stack_ptr);
 			}
 		}
@@ -122,7 +130,8 @@ void init_ftrace(unsigned char *buffer) {
 
 	if (memcmp(ehdr->e_ident, ELFMAG, SELFMAG) !=0) {
 		free(buffer);
-		Assert(memcmp(ehdr->e_ident, ELFMAG, SELFMAG) ==0, "no valid elf\n");
+		printf("no valid elf\n");
+		assert(memcmp(ehdr->e_ident, ELFMAG, SELFMAG) ==0);
 	}
 
 	// section header

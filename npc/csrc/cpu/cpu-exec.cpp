@@ -23,7 +23,7 @@ static void iringbuf_push(char *ibuf) {
 	}
 	memcpy(iringbuf[iring_ptr], ibuf, 128);
 }
-static void iringbuf_print() {
+void iringbuf_print() {
 	for(int i=0; i<IRING_SIZE; i++) {
 		if(iringbuf[i][0] != '\0') {
 			if(i == iring_ptr) {
@@ -36,6 +36,13 @@ static void iringbuf_print() {
 }
 #endif
 
+/*----------------ftrace--------------*/
+#ifdef CONFIG_FTRACE
+void ftrace_print();
+void ftrace_rcd(Decode *s);
+void free_fp();
+#endif
+
 static void trace_and_difftest(Decode *_this) {
 #ifdef CONFIG_ITRACE
 	log_write("%s\n", _this->logbuf);
@@ -45,6 +52,10 @@ static void trace_and_difftest(Decode *_this) {
 
 #ifdef CONFIG_IRINGTRACE
 	iringbuf_push(_this->logbuf);
+#endif
+
+#ifdef CONFIG_FTRACE
+	ftrace_rcd(_this);
 #endif
 
 #ifdef CONFIG_WATCHPOINT
@@ -131,6 +142,7 @@ static void statistic() {
 
 void assert_fail_msg() {
 	reg_display();
+	IFDEF(CONFIG_FTRACE, ftrace_print(); free_fp());
 	IFDEF(CONFIG_IRINGTRACE, iringbuf_print()); 
 	statistic();
 }
@@ -154,5 +166,6 @@ void cpu_exec(uint64_t n) {
 					ANSI_FMT("HIT BAD TRAP", ANSI_FG_RED)),
 					npc_state.halt_pc);
 		case NPC_QUIT: statistic();
+	IFDEF(CONFIG_FTRACE, free_fp());
 	}
 }

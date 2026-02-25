@@ -14,6 +14,7 @@ LDFLAGS   += --defsym=_pmem_start=0x80000000 --defsym=_entry_offset=0x0
 LDFLAGS   += --gc-sections -e _start
 
 NPCFLAGS += -l $(shell dirname $(IMAGE).elf)/npc-log.txt
+NPCFLAGS += -e $(IMAGE).elf
 NPCFLAGS += -b
 
 MAINARGS_MAX_LEN = 64
@@ -30,5 +31,8 @@ image: image-dep
 
 run: insert-arg
 	$(MAKE) -C $(NPC_HOME) run ARGS="$(NPCFLAGS)" IMG=$(IMAGE).bin
+
+gdb: insert-arg
+	$(MAKE) -C $(NPC_HOME) gdb ARGS="$(NPCFLAGS)" IMG=$(IMAGE).bin
 
 .PHONY: insert-arg
