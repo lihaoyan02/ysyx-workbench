@@ -54,6 +54,13 @@ static FPOOL* pc_compare(vaddr_t pc) {
 	return NULL;
 }
 
+static bool pc_compare_off(uint32_t pc) { 
+	for( FPOOL* current = head; current != NULL; current = current->next) {
+		if( pc == current->addr) return true;
+	}
+	return false;
+}
+
 static void fringbuf_push(enum inst_type type, vaddr_t pc, char* logbuf, int stack_num) {
 	fringbuf[fringbuf_ptr].type = type;
 	fringbuf[fringbuf_ptr].num = stack_num;
@@ -90,7 +97,7 @@ void ftrace_rcd(Decode *s) {
 			sprintf(logbuf, "call/ret [???]");
 			fringbuf_push(TYPE_OTHER, s->pc, logbuf, stack_ptr);
 		} else {
-			if (((inst>>7) &0b11111) != 0b00000 && next_fp->addr == s->dnpc) {
+			if (((inst>>7) &0b11111) != 0b00000 && pc_compare_off(s->dnpc)) {
 				sprintf(logbuf, "call [%s@0x%08x]",next_fp->name, next_fp->addr);
 				fringbuf_push(TYPE_CALL, s->pc, logbuf, stack_ptr++);
 			} else if((inst & 0b1111111) == 0b1100111 //jalr
