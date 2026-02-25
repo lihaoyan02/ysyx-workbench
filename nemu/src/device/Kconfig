@@ -7,6 +7,10 @@ menuconfig DEVICE
 
 if DEVICE
 
+config DTRACE
+	bool "Enable device tracer"
+	default n
+
 config HAS_PORT_IO
   bool
   default y if ISA_x86
