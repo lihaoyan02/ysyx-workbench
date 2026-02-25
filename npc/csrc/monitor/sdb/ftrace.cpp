@@ -64,6 +64,13 @@ static void fringbuf_push(enum inst_type type, uint32_t pc, char* logbuf, int st
 	}
 }
 
+void print_funct_info() {
+	for( FPOOL* current = head; current != NULL; current = current->next) {
+		printf("%s\n",current->name);
+	}
+	printf("\n");
+}
+
 void ftrace_print() {
 	for(int i=0; i<FRING_SIZE; i++) {
 		int real_ptr = (fringbuf_ptr+i < FRING_SIZE) ? fringbuf_ptr + i : fringbuf_ptr + i - FRING_SIZE;

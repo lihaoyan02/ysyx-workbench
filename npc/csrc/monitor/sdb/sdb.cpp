@@ -14,6 +14,8 @@ void set_new_wp(char *e);
 void delete_wp(int N);
 void print_wp_info();
 
+void print_funct_info();
+
 static char* rl_gets() {
 	static char *line_read = NULL;
 
@@ -56,6 +58,8 @@ static int cmd_info(char *args) {
 		reg_display();
 	} else if (strcmp(arg, "w") == 0) {
 		print_wp_info();
+	} else if (strcmp(arg, "f") == 0) {
+		print_funct_info();
 	} else {
 		printf("Invalid argument\n");
 	}
