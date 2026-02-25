@@ -97,7 +97,7 @@ void ftrace_rcd(Decode *s) {
 			sprintf(logbuf, "call/ret [???]");
 			fringbuf_push(TYPE_OTHER, s->pc, logbuf, stack_ptr);
 		} else {
-			if (((inst>>7) &0b11111) != 0b00000 && next_fp->addr == s->dnpc) {
+			if (((inst>>7) &0b11111) != 0b00000 && (next_fp->addr == s->dnpc)) {
 				sprintf(logbuf, "call [%s@0x%08x]",next_fp->name, next_fp->addr);
 				fringbuf_push(TYPE_CALL, s->pc, logbuf, stack_ptr++);
 			} else if((inst & 0b1111111) == 0b1100111 //jalr
