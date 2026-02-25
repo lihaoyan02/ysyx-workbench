@@ -26,15 +26,15 @@ extern "C" int pmem_read(int raddr) {
 		*/
 	} else {
 		IFDEF(CONFIG_DEVICE, return mmio_read(raddr));
-		printf("illegal access for pmem\n");
-		assert(0);
+		panic("illegal access for pmem\n");
+		//assert(0);
 	}
 }	
 
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 	IFDEF(CONFIG_MTRACE,
 			if(waddr >= CONFIG_MTRACE_START && waddr < CONFIG_MTRACE_END) {
-			printf("mtrace: W addr=0x%08x, mask=0x%x data=0x%x\n", waddr, wmask, wdata);
+			Log("mtrace: W addr=0x%08x, mask=0x%x data=0x%x\n", waddr, wmask, wdata);
 			}
 	);
 	if(in_mem((uint32_t)waddr)) {
