@@ -39,7 +39,7 @@ void mmio_write(int addr, int data) {
 	if ( addr == 0x10000000){
 		putchar((uint8_t)data);
 	} else {
-		printf("illegal access for pmem\n");
+		panic("illegal access for pmem\n");
 		assert(0);
 	}
 }

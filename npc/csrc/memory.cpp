@@ -26,8 +26,7 @@ extern "C" int pmem_read(int raddr) {
 		*/
 	} else {
 		IFDEF(CONFIG_DEVICE, return mmio_read(raddr));
-		printf("illegal access for pmem\n");
-		//assert(0);
+		panic("illegal access for pmem\n");
 	}
 }	
 
@@ -47,8 +46,7 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 		}
 	} else {
 		IFDEF(CONFIG_DEVICE, mmio_write(waddr, wdata); return);
-		printf("illegal access for pmem\n");
-		assert(0);
+		panic("illegal access for pmem\n");
 	}
 }
 

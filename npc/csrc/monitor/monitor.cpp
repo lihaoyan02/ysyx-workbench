@@ -6,6 +6,7 @@ void init_mem();
 void init_cpu();
 void init_sdb();
 void init_disasm();
+void init_ftrace(unsigned char *buffer);
 void sdb_set_batch_mode();
 
 static void welcome() {
@@ -20,6 +21,7 @@ static void welcome() {
 
 static char *log_file = NULL;
 static char *img_file = NULL;
+static char *elf_file = NULL; 
 
 static long load_img() {
 	if (img_file == NULL) {
@@ -31,23 +33,54 @@ static long load_img() {
 	return result;
 }
 
+unsigned char *load_elf() {
+	if (elf_file == NULL) {
+		Log("No elf is given.\n");
+		return NULL;
+	}
+
+	FILE *fp = fopen(elf_file, "rb");
+	Assert(fp, "Can not open '%s'", elf_file);
+	fseek(fp, 0, SEEK_END);
+	size_t file_size = ftell(fp);
+	fseek(fp, 0, SEEK_SET);
+
+	unsigned char *buffer = (unsigned char *)malloc(file_size);
+	if(!buffer) {
+		fclose(fp);
+		Assert(buffer, "Faill to alloc memory to buffer\n");
+	}
+
+	size_t read_size = fread(buffer, 1, file_size, fp);
+	if (read_size != file_size) {
+		free(buffer);
+		fclose(fp);
+		Assert(read_size == file_size, "Fail to read file\n");
+	}
+	fclose(fp); 
+	return buffer;
+}
+
 static int parse_args(int argc, char *argv[]) {
 	const struct option table[] = {
 		{"batch"    , no_argument      , NULL, 'b'},
 		{"log"      , required_argument, NULL, 'l'},
 		{"help"     , no_argument      , NULL, 'h'},
+		{"elf"      , required_argument, NULL, 'e'},
 		{0          , 0                , NULL,  0 },
 	};
 	int o;
-	while ( (o = getopt_long(argc, argv, "-bhl:", table, NULL)) != -1) {
+	while ( (o = getopt_long(argc, argv, "-bhl:e:", table, NULL)) != -1) {
 		switch (o) {
 			 case 'b': sdb_set_batch_mode(); break;
 			 case 'l': log_file = optarg; break;
+			 case 'e': elf_file = optarg; break;
 			 case 1: img_file = optarg; return 0;
 			 default:
 				 printf("Usage: %s [OPTION...] IMAGE [args]\n\n", argv[0]);
 				 printf("\t-b,--batch              run with batch mode\n");
 				 printf("\t-l,--log=FILE           output log to FILE\n");
+				 printf("\t-e,--elf=ELF_FILE       run ftrace with ELF_FILE\n");
 				 printf("\n");
 				 exit(0);
 		}
@@ -66,7 +99,11 @@ void init_monitor(int argc, char *argv[]) {
 	/* Initialize memory. */
 	init_mem();
 
-	/* Initialize memory. */
+	/* Initialize ftrace. */
+	unsigned char *buffer = load_elf();
+	init_ftrace(buffer);
+
+	/* Initialize verilator. */
 	init_cpu();
 
 	/* Load the image to memory. This will overwrite the built-in image. */
