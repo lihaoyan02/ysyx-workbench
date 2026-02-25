@@ -7,6 +7,11 @@ uint32_t mmio_read(int addr);
 void mmio_write(int addr, int data);
 
 extern "C" int pmem_read(int raddr) {
+	IFDEF(CONFIG_MTRACE,
+			if((unsigned)raddr >= CONFIG_MTRACE_START && (unsigned)raddr < CONFIG_MTRACE_END) {
+			printf("mtrace: R addr=0x%08x\n", raddr);
+			}
+	);
 	if(in_mem((uint32_t)raddr)) {
 		uint8_t* paddr = pmem + ((unsigned)raddr & ~0x3u) - MEM_BASE;
 		return *(uint32_t *)paddr;
@@ -26,6 +31,11 @@ extern "C" int pmem_read(int raddr) {
 }	
 
 extern "C" void pmem_write(int waddr, int wdata, char wmask) {
+	IFDEF(CONFIG_MTRACE,
+			if(waddr >= CONFIG_MTRACE_START && waddr < CONFIG_MTRACE_END) {
+			printf("mtrace: W addr=0x%08x, mask=0x%x data=0x%x\n", waddr, wmask, wdata);
+			}
+	);
 	if(in_mem((uint32_t)waddr)) {
 		uint8_t* paddr = pmem + (unsigned)waddr - MEM_BASE;
 		switch (wmask) {
