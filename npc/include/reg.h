@@ -4,6 +4,13 @@
 
 #include <common.h>
 
+typedef struct {
+	uint32_t gpr[16];
+	uint32_t pc;
+} CPU_state;
+
+extern CPU_state cpu;
+
 static inline int check_reg_idx(int idx) {
 	assert(idx >= 0 && idx < 16);
 	return idx;
@@ -17,5 +24,7 @@ static inline const char* reg_name(int idx) {
 void reg_display();
 
 uint32_t reg_str2val(const char *s, bool *success);
+
+void update_reg_state();
 
 #endif

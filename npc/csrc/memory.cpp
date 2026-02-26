@@ -87,3 +87,7 @@ long load_mem(const char *img){
 	//printf("0x1220 = %08x\n",pmem_read(0x1220,4)); 
 	return file_size;
 }
+
+uint8_t *memory_export(uint32_t addr) {
+	return pmem + addr - MEM_BASE;
+}
