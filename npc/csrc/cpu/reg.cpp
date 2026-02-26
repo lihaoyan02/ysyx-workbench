@@ -1,6 +1,8 @@
 #include <core.h>
 #include <reg.h>
 
+CPU_state cpu = {};
+
 const char *regs[] = {
 	"$0", "ra", "sp", "gp", "tp", "t0", "t1", "t2",
 	"s0", "s1", "a0", "a1", "a2", "a3", "a4", "a5"
@@ -28,3 +30,9 @@ uint32_t reg_str2val(const char *s, bool *success) {
 	return 0;
 }
 
+void update_reg_state() {
+	for(int i=0; i<16; i++) {
+		cpu.gpr[i] = core_read_reg(i);
+	}
+	cpu.pc = top->pc;
+}
