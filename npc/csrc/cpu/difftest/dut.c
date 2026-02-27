@@ -44,11 +44,15 @@ void init_difftest(char *ref_so_file, long img_size, int port) {
 static bool difftest_checkregs(CPU_state *ref_r, uint32_t pc) {
 	bool ret = true;
 	for( int i=0; i<16; i++) {
-		if(ref_r->gpr[i] != cpu.gpr[i])
+		if(ref_r->gpr[i] != cpu.gpr[i]) {
 			ret = false;
+			printf("reg is different\n");
+		}
 	}
-	if(ref_r->pc != pc)
+	if(ref_r->pc != pc) {
 		ret = false;
+		printf("pc is different\n");
+	}
 	return ret;
 }
 
