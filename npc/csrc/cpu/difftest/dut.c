@@ -67,12 +67,16 @@ static void checkregs(CPU_state *ref, uint32_t pc) {
 
 void difftest_step(uint32_t pc, uint32_t npc) {
 	CPU_state ref_r;
+	static bool n_ignore_first = false;
 
-	update_reg_state();
-	ref_difftest_exec(1);
-	ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
+	if (n_ignore_first) {
+		update_reg_state();
+		ref_difftest_exec(1);
+		ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
 
-	checkregs(&ref_r, npc);
+		checkregs(&ref_r, pc);
+	} else 
+		n_ignore_first = true;
 
 }
 #else
