@@ -46,7 +46,7 @@ static bool difftest_checkregs(CPU_state *ref_r, uint32_t pc) {
 	for( int i=0; i<16; i++) {
 		if(ref_r->gpr[i] != cpu.gpr[i]) {
 			ret = false;
-			printf("reg is different\n");
+			printf("reg %d is different\n",i);
 		}
 	}
 	if(ref_r->pc != pc) {
