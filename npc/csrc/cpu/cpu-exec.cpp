@@ -10,6 +10,7 @@ uint64_t g_nr_guest_inst = 0;
 static bool g_print_step = false;
 
 bool scan_wp_diff();
+void difftest_step(uint32_t pc, uint32_t npc);
 
 /*-------iringbuf----------*/
 #ifdef CONFIG_IRINGTRACE
@@ -49,6 +50,7 @@ static void trace_and_difftest(Decode *_this) {
 #endif
 
 	if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
+	IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, _this->dnpc));
 
 #ifdef CONFIG_IRINGTRACE
 	iringbuf_push(_this->logbuf);

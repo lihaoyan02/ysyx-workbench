@@ -18,7 +18,7 @@ integer i = 0;
 				rf[i] <= {DATA_WIDTH{1'b0}};
 			end
 		end 
-		else if(wen) 
+		else if(wen && waddr[3:0] != 4'b0) 
 			rf[waddr[3:0]] <= wdata;
 	end
 

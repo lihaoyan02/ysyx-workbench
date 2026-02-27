@@ -18,16 +18,16 @@ void init_difftest(char *ref_so_file, long img_size, int port) {
 	handle = dlopen(ref_so_file, RTLD_LAZY);
 	assert(handle);
 
-	ref_difftest_memcpy = dlsym(handle, "difftest_memcpy");
+	ref_difftest_memcpy = reinterpret_cast<void (*)(uint32_t, void*, size_t, bool)>(dlsym(handle, "difftest_memcpy"));
 	assert(ref_difftest_memcpy);
 
-	ref_difftest_regcpy = dlsym(handle, "difftest_regcpy");
+	ref_difftest_regcpy = reinterpret_cast<void (*)(void*, bool)>(dlsym(handle, "difftest_regcpy"));
 	assert(ref_difftest_regcpy);
 
-	ref_difftest_exec = dlsym(handle, "difftest_exec");
+	ref_difftest_exec = reinterpret_cast<void (*)(uint64_t)>(dlsym(handle, "difftest_exec"));
 	assert(ref_difftest_exec);
 
-	void (*ref_difftest_init)(int) = dlsym(handle, "difftest_init"); 
+	void (*ref_difftest_init)(int) = reinterpret_cast<void (*)(int)>(dlsym(handle, "difftest_init")); 
 	assert(ref_difftest_init);
 
 	Log("Differential testing: %s", ANSI_FMT("ON", ANSI_FG_GREEN));
@@ -37,36 +37,46 @@ void init_difftest(char *ref_so_file, long img_size, int port) {
 
 	ref_difftest_init(port);
 	ref_difftest_memcpy(MEM_BASE, memory_export(MEM_BASE), img_size, DIFFTEST_TO_REF);
+	update_reg_state();
 	ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
 }
 
 static bool difftest_checkregs(CPU_state *ref_r, uint32_t pc) {
 	bool ret = true;
 	for( int i=0; i<16; i++) {
-		if(ref_r->gpr[i] != cpu.gpr[i])
+		if(ref_r->gpr[i] != cpu.gpr[i]) {
 			ret = false;
+			printf("reg %d is different, ref=%x, dut=%x\n",i,ref_r->gpr[i],cpu.gpr[i]);
+		}
 	}
-	if(ref_r->pc != pc)
+	if(ref_r->pc != pc) {
 		ret = false;
+		printf("pc is different\n");
+	}
 	return ret;
 }
 
 static void checkregs(CPU_state *ref, uint32_t pc) {
-	if (!isa_difftest_checkregs(ref, pc)) {
+	if (!difftest_checkregs(ref, pc)) {
 		npc_state.state = NPC_ABORT;
 		npc_state.halt_pc = pc;
 		reg_display();
+		Log("difftest falil");
 	}
 }
 
 void difftest_step(uint32_t pc, uint32_t npc) {
 	CPU_state ref_r;
+	static bool n_ignore_first = false;
 
-	update_reg_state();
-	ref_difftest_exec(1);
-	ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
+	if (n_ignore_first) {
+		update_reg_state();
+		ref_difftest_exec(1);
+		ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
 
-	checkregs(&ref_r, npc);
+		checkregs(&ref_r, pc);
+	} else 
+		n_ignore_first = true;
 
 }
 #else
