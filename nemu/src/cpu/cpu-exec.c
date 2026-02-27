@@ -40,12 +40,14 @@ void device_update();
 bool scan_wp_diff();
 
 //iringbuf function
+#ifdef CONFIG_ITRACE_COND
 static void iringbuf_push(char *ibuf) {
 	if (++iring_ptr >= IRING_SIZE) {
 		iring_ptr = 0;	
 	}
 	memcpy(iringbuf[iring_ptr], ibuf, 128);
 }
+#endif
 void iringbuf_print() {
 	for(int i=0; i<IRING_SIZE; i++) {
 		if(iringbuf[i][0] != '\0') {

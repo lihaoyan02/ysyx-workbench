@@ -19,25 +19,17 @@
 #include <memory/paddr.h>
 
 __EXPORT void difftest_memcpy(paddr_t addr, void *buf, size_t n, bool direction) {
-	switch (direction) {
-		case DIFFTEST_TO_DUT: 
-			memcpy(buf, guest_to_host(addr), n);
-			break;
-		case DIFFTEST_TO_REF: 
+	if (direction)
 			memcpy(guest_to_host(addr), buf, n);
-			break;
-		default: assert(0);
+	else
+			memcpy(buf, guest_to_host(addr), n);
 }
 
 __EXPORT void difftest_regcpy(void *dut, bool direction) {
-	switch (direction) {
-		case DIFFTEST_TO_DUT:
-			memcpy(dut, &cpu, DIFFTEST_REG_SIZE);
-			break;
-		case DIFFTEST_TO_REF:
+	if (direction) 
 			memcpy(&cpu, dut, DIFFTEST_REG_SIZE);
-			break;
-		default: assert(0);
+	else
+			memcpy(dut, &cpu, DIFFTEST_REG_SIZE);
 }
 
 __EXPORT void difftest_exec(uint64_t n) {
