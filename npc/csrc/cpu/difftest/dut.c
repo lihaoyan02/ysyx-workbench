@@ -18,16 +18,16 @@ void init_difftest(char *ref_so_file, long img_size, int port) {
 	handle = dlopen(ref_so_file, RTLD_LAZY);
 	assert(handle);
 
-	ref_difftest_memcpy = dlsym(handle, "difftest_memcpy");
+	ref_difftest_memcpy = reinterpret_cast<void (*)(uint32_t, void*, size_t, bool)>(dlsym(handle, "difftest_memcpy"));
 	assert(ref_difftest_memcpy);
 
-	ref_difftest_regcpy = dlsym(handle, "difftest_regcpy");
+	ref_difftest_regcpy = reinterpret_cast<void (*)(void*, bool)>(dlsym(handle, "difftest_regcpy"));
 	assert(ref_difftest_regcpy);
 
-	ref_difftest_exec = dlsym(handle, "difftest_exec");
+	ref_difftest_exec = reinterpret_cast<void (*)(uint64_t)>(dlsym(handle, "difftest_exec"));
 	assert(ref_difftest_exec);
 
-	void (*ref_difftest_init)(int) = dlsym(handle, "difftest_init"); 
+	void (*ref_difftest_init)(int) = reinterpret_cast<void (*)(int)>(dlsym(handle, "difftest_init")); 
 	assert(ref_difftest_init);
 
 	Log("Differential testing: %s", ANSI_FMT("ON", ANSI_FG_GREEN));
@@ -52,7 +52,7 @@ static bool difftest_checkregs(CPU_state *ref_r, uint32_t pc) {
 }
 
 static void checkregs(CPU_state *ref, uint32_t pc) {
-	if (!isa_difftest_checkregs(ref, pc)) {
+	if (!difftest_checkregs(ref, pc)) {
 		npc_state.state = NPC_ABORT;
 		npc_state.halt_pc = pc;
 		reg_display();
