@@ -31,6 +31,7 @@ CSRCS = $(filter-out $(SRCS-BLACKLIST-y),$(CSRCS-y))
 INCFLAGS = $(addprefix -I, $(INC_PATH))
 CXXFLAGS += $(INCFLAGS)
 CXXFLAGS += $(if $(CONFIG_CC_DEBUG),-g,)
+CXXFLAGS += $(if $(CONFIG_CC_ASAN),-fsanitize=address,)
 
 # Some convenient rules 
 include $(NPC_HOME)/scripts/difftest.mk
