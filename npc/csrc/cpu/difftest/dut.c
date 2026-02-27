@@ -57,6 +57,7 @@ static void checkregs(CPU_state *ref, uint32_t pc) {
 		npc_state.state = NPC_ABORT;
 		npc_state.halt_pc = pc;
 		reg_display();
+		Log("difftest falil");
 	}
 }
 
