@@ -34,6 +34,8 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 
 	assign lsu_ctrl = funct3;
 
+	import "DPI-C" function void unknow_inst(); 
+
 		always @(*) begin
 			// default value
 			alu_ctrl = ALU_IDLE;
@@ -56,7 +58,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 					wb_ctrl = WB_ALU;
 				end
 				else
-					$finish;
+					unknow_inst(); 
 			end
 			7'b1100111: begin //jalr
 				if (funct3 == 3'b000) begin
@@ -68,7 +70,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 					j_pc = 1;
 				end
 				else
-					$finish;
+					unknow_inst(); 
 			end
 			7'b0110111: begin //lui
 				imm = imm_U;
@@ -83,7 +85,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 					wb_ctrl = WB_ALU;
 				end
 				else
-					$finish;
+					unknow_inst(); 
 			end
 			7'b0000011: begin //lw
 				case (funct3)
@@ -96,7 +98,8 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 						wb_en = 1'b1;
 						wb_ctrl = WB_MEM;
 					end
-					default: $finish;
+				default:
+					unknow_inst(); 
 				endcase
 			end
 			7'b0100011: begin //sb sw
@@ -109,7 +112,8 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 						lsu_wen = 1'b1;
 						wb_en = 1'b0;
 					end
-					default: $finish;
+				default:
+					unknow_inst(); 
 				endcase
 			end
 			7'b1110011: begin //ebreak
@@ -118,9 +122,10 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 					ebreak_flag = 1;
 				end
 				else
-					$finish;
+					unknow_inst(); 
 			end
-			default: ;
+			default:
+					unknow_inst(); 
 		endcase
 	end
 
