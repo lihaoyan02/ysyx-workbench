@@ -32,7 +32,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 	assign imm_I = {{20{inst_fetch[31]}}, inst_fetch[31:20]};
 	assign imm_U = {inst_fetch[31:12], 12'b0};
 	assign imm_S = {{20{inst_fetch[31]}}, inst_fetch[31:25], inst_fetch[11:7]};
-	assign imm_J = {{12{inst_fetch[31]}}, inst_fetch[19:12], inst_fetch[11], inst_fetch[30:21], 1'b0};
+	assign imm_J = {{12{inst_fetch[31]}}, inst_fetch[19:12], inst_fetch[20], inst_fetch[30:21], 1'b0};
 
 	assign lsu_ctrl = funct3;
 
