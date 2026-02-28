@@ -25,12 +25,14 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 	wire [31:0] imm_I;
 	wire [31:0] imm_U;
 	wire [31:0] imm_S;
+	wire [31:0] imm_J;
 	assign opcode = inst_fetch[6:0];
 	assign funct3 = inst_fetch[14:12];
 	assign funct7 = inst_fetch[31:25];
 	assign imm_I = {{20{inst_fetch[31]}}, inst_fetch[31:20]};
 	assign imm_U = {inst_fetch[31:12], 12'b0};
 	assign imm_S = {{20{inst_fetch[31]}}, inst_fetch[31:25], inst_fetch[11:7]};
+	assign imm_J = {{12{inst_fetch[31]}}, inst_fetch[19:12], 12'b0};
 
 	assign lsu_ctrl = funct3;
 
@@ -43,13 +45,13 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 			imm = 32'b0;
 			wb_en = 0; // if wb
 			wb_ctrl = WB_IDLE; //from where to wb
-			j_pc = 1'b0;
+			j_pc = 1'b0; // if jump
 			lsu_en = 1'b0;
 			lsu_wen = 1'b0;
 			ebreak_flag = 1'b0;
 
 			case (opcode)
-			7'b0010111: begin
+			7'b0010111: begin //auipc
 				alu_ctrl = ALU_ADD_PC;
 				imm_sel = 1'b1;
 				imm = imm_U;
@@ -67,6 +69,14 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 				end
 				else
 					unknow_inst(); 
+			end
+			7'b1101111: begin //jal
+				alu_ctrl = ALU_ADD_PC;
+				imm_sel = 1'b1;
+				imm = imm_J;
+				wb_en = 1;
+				wb_ctrl = WB_PC;
+				j_pc = 1;
 			end
 			7'b1100111: begin //jalr
 				if (funct3 == 3'b000) begin
