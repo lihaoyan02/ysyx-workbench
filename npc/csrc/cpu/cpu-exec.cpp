@@ -173,7 +173,5 @@ void cpu_exec(uint64_t n) {
 }
 
 extern "C" void unknow_inst() {
-	npc_state.state = NPC_ABORT;
-	npc_state.halt_pc = top->pc;
-	panic("Unknown instruction at pc=0x%08x",top->pc);
+	Assert(npc_state.state == NPC_RUNNING,"Unknown instruction at pc=0x%08x",top->pc);
 }
