@@ -30,7 +30,7 @@ uint32_t mmio_read(int addr) {
 		rtc_port_update();
 		return rtc_port[1];
 	}else {
-		panic("illegal access for pmem\n");
+		panic("illegal access for pmem, 0x%08x\n",addr);
 		assert(0);
 	}
 }

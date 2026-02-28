@@ -64,6 +64,7 @@ wire [DATA_WIDTH-1:0] srcval2;
 
 	EXU u_EXU (
 		.imm_sel(imm_sel),
+		.pc(pc),
 		.alu_ctrl(alu_ctrl),
 		.srcval1(srcval1),
 		.srcval2(srcval2),

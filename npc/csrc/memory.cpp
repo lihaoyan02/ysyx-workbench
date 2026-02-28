@@ -26,7 +26,7 @@ extern "C" int pmem_read(int raddr) {
 		*/
 	} else {
 		IFDEF(CONFIG_DEVICE, return mmio_read(raddr));
-		panic("illegal access for pmem\n");
+		panic("illegal access for pmem 0x%08x\n",raddr);
 	}
 }	
 

@@ -51,7 +51,7 @@ static bool difftest_checkregs(CPU_state *ref_r, uint32_t pc) {
 	}
 	if(ref_r->pc != pc) {
 		ret = false;
-		printf("pc is different\n");
+		printf("pc is different, ref=0x%08x, dut=0x%08x\n",ref_r->pc, pc);
 	}
 	return ret;
 }
@@ -60,7 +60,6 @@ static void checkregs(CPU_state *ref, uint32_t pc) {
 	if (!difftest_checkregs(ref, pc)) {
 		npc_state.state = NPC_ABORT;
 		npc_state.halt_pc = pc;
-		reg_display();
 		Log("difftest falil");
 	}
 }

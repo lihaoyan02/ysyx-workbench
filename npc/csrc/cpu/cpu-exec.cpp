@@ -143,9 +143,9 @@ static void statistic() {
 }
 
 void assert_fail_msg() {
-	reg_display();
 	IFDEF(CONFIG_FTRACE, ftrace_print(); free_fp());
 	IFDEF(CONFIG_IRINGTRACE, iringbuf_print()); 
+	reg_display();
 	statistic();
 }
 
@@ -162,12 +162,19 @@ void cpu_exec(uint64_t n) {
 
 	switch (npc_state.state) {
 		case NPC_RUNNING: npc_state.state = NPC_STOP; break;
-
-		case NPC_END: case NPC_ABORT:
+		case NPC_ABORT:
+		IFDEF(CONFIG_FTRACE, ftrace_print(); free_fp());
+		IFDEF(CONFIG_IRINGTRACE, iringbuf_print()); 
+		reg_display();
+		case NPC_END:
 			Log("npc: %s at pc = 0x%08x", (npc_state.halt_ret==0 ? ANSI_FMT("HIT GOOD TRAP", ANSI_FG_GREEN) :
 					ANSI_FMT("HIT BAD TRAP", ANSI_FG_RED)),
 					npc_state.halt_pc);
 		case NPC_QUIT: statistic();
 	IFDEF(CONFIG_FTRACE, free_fp());
 	}
+}
+
+extern "C" void unknow_inst() {
+	Assert(npc_state.state != NPC_RUNNING,"Unknown instruction at pc=0x%08x",top->pc);
 }
