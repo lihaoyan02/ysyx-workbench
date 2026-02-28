@@ -7,7 +7,8 @@ module EXU #(DATA_WIDTH = 32) (
 	input [DATA_WIDTH-1:0] immval,
 	output reg [DATA_WIDTH-1:0] alu_out
 );
-localparam ALU_IDEL = 3'b000, ALU_ADD = 3'b001, ALU_ADD_PC = 3'b010;
+localparam ALU_IDEL = 3'b000, ALU_ADD = 3'b001, ALU_ADD_PC = 3'b010,
+	ALU_SUB = 3'b011;
 wire [DATA_WIDTH-1:0] op1;
 wire [DATA_WIDTH-1:0] op2;
 assign op1 = srcval1;
@@ -17,6 +18,7 @@ always @(*) begin
 	case (alu_ctrl)
 		ALU_IDEL: alu_out = {DATA_WIDTH{1'b0}};
 		ALU_ADD: alu_out = op1 + op2;
+		ALU_SUB: alu_out = op1 - op2;
 		ALU_ADD_PC: alu_out = pc + op2;
 		default: alu_out = {DATA_WIDTH{1'b0}};
 	endcase

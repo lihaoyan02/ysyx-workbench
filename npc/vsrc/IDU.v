@@ -14,7 +14,8 @@ module IDU #(INST_WIDTH = 32, REGADDR_WIDTH = 5, DATA_WIDTH = 32) (
 	output reg ebreak_flag,
 	output reg j_pc
 );
-localparam ALU_IDLE = 3'b000, ALU_ADD = 3'b001, ALU_ADD_PC = 3'b010;
+localparam ALU_IDLE = 3'b000, ALU_ADD = 3'b001, ALU_ADD_PC = 3'b010,
+	ALU_SUB = 3'b011;
 localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010, 
 	WB_IMM = 3'b011, WB_MEM = 3'b100;
 
@@ -99,6 +100,12 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 				if(funct3==3'b0 && funct7 == 7'b0) begin
 					alu_ctrl = ALU_ADD;
 					imm_sel = 1'b0;
+					wb_en = 1'b1;
+					wb_ctrl = WB_ALU;
+				end
+				else if(funct3==3'b0 && funct7 == 7'b0100000) begin
+					alu_ctrl = ALU_SUB;
+					imm_sel = 1'b0; 
 					wb_en = 1'b1;
 					wb_ctrl = WB_ALU;
 				end
