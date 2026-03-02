@@ -68,6 +68,20 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 					wb_en = 1'b1;
 					wb_ctrl = WB_ALU;
 				end
+				else if (funct3==3'b011) begin //sltiu
+					alu_ctrl = ALU_LESS_U;
+					imm_sel = 1'b1;
+					imm = imm_I;
+					wb_en = 1'b1;
+					wb_ctrl = WB_ALU;
+				end
+				else if (funct3==3'b010) begin //slti
+					alu_ctrl = ALU_LESS;
+					imm_sel = 1'b1;
+					imm = imm_I;
+					wb_en = 1'b1;
+					wb_ctrl = WB_ALU;
+				end
 				else
 					unknow_inst(); 
 			end
@@ -109,7 +123,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 					wb_en = 1'b1;
 					wb_ctrl = WB_ALU;
 				end
-				else if(funct3==3'b011 && funct7 == 7'b0000000) begin
+				else if(funct3==3'b011 && funct7 == 7'b0000000) begin //sltu
 					alu_ctrl = ALU_LESS_U;
 					imm_sel = 1'b0;
 					wb_en = 1'b1;
