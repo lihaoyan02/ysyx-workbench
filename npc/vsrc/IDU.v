@@ -29,6 +29,7 @@ localparam J_UNCOND = 2'b00, J_BEQ = 2'b01, J_BNE = 2'b10;
 	wire [31:0] imm_U;
 	wire [31:0] imm_S;
 	wire [31:0] imm_J;
+	wire [31:0] imm_B;
 	assign opcode = inst_fetch[6:0];
 	assign funct3 = inst_fetch[14:12];
 	assign funct7 = inst_fetch[31:25];
@@ -36,6 +37,7 @@ localparam J_UNCOND = 2'b00, J_BEQ = 2'b01, J_BNE = 2'b10;
 	assign imm_U = {inst_fetch[31:12], 12'b0};
 	assign imm_S = {{20{inst_fetch[31]}}, inst_fetch[31:25], inst_fetch[11:7]};
 	assign imm_J = {{12{inst_fetch[31]}}, inst_fetch[19:12], inst_fetch[20], inst_fetch[30:21], 1'b0};
+	assign imm_B = {{20{inst_fetch[31]}}, inst_fetch[7], inst_fetch[30:25], inst_fetch[11:8], 1'b0};
 
 	assign lsu_ctrl = funct3;
 
@@ -100,10 +102,19 @@ localparam J_UNCOND = 2'b00, J_BEQ = 2'b01, J_BNE = 2'b10;
 				if (funct3 == 3'b000) begin
 					alu_ctrl = ALU_ADD_PC;
 					imm_sel = 1'b1;
+					imm = imm_B;
 					wb_en = 1'b0;
 					j_en = 1'b1;
 					j_cond = J_BEQ;
 				end	
+				else if (funct3 == 3'b001) begin
+					alu_ctrl = ALU_ADD_PC;
+					imm_sel = 1'b1;
+					imm = imm_B;
+					wb_en = 1'b0;
+					j_en = 1'b1;
+					j_cond = J_BNE;
+				end
 				else
 					unknow_inst(); 
 			end
