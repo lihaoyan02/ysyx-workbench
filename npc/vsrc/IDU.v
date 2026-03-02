@@ -12,12 +12,14 @@ module IDU #(INST_WIDTH = 32, REGADDR_WIDTH = 5, DATA_WIDTH = 32) (
 	output reg lsu_wen,
 	output [2:0] lsu_ctrl,
 	output reg ebreak_flag,
-	output reg j_pc
+	output reg j_en,
+	output [1:0] j_cond
 );
 localparam ALU_IDLE = 3'b000, ALU_ADD = 3'b001, ALU_ADD_PC = 3'b010,
 	ALU_SUB = 3'b011, ALU_LESS_U = 3'b100, ALU_LESS = 3'b101;
 localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010, 
 	WB_IMM = 3'b011, WB_MEM = 3'b100;
+localparam J_UNCOND = 2'b00, J_BEQ = 2'b01, J_BNE = 2'b10; 
 
 
 	wire [6:0] opcode;
@@ -46,7 +48,8 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 			imm = 32'b0;
 			wb_en = 0; // if wb
 			wb_ctrl = WB_IDLE; //from where to wb
-			j_pc = 1'b0; // if jump
+			j_en = 1'b0; // if jump
+			j_cond = J_UNCOND; // if conditional jump
 			lsu_en = 1'b0;
 			lsu_wen = 1'b0;
 			ebreak_flag = 1'b0;
@@ -89,9 +92,18 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 				alu_ctrl = ALU_ADD_PC;
 				imm_sel = 1'b1;
 				imm = imm_J;
-				wb_en = 1;
+				wb_en = 1'b1;
 				wb_ctrl = WB_PC;
-				j_pc = 1;
+				j_en = 1'b1;
+			end
+			7'b1100011: begin //beq
+				if (funct3 == 3'b000) begin
+					alu_ctrl = ALU_ADD_PC;
+					imm_sel = 1'b1;
+					wb_en = 1'b0;
+					j_en = 1'b1;
+					j_cond = J_BEQ;
+				end	
 			end
 			7'b1100111: begin //jalr
 				if (funct3 == 3'b000) begin
@@ -100,7 +112,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 					imm = imm_I;
 					wb_en = 1;
 					wb_ctrl = WB_PC;
-					j_pc = 1;
+					j_en = 1'b1;
 				end
 				else
 					unknow_inst(); 
