@@ -11,10 +11,6 @@ module EXU #(DATA_WIDTH = 32) (
 	output reg [DATA_WIDTH-1:0] alu_out,
 	output j_pc
 );
-/*localparam ALU_IDEL = 3'b000, ALU_ADD = 3'b001, ALU_ADD_PC = 3'b010,
-	ALU_SUB = 3'b011, ALU_LESS_U = 3'b100, ALU_LESS = 3'b101, 
-	ALU_SHIFT_LEFT=3'b110;
-*/
 localparam J_UNCOND = 2'b00, J_BEQ = 2'b01, J_BNE = 2'b10;
 wire [DATA_WIDTH-1:0] op1;
 wire [DATA_WIDTH-1:0] op2;
