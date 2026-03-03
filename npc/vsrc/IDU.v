@@ -107,7 +107,7 @@ localparam J_UNCOND = 2'b00, J_BEQ = 2'b01, J_BNE = 2'b10;
 					j_en = 1'b1;
 					j_cond = J_BEQ;
 				end	
-				else if (funct3 == 3'b001) begin
+				else if (funct3 == 3'b001) begin //bne
 					alu_ctrl = ALU_ADD_PC;
 					imm_sel = 1'b1;
 					imm = imm_B;
