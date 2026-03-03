@@ -2,7 +2,7 @@
 module EXU #(DATA_WIDTH = 32) (
 	input imm_sel,
 	input j_en,
-	input [1:0] j_cond,
+	input [2:0] j_cond,
 	input [DATA_WIDTH-1:0] pc,
 	input [3:0] alu_ctrl,
 	input [DATA_WIDTH-1:0] srcval1,
@@ -11,7 +11,6 @@ module EXU #(DATA_WIDTH = 32) (
 	output reg [DATA_WIDTH-1:0] alu_out,
 	output j_pc
 );
-localparam J_UNCOND = 2'b00, J_BEQ = 2'b01, J_BNE = 2'b10;
 wire [DATA_WIDTH-1:0] op1;
 wire [DATA_WIDTH-1:0] op2;
 assign op1 = srcval1;
@@ -39,9 +38,11 @@ end
 always @(*) begin
 	if (j_en) begin
 		case (j_cond)
-			J_UNCOND: j_pc = 1'b1;
-			J_BEQ: j_pc = (srcval1 == srcval2);
-			J_BNE: j_pc = (srcval1 != srcval2);
+			`J_UNCOND: j_pc = 1'b1;
+			`J_BEQ: j_pc = (srcval1 == srcval2);
+			`J_BNE: j_pc = (srcval1 != srcval2);
+			`J_BGE: j_pc = (srcval1[DATA_WIDTH-1] == srcval2[DATA_WIDTH-1]) ?
+			 	~{srcval1-srcval2}[DATA_WIDTH-1] : srcval2[DATA_WIDTH-1];
 			default: j_pc = 1'b0;
 		endcase
 	end

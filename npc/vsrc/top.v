@@ -18,7 +18,7 @@ wire [4:0] rs2;
 wire [3:0] alu_ctrl;
 wire [2:0] wb_ctrl;
 wire [2:0] lsu_ctrl;
-wire [1:0] j_cond;
+wire [2:0] j_cond;
 
 wire [DATA_WIDTH-1:0] wb_data;
 wire [DATA_WIDTH-1:0] srcval1;

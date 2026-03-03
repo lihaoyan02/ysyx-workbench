@@ -15,5 +15,10 @@
 `define ALU_SHIFT_RIGHT 4'b1011
 `define ALU_XXXXXX 4'b1100
 
+`define J_UNCOND 3'b000
+`define J_BEQ 3'b001
+`define J_BNE 3'b010
+`define J_BGE 3'b011
+`define J_BGE_U 3'b100
 
 `endif
