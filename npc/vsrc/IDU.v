@@ -1,10 +1,11 @@
+`include "alu_opcodes.v"
 module IDU #(INST_WIDTH = 32, REGADDR_WIDTH = 5, DATA_WIDTH = 32) (
 	input [INST_WIDTH-1:0] inst_fetch,
 	output reg [DATA_WIDTH-1:0] imm,
 	output [REGADDR_WIDTH-1:0] rd,
 	output [REGADDR_WIDTH-1:0] rs1, 	
 	output [REGADDR_WIDTH-1:0] rs2,
-	output reg [2:0] alu_ctrl,
+	output reg [3:0] alu_ctrl,
 	output reg imm_sel,  //choose imm in ALU
 	output reg [2:0] wb_ctrl,
 	output reg wb_en, //enable write back
@@ -15,9 +16,10 @@ module IDU #(INST_WIDTH = 32, REGADDR_WIDTH = 5, DATA_WIDTH = 32) (
 	output reg j_en,
 	output [1:0] j_cond
 );
-localparam ALU_IDLE = 3'b000, ALU_ADD = 3'b001, ALU_ADD_PC = 3'b010,
-	ALU_SUB = 3'b011, ALU_LESS_U = 3'b100, ALU_LESS = 3'b101, 
-	ALU_SHIFT_LEFT=3'b110;
+/*localparam `ALU_IDLE = 3'b000, ALU_ADD = 3'b001, ALU_ADD_PC = 3'b010,
+	`ALU_SUB = 3'b011, ALU_LESS_U = 3'b100, ALU_LESS = 3'b101, 
+	`ALU_SHIFT_LEFT=3'b110, ALU_AND=3'b111;
+*/
 localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010, 
 	WB_IMM = 3'b011, WB_MEM = 3'b100;
 localparam J_UNCOND = 2'b00, J_BEQ = 2'b01, J_BNE = 2'b10; 
@@ -46,7 +48,7 @@ localparam J_UNCOND = 2'b00, J_BEQ = 2'b01, J_BNE = 2'b10;
 
 		always @(*) begin
 			// default value
-			alu_ctrl = ALU_IDLE;
+			alu_ctrl = `ALU_IDLE;
 			imm_sel = 1'b0; // if choose imm
 			imm = 32'b0;
 			wb_en = 0; // if wb
@@ -59,7 +61,7 @@ localparam J_UNCOND = 2'b00, J_BEQ = 2'b01, J_BNE = 2'b10;
 
 			case (opcode)
 			7'b0010111: begin //auipc
-				alu_ctrl = ALU_ADD_PC;
+				alu_ctrl = `ALU_ADD_PC;
 				imm_sel = 1'b1;
 				imm = imm_U;
 				wb_en = 1;
@@ -72,22 +74,25 @@ localparam J_UNCOND = 2'b00, J_BEQ = 2'b01, J_BNE = 2'b10;
 				wb_en = 1'b1;
 				wb_ctrl = WB_ALU;
 				if (funct3 == 3'b000) begin
-					alu_ctrl = ALU_ADD;
+					alu_ctrl = `ALU_ADD;
 				end
 				else if (funct3==3'b011) begin //sltiu
-					alu_ctrl = ALU_LESS_U;
+					alu_ctrl = `ALU_LESS_U;
 				end
 				else if (funct3==3'b010) begin //slti
-					alu_ctrl = ALU_LESS;
+					alu_ctrl = `ALU_LESS;
+				end
+				else if (funct3==3'b010) begin //slti
+					alu_ctrl = `ALU_AND;
 				end
 				else if (funct3==3'b001 && funct7==7'b0000000) begin //slli
-					alu_ctrl = ALU_SHIFT_LEFT;
+					alu_ctrl = `ALU_SHIFT_LEFT;
 				end
 				else
 					unknow_inst(); 
 			end
 			7'b1101111: begin //jal
-				alu_ctrl = ALU_ADD_PC;
+				alu_ctrl = `ALU_ADD_PC;
 				imm_sel = 1'b1;
 				imm = imm_J;
 				wb_en = 1'b1;
@@ -96,7 +101,7 @@ localparam J_UNCOND = 2'b00, J_BEQ = 2'b01, J_BNE = 2'b10;
 			end
 			7'b1100011: begin //beq
 				if (funct3 == 3'b000) begin
-					alu_ctrl = ALU_ADD_PC;
+					alu_ctrl = `ALU_ADD_PC;
 					imm_sel = 1'b1;
 					imm = imm_B;
 					wb_en = 1'b0;
@@ -104,7 +109,7 @@ localparam J_UNCOND = 2'b00, J_BEQ = 2'b01, J_BNE = 2'b10;
 					j_cond = J_BEQ;
 				end	
 				else if (funct3 == 3'b001) begin //bne
-					alu_ctrl = ALU_ADD_PC;
+					alu_ctrl = `ALU_ADD_PC;
 					imm_sel = 1'b1;
 					imm = imm_B;
 					wb_en = 1'b0;
@@ -116,7 +121,7 @@ localparam J_UNCOND = 2'b00, J_BEQ = 2'b01, J_BNE = 2'b10;
 			end
 			7'b1100111: begin //jalr
 				if (funct3 == 3'b000) begin
-					alu_ctrl = ALU_ADD;
+					alu_ctrl = `ALU_ADD;
 					imm_sel = 1'b1;
 					imm = imm_I;
 					wb_en = 1;
@@ -133,19 +138,19 @@ localparam J_UNCOND = 2'b00, J_BEQ = 2'b01, J_BNE = 2'b10;
 			end
 			7'b0110011: begin //add
 				if(funct3==3'b0 && funct7 == 7'b0) begin
-					alu_ctrl = ALU_ADD;
+					alu_ctrl = `ALU_ADD;
 					imm_sel = 1'b0;
 					wb_en = 1'b1;
 					wb_ctrl = WB_ALU;
 				end
 				else if(funct3==3'b0 && funct7 == 7'b0100000) begin //sub
-					alu_ctrl = ALU_SUB;
+					alu_ctrl = `ALU_SUB;
 					imm_sel = 1'b0; 
 					wb_en = 1'b1;
 					wb_ctrl = WB_ALU;
 				end
 				else if(funct3==3'b011 && funct7 == 7'b0000000) begin //sltu
-					alu_ctrl = ALU_LESS_U;
+					alu_ctrl = `ALU_LESS_U;
 					imm_sel = 1'b0;
 					wb_en = 1'b1;
 					wb_ctrl = WB_ALU;
@@ -156,7 +161,7 @@ localparam J_UNCOND = 2'b00, J_BEQ = 2'b01, J_BNE = 2'b10;
 			7'b0000011: begin //lw
 				case (funct3)
 					3'b010,3'b100: begin
-						alu_ctrl = ALU_ADD;
+						alu_ctrl = `ALU_ADD;
 						imm_sel = 1'b1;
 						imm = imm_I;
 						lsu_en = 1'b1;
@@ -171,7 +176,7 @@ localparam J_UNCOND = 2'b00, J_BEQ = 2'b01, J_BNE = 2'b10;
 			7'b0100011: begin //sb sw
 				case (funct3)
 					3'b000, 3'b010: begin
-						alu_ctrl = ALU_ADD;
+						alu_ctrl = `ALU_ADD;
 						imm_sel = 1'b1;
 						imm = imm_S;
 						lsu_en = 1'b1;
