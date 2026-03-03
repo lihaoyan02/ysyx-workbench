@@ -19,6 +19,7 @@ always @(posedge clk) begin
 			case (lsu_ctrl)
 				3'b010: pmem_write(waddr, wdata, 8'b1111); //sw
 				3'b000: pmem_write(waddr, wdata, 8'b1); //sb
+				3'b001: pmem_write(waddr, wdata, 8'b11); //sj
 				default: $finish;
 			endcase
 		end

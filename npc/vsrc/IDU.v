@@ -178,9 +178,9 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 					unknow_inst(); 
 				endcase
 			end
-			7'b0100011: begin //sb sw
+			7'b0100011: begin //sb sw sj
 				case (funct3)
-					3'b000, 3'b010: begin
+					3'b000, 3'b010, 3'b001: begin
 						alu_ctrl = `ALU_ADD;
 						imm_sel = 1'b1;
 						imm = imm_S;
