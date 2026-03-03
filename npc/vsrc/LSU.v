@@ -38,6 +38,10 @@ always @(*) begin
 												raddr[1:0]==2'b01 ? {24'b0, rdata_word[15:8]} :
 												raddr[1:0]==2'b10 ? {24'b0, rdata_word[23:16]} :
 												raddr[1:0]==2'b11 ? {24'b0, rdata_word[31:24]} : 32'b0; //lbu 
+				3'b000: rdata = raddr[1:0]==2'b00 ? {{24{rdata_word[7]}}, rdata_word[7:0]} :
+												raddr[1:0]==2'b01 ? {{24{rdata_word[15]}}, rdata_word[15:8]} :
+												raddr[1:0]==2'b10 ? {{24{rdata_word[23]}}, rdata_word[23:16]} :
+												raddr[1:0]==2'b11 ? {{24{rdata_word[31]}}, rdata_word[31:24]} : 32'b0; //lb 
 				default: $finish;
 			endcase
 		end
