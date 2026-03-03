@@ -112,6 +112,9 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 				else if (funct3 == 3'b101) begin //bge
 					j_cond = `J_BGE;
 				end
+				else if (funct3 == 3'b110) begin //bge
+					j_cond = `J_BLT_U;
+				end
 				else
 					unknow_inst(); 
 			end
