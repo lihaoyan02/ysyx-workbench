@@ -77,7 +77,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 				else if (funct3==3'b010) begin //slti
 					alu_ctrl = `ALU_LESS;
 				end
-				else if (funct3==3'b111) begin //and
+				else if (funct3==3'b111) begin //andi
 					alu_ctrl = `ALU_AND;
 				end
 				else if (funct3==3'b101 && funct7==7'b0000000) begin //srli
@@ -159,6 +159,9 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 				end
 				else if(funct3==3'b110 && funct7 == 7'b0000000) begin //or
 					alu_ctrl = `ALU_OR;
+				end
+				else if(funct3==3'b110 && funct7 == 7'b0000000) begin //or
+					alu_ctrl = `ALU_AND;
 				end
 				else if(funct3==3'b011 && funct7 == 7'b0000000) begin //sltu
 					alu_ctrl = `ALU_LESS_U;
