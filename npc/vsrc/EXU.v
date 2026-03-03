@@ -43,6 +43,7 @@ always @(*) begin
 			`J_BNE: j_pc = (srcval1 != srcval2);
 			`J_BGE: j_pc = (srcval1[DATA_WIDTH-1] == srcval2[DATA_WIDTH-1]) ?
 			 	~{srcval1-srcval2}[DATA_WIDTH-1] : srcval2[DATA_WIDTH-1];
+			`J_BGE_U: j_pc = srcval1 >= srcval2; 
 			`J_BLT_U: j_pc = srcval1 < srcval2; 
 			`J_BLT: j_pc = (srcval1[DATA_WIDTH-1] == srcval2[DATA_WIDTH-1]) ?
 			 	{srcval1-srcval2}[DATA_WIDTH-1] : srcval1[DATA_WIDTH-1];
