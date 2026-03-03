@@ -66,26 +66,21 @@ localparam J_UNCOND = 2'b00, J_BEQ = 2'b01, J_BNE = 2'b10;
 			end
 
 			7'b0010011: begin //addi
+				imm_sel = 1'b1;
+				imm = imm_I;
+				wb_en = 1'b1;
+				wb_ctrl = WB_ALU;
 				if (funct3 == 3'b000) begin
 					alu_ctrl = ALU_ADD;
-					imm_sel = 1'b1;
-					imm = imm_I;
-					wb_en = 1'b1;
-					wb_ctrl = WB_ALU;
 				end
 				else if (funct3==3'b011) begin //sltiu
 					alu_ctrl = ALU_LESS_U;
-					imm_sel = 1'b1;
-					imm = imm_I;
-					wb_en = 1'b1;
-					wb_ctrl = WB_ALU;
 				end
 				else if (funct3==3'b010) begin //slti
 					alu_ctrl = ALU_LESS;
-					imm_sel = 1'b1;
-					imm = imm_I;
-					wb_en = 1'b1;
-					wb_ctrl = WB_ALU;
+				end
+				else if (funct3==3'b001 && funct7==7'b0000000) begin //slli
+					alu_ctrl = ALU_LESS_U;
 				end
 				else
 					unknow_inst(); 
