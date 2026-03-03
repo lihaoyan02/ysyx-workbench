@@ -21,5 +21,6 @@
 `define J_BGE 3'b011
 `define J_BGE_U 3'b100
 `define J_BLT_U 3'b101
+`define J_BLT 3'b110
 
 `endif
