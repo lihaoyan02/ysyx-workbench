@@ -163,7 +163,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 				else if(funct3==3'b011 && funct7 == 7'b0000000) begin //sltu
 					alu_ctrl = `ALU_LESS_U;
 				end
-				else if(funct3==3'b011 && funct7 == 7'b0000000) begin //sll
+				else if(funct3==3'b001 && funct7 == 7'b0000000) begin //sll
 					alu_ctrl = `ALU_SHIFT_LEFT;
 				end
 				else
