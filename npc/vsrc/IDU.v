@@ -145,8 +145,11 @@ localparam J_UNCOND = 2'b00, J_BEQ = 2'b01, J_BNE = 2'b10;
 				else if(funct3==3'b000 && funct7 == 7'b0100000) begin //sub
 					alu_ctrl = `ALU_SUB;
 				end
-				else if(funct3==3'b100 && funct7 == 7'b0000000) begin //sub
+				else if(funct3==3'b100 && funct7 == 7'b0000000) begin //XOR
 					alu_ctrl = `ALU_XOR;
+				end
+				else if(funct3==3'b110 && funct7 == 7'b0000000) begin //or
+					alu_ctrl = `ALU_OR;
 				end
 				else if(funct3==3'b011 && funct7 == 7'b0000000) begin //sltu
 					alu_ctrl = `ALU_LESS_U;

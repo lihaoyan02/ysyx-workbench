@@ -31,6 +31,7 @@ always @(*) begin
 		`ALU_SHIFT_RIGHT_U: alu_out = op1 >> op2[4:0];
 		`ALU_AND: alu_out = op1 & op2;
 		`ALU_XOR: alu_out = op1 ^ op2;
+		`ALU_OR: alu_out = op1 | op2;
 		default: alu_out = {DATA_WIDTH{1'b0}};
 	endcase
 end
