@@ -16,10 +16,6 @@ module IDU #(INST_WIDTH = 32, REGADDR_WIDTH = 5, DATA_WIDTH = 32) (
 	output reg j_en,
 	output [1:0] j_cond
 );
-/*localparam `ALU_IDLE = 3'b000, ALU_ADD = 3'b001, ALU_ADD_PC = 3'b010,
-	`ALU_SUB = 3'b011, ALU_LESS_U = 3'b100, ALU_LESS = 3'b101, 
-	`ALU_SHIFT_LEFT=3'b110, ALU_AND=3'b111;
-*/
 localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010, 
 	WB_IMM = 3'b011, WB_MEM = 3'b100;
 localparam J_UNCOND = 2'b00, J_BEQ = 2'b01, J_BNE = 2'b10; 
@@ -73,7 +69,7 @@ localparam J_UNCOND = 2'b00, J_BEQ = 2'b01, J_BNE = 2'b10;
 				imm = imm_I;
 				wb_en = 1'b1;
 				wb_ctrl = WB_ALU;
-				if (funct3 == 3'b000) begin
+				if (funct3 == 3'b000) begin //add
 					alu_ctrl = `ALU_ADD;
 				end
 				else if (funct3==3'b011) begin //sltiu
@@ -82,7 +78,7 @@ localparam J_UNCOND = 2'b00, J_BEQ = 2'b01, J_BNE = 2'b10;
 				else if (funct3==3'b010) begin //slti
 					alu_ctrl = `ALU_LESS;
 				end
-				else if (funct3==3'b010) begin //slti
+				else if (funct3==3'b111) begin //and
 					alu_ctrl = `ALU_AND;
 				end
 				else if (funct3==3'b001 && funct7==7'b0000000) begin //slli
