@@ -25,7 +25,7 @@ always @(*) begin
 		`ALU_SUB: alu_out = sub_out;
 		`ALU_ADD_PC: alu_out = pc + op2;
 		`ALU_LESS_U: alu_out = (op1 < op2) ? {{(DATA_WIDTH-1){1'b0}},1'b1} : {(DATA_WIDTH){1'b0}};
-		`ALU_LESS: alu_out = {{(DATA_WIDTH-1){1'b0}},sub_out[DATA_WIDTH-1]};
+		`ALU_LESS: alu_out = op1[DATA_WIDTH-1]==op2[DATA_WIDTH-1] ? {{(DATA_WIDTH-1){1'b0}},sub_out[DATA_WIDTH-1]} : {{(DATA_WIDTH-1){1'b0}},op1[DATA_WIDTH-1]};
 		`ALU_SHIFT_LEFT: alu_out = op1 << op2[4:0];
 		`ALU_SHIFT_RIGHT_U: alu_out = op1 >> op2[4:0];
 		`ALU_SHIFT_RIGHT: alu_out = $signed(op1) >>> op2[4:0];
