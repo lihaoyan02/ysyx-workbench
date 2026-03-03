@@ -81,6 +81,9 @@ localparam J_UNCOND = 2'b00, J_BEQ = 2'b01, J_BNE = 2'b10;
 				else if (funct3==3'b111) begin //and
 					alu_ctrl = `ALU_AND;
 				end
+				else if (funct3==3'b101 && funct7==7'b0000000) begin //slli
+					alu_ctrl = `ALU_SHIFT_RIGHT_U;
+				end
 				else if (funct3==3'b001 && funct7==7'b0000000) begin //slli
 					alu_ctrl = `ALU_SHIFT_LEFT;
 				end

@@ -32,6 +32,7 @@ always @(*) begin
 		`ALU_LESS_U: alu_out = (op1 < op2) ? {{(DATA_WIDTH-1){1'b0}},1'b1} : {(DATA_WIDTH){1'b0}};
 		`ALU_LESS: alu_out = {{(DATA_WIDTH-1){1'b0}},sub_out[DATA_WIDTH-1]};
 		`ALU_SHIFT_LEFT: alu_out = op1 << op2[4:0];
+		`ALU_SHIFT_RIGHT_U: alu_out = op1 >> op2[4:0];
 		`ALU_AND: alu_out = op1 & op2;
 		default: alu_out = {DATA_WIDTH{1'b0}};
 	endcase

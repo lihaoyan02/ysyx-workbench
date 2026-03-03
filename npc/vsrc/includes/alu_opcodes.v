@@ -11,8 +11,8 @@
 `define ALU_AND 4'b0111
 `define ALU_OR 4'b1000
 `define ALU_XOR 4'b1001
-`define ALU_XXXX 4'b1010
-`define ALU_XXXXX 4'b1011
+`define ALU_SHIFT_RIGHT_U 4'b1010
+`define ALU_SHIFT_RIGHT 4'b1011
 `define ALU_XXXXXX 4'b1100
 
 
