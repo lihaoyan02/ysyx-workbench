@@ -19,7 +19,7 @@ static uint32_t screen_size() {
 static void *vmem = NULL;
 static uint32_t *vgactl_port_base = NULL;
 
-#ifdef CONFIG_VGA_SHOW_SCREEN
+#ifdef CONFIG_HAS_VGA
 #include <SDL2/SDL.h>
 
 static SDL_Renderer *renderer = NULL;
@@ -61,6 +61,6 @@ void init_vga() {
 	vgactl_port_base = (uint32_t *)malloc(8);
 	vgactl_port_base[0] = (screen_width() << 16) | screen_height();
 	vmem = malloc(screen_size());
-	IFDEF(CONFIG_VGA_SHOW_SCREEN, init_screen());
-	IFDEF(CONFIG_VGA_SHOW_SCREEN, memset(vmem, 0, screen_size()));
+	IFDEF(CONFIG_HAS_VGA, init_screen());
+	IFDEF(CONFIG_HAS_VGA, memset(vmem, 0, screen_size()));
 }
