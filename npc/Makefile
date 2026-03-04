@@ -45,6 +45,7 @@ IMG ?=
 NPC_EXEC := $(BIN) $(ARGS) $(IMG)
 
 LDFLAGS = -lreadline -lhistory
+LDFLAGS += $(if $(CONFIG_HAS_VGA), -lSDL2,)
 
 all: run-env
 	@echo "Building NPC"
