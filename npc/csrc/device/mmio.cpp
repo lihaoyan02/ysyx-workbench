@@ -57,13 +57,13 @@ void mmio_write(uint32_t addr, uint32_t data, char mask) {
 				IFDEF(CONFIG_HAS_VGA, vga_mem_write(paddr, (uint8_t)(data & 0xff)));
 			}
 			if (mask & 0x2) {
-				IFDEF(CONFIG_HAS_VGA, vga_mem_write(paddr, (uint8_t)(data>>8 & 0xff)));
+				IFDEF(CONFIG_HAS_VGA, vga_mem_write(paddr+1, (uint8_t)(data>>8 & 0xff)));
 			}
 			if (mask & 0x4) {
-				IFDEF(CONFIG_HAS_VGA, vga_mem_write(paddr, (uint8_t)(data>>16 & 0xff)));
+				IFDEF(CONFIG_HAS_VGA, vga_mem_write(paddr+2, (uint8_t)(data>>16 & 0xff)));
 			}
 			if (mask & 0x8) {
-				IFDEF(CONFIG_HAS_VGA, vga_mem_write(paddr, (uint8_t)(data>>24 & 0xff)));
+				IFDEF(CONFIG_HAS_VGA, vga_mem_write(paddr+3, (uint8_t)(data>>24 & 0xff)));
 			}
 			IFDEF(CONFIG_HAS_VGA, return);
 	} 
