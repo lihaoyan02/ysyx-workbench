@@ -35,6 +35,9 @@ void iringbuf_print() {
 		}
 	}
 }
+#else
+void iringbuf_print() {
+}
 #endif
 
 /*----------------ftrace--------------*/
