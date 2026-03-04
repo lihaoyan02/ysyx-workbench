@@ -11,6 +11,7 @@ static bool g_print_step = false;
 
 bool scan_wp_diff();
 void difftest_step(uint32_t pc, uint32_t npc);
+void device_update();
 
 /*-------iringbuf----------*/
 #ifdef CONFIG_IRINGTRACE
@@ -138,6 +139,7 @@ static void execute(uint64_t n) {
 		g_nr_guest_inst ++;
 		trace_and_difftest(&s);
 		if (npc_state.state != NPC_RUNNING) break;
+		IFDEF(CONFIG_DEVICE, device_update());
 	}
 }
 
