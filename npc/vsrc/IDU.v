@@ -62,26 +62,33 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 				wb_en = 1;
 				wb_ctrl = WB_ALU;
 			end
-
-			7'b0010011: begin //addi
+			7'b0110111: begin //lui
+				imm = imm_U;
+				wb_en = 1;
+				wb_ctrl = WB_IMM;
+			end
+			7'b0010011: begin
 				imm_sel = 1'b1;
 				imm = imm_I;
 				wb_en = 1'b1;
 				wb_ctrl = WB_ALU;
-				if (funct3 == 3'b000) begin //add
+				if (funct3 == 3'b000) begin //addi
 					alu_ctrl = `ALU_ADD;
 				end
 				else if (funct3==3'b011) begin //sltiu
 					alu_ctrl = `ALU_LESS_U;
 				end
-				else if (funct3==3'b010) begin //slti
-					alu_ctrl = `ALU_LESS;
-				end
 				else if (funct3==3'b100) begin //xori
 					alu_ctrl = `ALU_XOR;
 				end
+				else if (funct3==3'b110) begin //ori
+					alu_ctrl = `ALU_OR;
+				end
 				else if (funct3==3'b111) begin //andi
 					alu_ctrl = `ALU_AND;
+				end
+				else if (funct3==3'b010) begin //slti
+					alu_ctrl = `ALU_LESS;
 				end
 				else if (funct3==3'b101 && funct7==7'b0000000) begin //srli
 					alu_ctrl = `ALU_SHIFT_RIGHT_U;
@@ -95,69 +102,17 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 				else
 					unknow_inst(); 
 			end
-			7'b1101111: begin //jal
-				alu_ctrl = `ALU_ADD_PC;
-				imm_sel = 1'b1;
-				imm = imm_J;
-				wb_en = 1'b1;
-				wb_ctrl = WB_PC;
-				j_en = 1'b1;
-			end
-			7'b1100011: begin //beq
-				alu_ctrl = `ALU_ADD_PC;
-				imm_sel = 1'b1;
-				imm = imm_B;
-				wb_en = 1'b0;
-				j_en = 1'b1;
-				if (funct3 == 3'b000) begin
-					j_cond = `J_BEQ;
-				end	
-				else if (funct3 == 3'b001) begin //bne
-					j_cond = `J_BNE;
-				end
-				else if (funct3 == 3'b111) begin //bgeu
-					j_cond = `J_BGE_U;
-				end
-				else if (funct3 == 3'b101) begin //bge
-					j_cond = `J_BGE;
-				end
-				else if (funct3 == 3'b110) begin //bltu
-					j_cond = `J_BLT_U;
-				end
-				else if (funct3 == 3'b100) begin //blt
-					j_cond = `J_BLT;
-				end
-				else
-					unknow_inst(); 
-			end
-			7'b1100111: begin //jalr
-				if (funct3 == 3'b000) begin
-					alu_ctrl = `ALU_ADD;
-					imm_sel = 1'b1;
-					imm = imm_I;
-					wb_en = 1;
-					wb_ctrl = WB_PC;
-					j_en = 1'b1;
-				end
-				else
-					unknow_inst(); 
-			end
-			7'b0110111: begin //lui
-				imm = imm_U;
-				wb_en = 1;
-				wb_ctrl = WB_IMM;
-			end
-			7'b0110011: begin //add
+			7'b0110011: begin 
 				imm_sel = 1'b0;
 				wb_en = 1'b1;
 				wb_ctrl = WB_ALU;
-				if(funct3==3'b0 && funct7 == 7'b0) begin
+				if(funct3==3'b0 && funct7 == 7'b0000000) begin //add
 					alu_ctrl = `ALU_ADD;
 				end
 				else if(funct3==3'b000 && funct7 == 7'b0100000) begin //sub
 					alu_ctrl = `ALU_SUB;
 				end
-				else if(funct3==3'b100 && funct7 == 7'b0000000) begin //XOR
+				else if(funct3==3'b100 && funct7 == 7'b0000000) begin //xor
 					alu_ctrl = `ALU_XOR;
 				end
 				else if(funct3==3'b110 && funct7 == 7'b0000000) begin //or
@@ -180,6 +135,53 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 				end
 				else if(funct3==3'b001 && funct7 == 7'b0000000) begin //sll
 					alu_ctrl = `ALU_SHIFT_LEFT;
+				end
+				else
+					unknow_inst(); 
+			end
+			7'b1101111: begin //jal
+				alu_ctrl = `ALU_ADD_PC;
+				imm_sel = 1'b1;
+				imm = imm_J;
+				wb_en = 1'b1;
+				wb_ctrl = WB_PC;
+				j_en = 1'b1;
+			end
+			7'b1100111: begin //jalr
+				if (funct3 == 3'b000) begin
+					alu_ctrl = `ALU_ADD;
+					imm_sel = 1'b1;
+					imm = imm_I;
+					wb_en = 1;
+					wb_ctrl = WB_PC;
+					j_en = 1'b1;
+				end
+				else
+					unknow_inst(); 
+			end
+			7'b1100011: begin 
+				alu_ctrl = `ALU_ADD_PC;
+				imm_sel = 1'b1;
+				imm = imm_B;
+				wb_en = 1'b0;
+				j_en = 1'b1;
+				if (funct3 == 3'b000) begin //beq
+					j_cond = `J_BEQ;
+				end	
+				else if (funct3 == 3'b001) begin //bne
+					j_cond = `J_BNE;
+				end
+				else if (funct3 == 3'b111) begin //bgeu
+					j_cond = `J_BGE_U;
+				end
+				else if (funct3 == 3'b101) begin //bge
+					j_cond = `J_BGE;
+				end
+				else if (funct3 == 3'b110) begin //bltu
+					j_cond = `J_BLT_U;
+				end
+				else if (funct3 == 3'b100) begin //blt
+					j_cond = `J_BLT;
 				end
 				else
 					unknow_inst(); 
