@@ -26,6 +26,7 @@ static void rtc_port_update() {
 uint32_t vga_ctl_read(int idx);
 uint32_t screen_size();
 void vga_mem_write(uint32_t addr, uint8_t data_byte);
+void vga_ctl_write(int idx, uint32_t data);
 
 uint32_t mmio_read(int addr) {
 	if( addr == 0xa0000048) {
@@ -46,6 +47,10 @@ void mmio_write(uint32_t addr, uint32_t data, char mask) {
 	if ( addr == 0x10000000){
 		putchar((uint8_t)data);
 		return;
+	} else if (addr == 0xa0000100 && mask == 0b1111) {
+		IFDEF(CONFIG_HAS_VGA, vga_ctl_write(0, data); return);
+	} else if (addr == 0xa0000100+4 && mask == 0b1111) {
+		IFDEF(CONFIG_HAS_VGA, vga_ctl_write(1, data); return);
 	} else if (addr >= 0xa1000000 && addr < 0xa1000000 + screen_size()) {
 			uint32_t paddr =addr-0xa1000000;
 			if (mask & 0x1) {

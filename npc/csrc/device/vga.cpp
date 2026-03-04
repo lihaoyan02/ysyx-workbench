@@ -66,6 +66,15 @@ uint32_t vga_ctl_read(int idx) {
 		assert(0);
 }
 
+void vga_ctl_write(int idx, uint32_t data) {
+	if(idx==0)
+		vgactl_port_base[0] = data;
+	else if(idx==1)
+		vgactl_port_base[1] = data;
+	else
+		assert(0);
+}
+
 void vga_mem_write(uint32_t addr, uint8_t data_byte) {
 	if( addr < screen_size())
 		vmem[addr] = data_byte;
