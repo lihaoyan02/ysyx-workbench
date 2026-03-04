@@ -12,11 +12,11 @@ static uint32_t screen_height() {
 	return SCREEN_H;
 }
 
-static uint32_t screen_size() {
+uint32_t screen_size() {
 	return screen_width() * screen_height() * sizeof(uint32_t);
 }
 
-static void *vmem = NULL;
+static uint8_t *vmem = NULL;
 static uint32_t *vgactl_port_base = NULL;
 
 #ifdef CONFIG_HAS_VGA
@@ -57,10 +57,26 @@ void vga_update_screen() {
 	}
 }
 
+uint32_t vga_ctl_read(int idx) {
+	if(idx==0)
+		return vgactl_port_base[0];
+	else if(idx==1)
+		return vgactl_port_base[1];
+	else
+		assert(0);
+}
+
+void vga_mem_write(uint32_t addr, uint8_t data_byte) {
+	if( addr < screen_size())
+		vmem[addr] = data_byte;
+	else
+		assert(0);
+}
+
 void init_vga() { 
 	vgactl_port_base = (uint32_t *)malloc(8);
 	vgactl_port_base[0] = (screen_width() << 16) | screen_height();
-	vmem = malloc(screen_size());
+	vmem = (uint8_t *)malloc(screen_size());
 	IFDEF(CONFIG_HAS_VGA, init_screen());
 	IFDEF(CONFIG_HAS_VGA, memset(vmem, 0, screen_size()));
 }

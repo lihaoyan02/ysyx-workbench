@@ -5,7 +5,7 @@
 
 static uint8_t pmem[MEM_MAX];
 uint32_t mmio_read(int addr);
-void mmio_write(int addr, int data);
+void mmio_write(uint32_t addr, uint32_t data, char mask);
 
 extern "C" int pmem_read(int raddr) {
 	IFDEF(CONFIG_MTRACE,
@@ -54,7 +54,7 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 		}
 		*/
 	} else {
-		IFDEF(CONFIG_DEVICE, mmio_write(waddr, wdata); return);
+		IFDEF(CONFIG_DEVICE, mmio_write((uint32_t)waddr, (uint32_t)wdata, wmask); return);
 		panic("illegal access for pmem\n");
 	}
 }
