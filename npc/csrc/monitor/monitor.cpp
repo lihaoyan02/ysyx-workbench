@@ -41,6 +41,7 @@ unsigned char *load_elf() {
 		Log("No elf is given.\n");
 		return NULL;
 	}
+	IFNDEF(CONFIG_FTRACE, return NULL);
 
 	FILE *fp = fopen(elf_file, "rb");
 	Assert(fp, "Can not open '%s'", elf_file);
