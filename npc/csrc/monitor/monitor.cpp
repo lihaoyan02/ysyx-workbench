@@ -6,6 +6,7 @@ void init_mem();
 void init_cpu();
 void init_difftest(char *ref_so_file, long img_size, int port); 
 void init_sdb();
+void init_device();
 void init_disasm();
 void init_ftrace(unsigned char *buffer);
 void sdb_set_batch_mode();
@@ -112,6 +113,9 @@ void init_monitor(int argc, char *argv[]) {
 	/* Initialize ftrace. */
 	unsigned char *buffer = load_elf();
 	init_ftrace(buffer);
+
+	/* Initialize devices. */
+	IFDEF(CONFIG_DEVICE, init_device());
 
 	/* Initialize verilator. */
 	init_cpu();
