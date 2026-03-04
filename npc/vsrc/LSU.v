@@ -18,8 +18,13 @@ always @(posedge clk) begin
 	if(lsu_en) begin
 		if (wen) begin // write enable : store data
 			case (lsu_ctrl)
-				3'b000: begin
-					pmem_write(waddr, wdata, 8'b1<<waddr[1:0]); //sb
+				3'b000: begin //sb
+					case (waddr[1:0])
+						2'b00: pmem_write(waddr, wdata, 8'b1); 
+						2'b01: pmem_write(waddr, wdata<<8, 8'b10); 
+						2'b10: pmem_write(waddr, wdata<<16, 8'b100); 
+						2'b11: pmem_write(waddr, wdata<<24, 8'b1000); 
+					endcase
 				end
 				3'b001: begin //sj
 					case (waddr[1:0])
