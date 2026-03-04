@@ -62,7 +62,7 @@ void mmio_write(uint32_t addr, uint32_t data, char mask) {
 			}
 			IFDEF(CONFIG_HAS_VGA, return);
 	} 
-	panic("illegal access for pmem\n");
+	panic("illegal access for pmem111\n");
 	assert(0);
 	
 }
