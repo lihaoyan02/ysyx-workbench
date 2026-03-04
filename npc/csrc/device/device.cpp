@@ -1,4 +1,5 @@
 #include <common.h> 
+#include <SDL2/SDL.h>
 
 #define TIMER_HZ 60
 
@@ -15,6 +16,15 @@ void device_update() {
 	last = now;
 
 	IFDEF(CONFIG_HAS_VGA, vga_update_screen()); 
+	SDL_Event event;
+	while (SDL_PollEvent(&event)) {
+		switch (event.type) {
+			case SDL_QUIT:
+				npc_state.state = NPC_QUIT;
+				break;
+			default: break;
+		}
+	}
 }
 
 void init_device() { 
