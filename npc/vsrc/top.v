@@ -6,7 +6,7 @@ module top #(INST_WIDTH = 32, DATA_WIDTH = 32) (
 
 import "DPI-C" function void npctrap(int a0);
 
-wire j_pc, wb_en, imm_sel, ebreak_flag, lsu_en, lsu_wen;
+wire j_pc, j_en, wb_en, imm_sel, ebreak_flag, lsu_en, lsu_wen;
 wire [DATA_WIDTH-1:0] alu_out;
 wire [INST_WIDTH-1:0] inst_fetch;
 wire [DATA_WIDTH-1:0] imm;
@@ -15,9 +15,10 @@ wire [4:0] rd;
 wire [4:0] rs1;
 wire [4:0] rs2;
 
-wire [2:0] alu_ctrl;
+wire [3:0] alu_ctrl;
 wire [2:0] wb_ctrl;
 wire [2:0] lsu_ctrl;
+wire [2:0] j_cond;
 
 wire [DATA_WIDTH-1:0] wb_data;
 wire [DATA_WIDTH-1:0] srcval1;
@@ -47,7 +48,8 @@ wire [DATA_WIDTH-1:0] srcval2;
 		.lsu_wen(lsu_wen),
 		.lsu_ctrl(lsu_ctrl),
 		.ebreak_flag(ebreak_flag),
-		.j_pc(j_pc)
+		.j_en(j_en),
+		.j_cond(j_cond)
 	);
 
 	RegisterFile u_gpr (
@@ -64,12 +66,15 @@ wire [DATA_WIDTH-1:0] srcval2;
 
 	EXU u_EXU (
 		.imm_sel(imm_sel),
+		.j_en(j_en),
+		.j_cond(j_cond),
 		.pc(pc),
 		.alu_ctrl(alu_ctrl),
 		.srcval1(srcval1),
 		.srcval2(srcval2),
 		.immval(imm),
-		.alu_out(alu_out)
+		.alu_out(alu_out),
+		.j_pc(j_pc)
 	);
 
 	LSU u_LSU (

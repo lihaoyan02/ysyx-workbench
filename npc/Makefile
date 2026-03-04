@@ -7,6 +7,7 @@ NPC_DIR := $(NPC_HOME)
 INC_PATH = $(NPC_DIR)/include
 
 VERILATOR = verilator
+VERILATOR_CFLAGS += -I./vsrc/includes
 VERILATOR_CFLAGS += -MMD -cc --build \
 				-O3 --x-assign fast --x-initial fast --trace-vcd 
 BUILD_DIR = $(NPC_DIR)/build

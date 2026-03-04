@@ -37,13 +37,22 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 			}
 	);
 	if(in_mem((uint32_t)waddr)) {
-		uint8_t* paddr = pmem + (unsigned)waddr - MEM_BASE;
-		switch (wmask) {
+		uint8_t* paddr = pmem + ((unsigned)waddr & ~0x3u) - MEM_BASE;
+		if (wmask & 0x1)
+			paddr[0] = wdata & 0xff;
+		if (wmask & 0x2)
+			paddr[1] = (wdata>>8) & 0xff;
+		if (wmask & 0x4)
+			paddr[2] = (wdata>>16) & 0xff;
+		if (wmask & 0x8)
+			paddr[3] = (wdata>>24) & 0xff;
+		/*switch (wmask) {
 			case 0x1: *(uint8_t *)paddr = (uint8_t)wdata; break;
 			case 0x3: *(uint16_t *)paddr = (uint16_t)wdata; break;
 			case 0xf: *(uint32_t *)paddr = wdata; break;
 			default: assert(0);
 		}
+		*/
 	} else {
 		IFDEF(CONFIG_DEVICE, mmio_write(waddr, wdata); return);
 		panic("illegal access for pmem\n");
