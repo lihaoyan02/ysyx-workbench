@@ -125,6 +125,7 @@ static int decode_exec(Decode *s) {
 				case 0x341: srv = SR(0); SR(0) = src1; break; //mepc
 				case 0x342: srv = SR(1); SR(1) = src1; break; //mecause
 				case 0x300: srv = SR(2); SR(2) = src1; break; //mestatus
+				case 0x305: srv = SR(3); SR(3) = src1; break; //mestatus
 				default: INV(s->pc);
 			}
 			R(rd) = srv;
