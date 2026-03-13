@@ -19,6 +19,7 @@
 #include <cpu/decode.h>
 
 #define R(i) gpr(i)
+#define SR(i) csr(i)
 #define Mr vaddr_read
 #define Mw vaddr_write
 
@@ -49,7 +50,7 @@ static void decode_operand(Decode *s, int *rd, word_t *src1, word_t *src2, word_
 		case TYPE_J:									 immJ(); break;
 		case TYPE_B: src1R(); src2R(); immB(); break;
 		case TYPE_R: src1R(); src2R();			 ; break;
-    case TYPE_N: break;
+    case TYPE_N: src1R(); break;
     default: panic("unsupported type = %d", type);
   }
 }
@@ -118,7 +119,31 @@ static int decode_exec(Decode *s) {
 	INSTPAT("0000001 ????? ????? 011 ????? 01100 11", mulhu  , R, R(rd) = BITS((uint64_t)src1 * (uint64_t)src2, 63, 32)); 
 
   INSTPAT("0000000 00001 00000 000 00000 11100 11", ebreak , N, NEMUTRAP(s->pc, R(10))); // R(10) is $a0
-  INSTPAT("??????? ????? ????? ??? ????? ????? ??", inv    , N, INV(s->pc));
+  INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , N, s->dnpc = isa_raise_intr(0x1, s->pc)); // R(10) is $a0
+  INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , N, s->dnpc = SR(0)); // R(10) is $a0
+  INSTPAT("??????? ????? ????? 001 ????? 11100 11", csrrw  , N, 
+			do {int32_t srv = 0; 
+			switch(BITS(s->isa.inst, 31, 20)) {
+				case 0x341: srv = SR(0); SR(0) = src1; break; //mepc
+				case 0x342: srv = SR(1); SR(1) = src1; break; //mecause
+				case 0x300: srv = SR(2); SR(2) = src1; break; //mestatus
+				case 0x305: srv = SR(3); SR(3) = src1; break; //mtvec
+				default: INV(s->pc);
+			}
+			R(rd) = srv;
+			} while(0)); // sr(0) is mepc0x341
+	INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrs  , N, 
+			do {int32_t srv = 0; 
+			switch(BITS(s->isa.inst, 31, 20)) {
+				case 0x341: srv = SR(0); break; //mepc
+				case 0x342: srv = SR(1); break; //mecause
+				case 0x300: srv = SR(2); break; //mestatus
+				case 0x305: srv = SR(3); break; //mtvec
+				default: INV(s->pc);
+			}
+			R(rd) = srv | src1;
+			} while(0)); // sr(0) is mepc0x341
+	INSTPAT("??????? ????? ????? ??? ????? ????? ??", inv    , N, INV(s->pc));
   INSTPAT_END();
 
   R(0) = 0; // reset $zero to 0
