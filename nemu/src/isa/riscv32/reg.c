@@ -30,7 +30,7 @@ void isa_reg_display() {
 	for(int i=0; i < MUXDEF(CONFIG_RVE, 16, 32); i++) {
 		printf("%s = %x\t", reg_name(i), gpr(i));
 	}
-	for(int i=0; i < 3; i++) {
+	for(int i=0; i < 4; i++) {
 		printf("%s = %x\t", csrs[i], csr(i));
 	}
 	printf("\n");	
