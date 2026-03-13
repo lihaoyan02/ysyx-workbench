@@ -131,6 +131,17 @@ static int decode_exec(Decode *s) {
 			}
 			R(rd) = srv;
 			} while(0)); // sr(0) is mepc0x341
+	INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrs  , N, 
+			do {int32_t srv = 0; 
+			switch(BITS(s->isa.inst, 31, 20)) {
+				case 0x341: srv = SR(0); break; //mepc
+				case 0x342: srv = SR(1); break; //mecause
+				case 0x300: srv = SR(2); break; //mestatus
+				case 0x305: srv = SR(3); break; //mtvec
+				default: INV(s->pc);
+			}
+			R(rd) = srv | src1;
+			} while(0)); // sr(0) is mepc0x341
 	INSTPAT("??????? ????? ????? ??? ????? ????? ??", inv    , N, INV(s->pc));
   INSTPAT_END();
 
