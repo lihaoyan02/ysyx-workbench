@@ -20,11 +20,15 @@
 bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {
 	bool ret = true;
 	for( int i=0; i<MUXDEF(CONFIG_RVE , 16, 32); i++) {
-		if(ref_r->gpr[i] != cpu.gpr[i])
+		if(ref_r->gpr[i] != cpu.gpr[i]) {
 			ret = false;
+			printf("reg %s is different, ref=%x, dut=%x\n",reg_name(i),ref_r->gpr[i], cpu.gpr[i]);
+		}
 	}
-	if(ref_r->pc != pc)
+	if(ref_r->pc != pc) {
 		ret = false;
+		printf("pc is different, ref=0x%08x, dut=0x%08x\n",ref_r->pc, pc);
+	}
   return ret;
 }
 
