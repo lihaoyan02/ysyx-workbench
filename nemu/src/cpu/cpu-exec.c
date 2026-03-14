@@ -63,6 +63,8 @@ void iringbuf_print() {
 void ftrace_print();
 void ftrace_rcd(Decode *s);
 void free_fp();
+/*-------etrace-------*/
+void etrace_rcd(Decode *s);
 
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
@@ -74,6 +76,9 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 	// iringtrace
 #ifdef CONFIG_FTRACE
 	ftrace_rcd(_this);
+#endif
+#ifdef CONFIG_ETRACE
+	etrace_rcd(_this);
 #endif
 	// scan watchpoint
 #ifdef CONFIG_WATCHPOINT

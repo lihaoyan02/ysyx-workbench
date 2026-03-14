@@ -37,6 +37,10 @@ void isa_reg_display() {
 	printf("\n");	
 }
 
+word_t isa_csr_idx2val(int idx) {
+	return csr(idx);
+}
+
 word_t isa_reg_str2val(const char *s, bool *success) {
 	if(strcmp("pc", s)==0) {
 		*success = true;
