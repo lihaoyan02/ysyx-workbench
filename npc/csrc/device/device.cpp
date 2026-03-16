@@ -16,6 +16,7 @@ void device_update() {
 	last = now;
 
 	IFDEF(CONFIG_HAS_VGA, vga_update_screen()); 
+#ifdef CONFIG_HAS_VGA
 	SDL_Event event;
 	while (SDL_PollEvent(&event)) {
 		switch (event.type) {
@@ -25,6 +26,7 @@ void device_update() {
 			default: break;
 		}
 	}
+#endif
 }
 
 void init_device() { 
