@@ -5,6 +5,10 @@
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
 size_t strlen(const char *s) {
+	size_t len = 0;
+	while (*s++)
+		len++;
+	return len;
   panic("Not implemented");
 }
 
@@ -48,6 +52,16 @@ int strcmp(const char *s1, const char *s2) {
 }
 
 int strncmp(const char *s1, const char *s2, size_t n) {
+	if (n==0) return 0;
+	while (n--) {
+		if (*s1 != *s2) 
+			return (*(unsigned char *)s1 - *(unsigned char *)s2);
+		if (*s1 == '\0')
+			return 0;
+		s1++;
+		s2++;
+	}
+	return 0;
   panic("Not implemented");
 }
 
