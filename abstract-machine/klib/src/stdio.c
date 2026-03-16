@@ -25,11 +25,19 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
 			fmt++;
 			char pad = ' ';
 			int width = 0;
+			int long_flag = 0;
 
+			// zero padding
 			if (*fmt == '0') {
 				pad = '0';
 				fmt++;
 			}
+			// long flag
+			if (*fmt == 'l') {
+				long_flag = 1;
+				fmt++;
+			}
+
 			while (*fmt >= '0' && *fmt <= '9') {
 				width = width*10 + (*fmt - '0');
 				fmt++;
@@ -46,7 +54,11 @@ int vsprintf(char *out, const char *fmt, va_list ap) {
 					}
 					break;
 				case 'd':
-					int value = va_arg(ap, int);
+					long value;
+					if(long_flag == 1)
+						value = va_arg(ap, long);
+					else 
+						value = va_arg(ap, int);
 					if (value < 0) {
 						*out++ = '-';
 						value = -value;
