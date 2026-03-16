@@ -5,6 +5,10 @@
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
 size_t strlen(const char *s) {
+	size_t len = 0;
+	while (*s++)
+		len++;
+	return len;
   panic("Not implemented");
 }
 
