@@ -75,15 +75,17 @@ void difftest_step(uint32_t pc, uint32_t npc) {
 	CPU_state ref_r;
 	static bool n_ignore_first = false;
 
-	if (is_skip_ref_r) { 
+	/*if (is_skip_ref_r) { 
 		update_reg_state();
 		ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
 		is_skip_ref_r = false;
 		return;
-	}
+	}*/
 
 	if (is_skip_ref) { 
 		is_skip_ref_r = true;
+		update_reg_state();
+		ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
 		is_skip_ref = false;
 		return;
 	}
