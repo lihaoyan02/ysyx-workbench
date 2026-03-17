@@ -2,6 +2,8 @@ module CSR_group #(CSR_ADDR_WIDTH = 12, DATA_WIDTH = 32, CSR_NUM = 8) (
 	input clk,
 	input rst,
 	input wen,
+	input [DATA_WIDTH-1:0] pc,
+	input csr_event,
 	input [CSR_ADDR_WIDTH-1:0] addr,
 	input [DATA_WIDTH-1:0] wdata,
 	output reg [DATA_WIDTH-1:0] rdata
@@ -41,6 +43,10 @@ always @(posedge clk) begin
 					csr[5] <= wdata;
 				default: unknow_inst();
 			endcase
+		end
+		if(csr_event) begin
+			csr[2] <= pc;
+			csr[3] <= 32'hb;
 		end
 	end
 end

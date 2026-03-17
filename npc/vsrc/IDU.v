@@ -17,6 +17,7 @@ module IDU #(INST_WIDTH = 32, REGADDR_WIDTH = 5, DATA_WIDTH = 32) (
 	output [2:0] j_cond,
 
 	output csr_wen,
+	output csr_event,
 	output [11:0] csr_addr
 
 );
@@ -43,7 +44,6 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 	assign imm_B = {{20{inst_fetch[31]}}, inst_fetch[7], inst_fetch[30:25], inst_fetch[11:8], 1'b0};
 
 	assign lsu_ctrl = funct3;
-	assign csr_addr = inst_fetch[31:20];  
 
 	import "DPI-C" function void unknow_inst(); 
 
@@ -60,6 +60,8 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 			lsu_wen = 1'b0;
 			ebreak_flag = 1'b0;
 			csr_wen = 1'b0;
+			csr_event = 1'b0;
+			csr_addr = inst_fetch[31:20];
 
 			case (opcode)
 			7'b0010111: begin //auipc
@@ -226,6 +228,14 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 				if(imm_I == 32'b1 && rs1 == 0 && 
 					funct3 == 3'b0 && rd == 5'b0) begin
 					ebreak_flag = 1;
+				end
+				/*------ecall------*/
+				else if(inst_fetch[31:7] == 25'b0) begin
+					csr_addr = 12'h305; //mtvec
+					csr_event = 1'b1;
+					alu_ctrl = `ALU_OP2;
+					alu_op_ctrl = `OP_RS1_CSR;
+					j_en = 1'b1;
 				end
 				else if(funct3 == 3'b001) begin //csrrw
 					alu_ctrl = `ALU_OP2;

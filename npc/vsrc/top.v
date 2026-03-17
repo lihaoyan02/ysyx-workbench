@@ -27,6 +27,7 @@ wire [DATA_WIDTH-1:0] rs2_data;
 
 wire [DATA_WIDTH-1:0] csr_rdata;
 wire [11:0] csr_addr;
+wire csr_event;
 
 
 	IFU u_IFU (
@@ -55,6 +56,7 @@ wire [11:0] csr_addr;
 		.j_en(j_en),
 		.j_cond(j_cond),
 		.csr_wen(csr_wen),
+		.csr_event(csr_event),
 		.csr_addr(csr_addr)
 	);
 
@@ -74,6 +76,8 @@ wire [11:0] csr_addr;
 		.clk(clk),
 		.rst(rst),
 		.wen(csr_wen),
+		.pc(pc),
+		.csr_event(csr_event),
 		.addr(csr_addr),
 		.wdata(rs1_data),
 		.rdata(csr_rdata)
