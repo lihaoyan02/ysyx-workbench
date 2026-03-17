@@ -6,23 +6,27 @@ module top #(INST_WIDTH = 32, DATA_WIDTH = 32) (
 
 import "DPI-C" function void npctrap(int a0);
 
-wire j_pc, j_en, wb_en, imm_sel, ebreak_flag, lsu_en, lsu_wen;
+wire j_pc, j_en, wb_en, ebreak_flag, lsu_en, lsu_wen, csr_wen;
 wire [DATA_WIDTH-1:0] alu_out;
 wire [INST_WIDTH-1:0] inst_fetch;
 wire [DATA_WIDTH-1:0] imm;
-wire [DATA_WIDTH-1:0] rdata;
+wire [DATA_WIDTH-1:0] lsu_rdata;
 wire [4:0] rd;
 wire [4:0] rs1;
 wire [4:0] rs2;
 
 wire [3:0] alu_ctrl;
+wire [1:0] alu_op_ctrl;
 wire [2:0] wb_ctrl;
 wire [2:0] lsu_ctrl;
 wire [2:0] j_cond;
 
 wire [DATA_WIDTH-1:0] wb_data;
-wire [DATA_WIDTH-1:0] srcval1;
-wire [DATA_WIDTH-1:0] srcval2;
+wire [DATA_WIDTH-1:0] rs1_data;
+wire [DATA_WIDTH-1:0] rs2_data;
+
+wire [DATA_WIDTH-1:0] csr_rdata;
+wire [11:0] csr_addr;
 
 
 	IFU u_IFU (
@@ -41,7 +45,7 @@ wire [DATA_WIDTH-1:0] srcval2;
 		.rs1(rs1),
 		.rs2(rs2),
 		.alu_ctrl(alu_ctrl),
-		.imm_sel(imm_sel),
+		.alu_op_ctrl(alu_op_ctrl),
 		.wb_ctrl(wb_ctrl),
 		.wb_en(wb_en),
 		.lsu_en(lsu_en),
@@ -49,7 +53,9 @@ wire [DATA_WIDTH-1:0] srcval2;
 		.lsu_ctrl(lsu_ctrl),
 		.ebreak_flag(ebreak_flag),
 		.j_en(j_en),
-		.j_cond(j_cond)
+		.j_cond(j_cond),
+		.csr_wen(csr_wen),
+		.csr_addr(csr_addr)
 	);
 
 	RegisterFile u_gpr (
@@ -60,18 +66,28 @@ wire [DATA_WIDTH-1:0] srcval2;
 		.waddr(rd),
 		.raddr1(rs1),
 		.raddr2(rs2),
-		.rdata1(srcval1),
-		.rdata2(srcval2)
+		.rdata1(rs1_data),
+		.rdata2(rs2_data)
+	);
+
+	CSR_group u_csr (
+		.clk(clk),
+		.rst(rst),
+		.wen(csr_wen),
+		.addr(csr_addr),
+		.wdata(rs1_data),
+		.rdata(csr_rdata)
 	);
 
 	EXU u_EXU (
-		.imm_sel(imm_sel),
+		.op_ctrl(alu_op_ctrl),
 		.j_en(j_en),
 		.j_cond(j_cond),
 		.pc(pc),
+		.csr(csr_rdata),
 		.alu_ctrl(alu_ctrl),
-		.srcval1(srcval1),
-		.srcval2(srcval2),
+		.rs1_data(rs1_data),
+		.rs2_data(rs2_data),
 		.immval(imm),
 		.alu_out(alu_out),
 		.j_pc(j_pc)
@@ -82,16 +98,16 @@ wire [DATA_WIDTH-1:0] srcval2;
 		.clk(clk),
 		.wen(lsu_wen),
 		.lsu_ctrl(lsu_ctrl),
-		.wdata(srcval2),
+		.wdata(rs2_data),
 		.waddr(alu_out),
 
 		.raddr(alu_out),
-		.rdata(rdata)
+		.rdata(lsu_rdata)
 	);
 
 	WBU u_WBU (
 		.alu_out(alu_out),
-		.mem_out(rdata),
+		.mem_out(lsu_rdata),
 		.wb_ctrl(wb_ctrl),
 		.imm(imm),
 		.pc(pc),
