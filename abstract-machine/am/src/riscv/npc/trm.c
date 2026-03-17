@@ -21,7 +21,14 @@ void halt(int code) {
 	while(1);
 }
 
+#include <stdio.h>
 void _trm_init() {
+	uint32_t marchid;
+	uint32_t mvendorid;
+	asm volatile("csrr %0, marchid":"=r" (marchid));
+	asm volatile("csrr %0, mvendorid":"=r" (mvendorid));
+	char *arch_str = (char*)&mvendorid;
+	printf("%c%c%c%c-%d\n",arch_str[3],arch_str[2],arch_str[1],arch_str[0],marchid);
   int ret = main(mainargs);
   halt(ret);
 }
