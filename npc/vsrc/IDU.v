@@ -237,6 +237,12 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 					alu_op_ctrl = `OP_RS1_CSR;
 					j_en = 1'b1;
 				end
+				else if(inst_fetch[31:7] == 25'b001100000010_00000_000_00000) begin
+					csr_addr = 12'h341;
+					alu_ctrl = `ALU_OP2;
+					alu_op_ctrl = `OP_RS1_CSR;
+					j_en = 1'b1;
+				end
 				else if(funct3 == 3'b001) begin //csrrw
 					alu_ctrl = `ALU_OP2;
 					alu_op_ctrl = `OP_RS1_CSR;
