@@ -44,8 +44,9 @@ uint32_t mmio_read(int addr) {
 }
 
 void mmio_write(uint32_t addr, uint32_t data, char mask) {
-	if ( addr == 0x10000000){
-		putchar((uint8_t)data);
+	//if ( addr == 0x10000000){
+	if ( addr == 0xa00003f8){
+		putc((uint8_t)data,stderr);
 		return;
 	} else if (addr == 0xa0000100 && mask == 0b1111) {
 		IFDEF(CONFIG_HAS_VGA, vga_ctl_write(0, data); return);
