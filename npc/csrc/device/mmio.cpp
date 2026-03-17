@@ -44,7 +44,8 @@ uint32_t mmio_read(int addr) {
 }
 
 void mmio_write(uint32_t addr, uint32_t data, char mask) {
-	if ( addr == 0x10000000){
+	//if ( addr == 0x10000000){
+	if ( addr == 0xa00003f8){
 		putchar((uint8_t)data);
 		return;
 	} else if (addr == 0xa0000100 && mask == 0b1111) {
