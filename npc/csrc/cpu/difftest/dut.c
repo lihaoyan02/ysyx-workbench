@@ -11,6 +11,12 @@ void (*ref_difftest_exec)(uint64_t n) = NULL;
 
 #ifdef CONFIG_DIFFTEST
 
+static bool is_skip_ref = false;
+
+void difftest_skip_ref() {
+	is_skip_ref = true;
+}
+
 void init_difftest(char *ref_so_file, long img_size, int port) {
 	assert(ref_so_file != NULL);
 
@@ -67,6 +73,12 @@ static void checkregs(CPU_state *ref, uint32_t pc) {
 void difftest_step(uint32_t pc, uint32_t npc) {
 	CPU_state ref_r;
 	static bool n_ignore_first = false;
+
+	if (is_skip_ref) { 
+		ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
+		is_skip_ref = false;
+		return;
+	}
 
 	if (n_ignore_first) {
 		update_reg_state();
