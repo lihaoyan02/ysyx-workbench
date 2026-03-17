@@ -56,6 +56,7 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 		}
 		*/
 	} else {
+		difftest_skip_ref();
 		IFDEF(CONFIG_DEVICE, mmio_write((uint32_t)waddr, (uint32_t)wdata, wmask); return);
 		panic("illegal access for pmem\n");
 	}
