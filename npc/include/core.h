@@ -6,6 +6,7 @@
 #include <Vtop__Dpi.h> 
 #include "svdpi.h"
 
+#include "generated/autoconf.h"
 #ifdef CONFIG_TRACE_WAVE
 #include "verilated_vcd_c.h"
 extern VerilatedVcdC* tfp; 

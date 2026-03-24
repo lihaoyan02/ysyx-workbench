@@ -82,6 +82,7 @@ static void eval_dump() {
 
 static void single_cycle() {
 #ifdef CONFIG_TRACE_WAVE
+	printf("111");
 	top->clk = 0; eval_dump();
 	top->clk = 1; eval_dump();
 #else
