@@ -5,11 +5,14 @@
 #include <Vtop.h>
 #include <Vtop__Dpi.h> 
 #include "svdpi.h"
+
+#ifdef CONFIG_TRACE_WAVE
 #include "verilated_vcd_c.h"
+extern VerilatedVcdC* tfp; 
+#endif
 
 extern VerilatedContext* contextp;
 extern Vtop* top;
-extern VerilatedVcdC* tfp; 
 
 uint32_t core_read_inst();
 

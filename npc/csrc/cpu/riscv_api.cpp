@@ -2,7 +2,9 @@
 
 VerilatedContext* contextp = NULL;
 Vtop* top = NULL;
+#ifdef CONFIG_TRACE_WAVE
 VerilatedVcdC* tfp = NULL;
+#endif 
 
 uint32_t core_read_inst() {
 	const svScope scope = svGetScopeFromName("TOP.top.u_IFU");
