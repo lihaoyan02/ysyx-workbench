@@ -237,20 +237,23 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 					alu_op_ctrl = `OP_RS1_CSR;
 					j_en = 1'b1;
 				end
+				/*------mret------*/
 				else if(inst_fetch[31:7] == 25'b001100000010_00000_000_00000) begin
-					csr_addr = 12'h341;
+					csr_addr = 12'h341; //mepc
 					alu_ctrl = `ALU_OP2;
 					alu_op_ctrl = `OP_RS1_CSR;
 					j_en = 1'b1;
 				end
-				else if(funct3 == 3'b001) begin //csrrw
+				/*------csrrw------*/
+				else if(funct3 == 3'b001) begin
 					alu_ctrl = `ALU_OP2;
 					alu_op_ctrl = `OP_RS1_CSR;
 					csr_wen = 1'b1;
 					wb_en = 1'b1;
 					wb_ctrl = WB_ALU;
 				end
-				else if(funct3 == 3'b010) begin //csrrs
+				/*------csrrs------*/
+				else if(funct3 == 3'b010) begin 
 					alu_ctrl = `ALU_OR;
 					alu_op_ctrl = `OP_RS1_CSR;
 					csr_wen = 1'b0;
