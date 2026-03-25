@@ -6,7 +6,7 @@ module top #(INST_WIDTH = 32, DATA_WIDTH = 32) (
 
 import "DPI-C" function void npctrap(int a0);
 
-wire j_pc, j_en, wb_en, ebreak_flag, lsu_en, lsu_wen, csr_wen;
+wire j_pc, j_en, wb_en, ebreak_flag, idu_en, lsu_en, lsu_wen, csr_wen;
 wire [DATA_WIDTH-1:0] alu_out;
 wire [INST_WIDTH-1:0] inst_fetch;
 wire [DATA_WIDTH-1:0] imm;
@@ -36,11 +36,13 @@ wire csr_event;
 		.j_pc(j_pc),
 		.j_pc_addr(alu_out),
 		.pc(pc),
+		.idu_en(idu_en),
 		.inst_fetch(inst_fetch)
 	);
 
 	IDU u_IDU (
 		.inst_fetch(inst_fetch),
+		.en(idu_en),
 		.imm(imm),
 		.rd(rd),
 		.rs1(rs1),

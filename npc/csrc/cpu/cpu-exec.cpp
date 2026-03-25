@@ -71,14 +71,23 @@ static void trace_and_difftest(Decode *_this) {
 #endif
 }
 
-static void single_cycle(Decode *s) {
-	//top->clk = 0; eval_dump(top, tfp);
-	//top->clk = 1; eval_dump(top, tfp);
+#ifdef CONFIG_TRACE_WAVE 
+static void eval_dump() {
+	static int time_step = 0;
+	top->eval();
+	if(time_step<=CONFIG_MAX_WAVE)
+		tfp->dump(time_step++);
+}
+#endif
+
+static void single_cycle() {
+#ifdef CONFIG_TRACE_WAVE
+	top->clk = 0; eval_dump();
+	top->clk = 1; eval_dump();
+#else
 	top->clk = 0; top->eval();
 	top->clk = 1; top->eval();
-	s->inst = core_read_inst();
-	s->pc = top->pc;
-	s->dnpc = core_read_dnpc(); 
+#endif
 }
 
 void init_cpu() {
@@ -86,22 +95,17 @@ void init_cpu() {
 	//contextp->commandArgs(argc, argv);
 	top= new Vtop{contextp};
 
-	//Verilated::traceEverOn(true);
-	//tfp = new VerilatedVcdC;
-	 //top->trace(tfp, 99);
-	 //tfp->open("build/wave.vcd");
+#ifdef CONFIG_TRACE_WAVE
+	Verilated::traceEverOn(true);
+	tfp = new VerilatedVcdC;
+	top->trace(tfp, 99);
+	tfp->open("build/wave.vcd");
+#endif
 
 	top->rst = 1;
-	top->clk = 0; top->eval();
-	top->clk = 1; top->eval();
+	single_cycle();
 	top->rst = 0;
 	top->eval();
-}
-
-static void eval_dump() {
-	static int time_step = 0;
-	top->eval();
-	tfp->dump(time_step++);
 }
 
 
@@ -111,8 +115,23 @@ extern "C" void npctrap(int a0) {
 	npc_state.halt_pc = top->pc;
 }
 
+static void exec_one_inst() {
+	for(int i =0; i<5; i++) {
+		single_cycle();
+		uint32_t current_state = core_read_state();
+		if(current_state==1) {
+			return;
+		}
+	}
+	panic("CPU don't finish inst in 5 cycle");
+	
+}
+
 static void exec_once(Decode *s) {
-	single_cycle(s);
+	exec_one_inst();
+	s->inst = core_read_inst();
+	s->pc = top->pc;
+	s->dnpc = core_read_dnpc(); 
 #ifdef CONFIG_ITRACE
 	char *p = s->logbuf;
 	p += snprintf(p, sizeof(s->logbuf), "0x%08x:", s->pc);
@@ -172,7 +191,8 @@ void cpu_exec(uint64_t n) {
 		IFDEF(CONFIG_IRINGTRACE, iringbuf_print()); 
 		reg_display();
 		case NPC_END:
-			Log("npc: %s at pc = 0x%08x", (npc_state.halt_ret==0 ? ANSI_FMT("HIT GOOD TRAP", ANSI_FG_GREEN) :
+		IFDEF(CONFIG_TRACE_WAVE,tfp->close());
+		Log("npc: %s at pc = 0x%08x", (npc_state.halt_ret==0 ? ANSI_FMT("HIT GOOD TRAP", ANSI_FG_GREEN) :
 					ANSI_FMT("HIT BAD TRAP", ANSI_FG_RED)),
 					npc_state.halt_pc);
 		case NPC_QUIT: statistic();
