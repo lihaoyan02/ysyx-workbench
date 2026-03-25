@@ -24,7 +24,6 @@ reg [DATA_WIDTH-1:0] rdata_word_n;
 reg read_out;
 
 assign reqValid = lsu_en;
-assign mem_wdata = wdata;
 assign mem_wen = wen;
 assign rdata_word = mem_rdata;
 assign mem_addr = addr;
@@ -32,9 +31,50 @@ assign ready_out = ~(lsu_en & ~wen & ~respValid);
 always @(*) begin
 	if(lsu_en&wen) begin
 		case (lsu_ctrl)
-			3'b000: mem_wmask = 4'b1;
-			3'b001: mem_wmask = 4'b11;
-			3'b010: mem_wmask = 4'b1111;
+			3'b000: begin
+				case (addr[1:0])
+				2'b00: begin
+					mem_wmask = 4'b1;
+					mem_wdata = wdata;
+				end
+				2'b01: begin
+					mem_wmask = 4'b10;
+					mem_wdata = wdata<<8;
+				end
+				2'b10: begin
+					mem_wmask = 4'b100;
+					mem_wdata = wdata<<16;
+				end
+				2'b11: begin
+					mem_wmask = 4'b1000;
+					mem_wdata = wdata<<24;
+				end
+				endcase
+			end
+			3'b001: begin
+				case (addr[1:0])
+				2'b00: begin
+					mem_wmask = 4'b11;
+					mem_wdata = wdata;
+				end
+				2'b01: begin
+					mem_wmask = 4'b110;
+					mem_wdata = wdata<<8;
+				end
+				2'b10: begin
+					mem_wmask = 4'b1100;
+					mem_wdata = wdata<<16;
+				end
+				2'b11: begin
+					mem_wmask = 4'b1000;
+					mem_wdata = wdata<<24;
+				end
+				endcase
+			end
+			3'b010: begin
+				mem_wmask = 4'b1111;
+				mem_wdata = wdata;
+			end
 			default: $finish;
 		endcase
 	end

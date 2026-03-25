@@ -195,7 +195,6 @@ void cpu_exec(uint64_t n) {
 					ANSI_FMT("HIT BAD TRAP", ANSI_FG_RED)),
 					npc_state.halt_pc);
 		case NPC_QUIT: 
-		IFDEF(CONFIG_TRACE_WAVE,tfp->close());
 		statistic();
 	IFDEF(CONFIG_FTRACE, free_fp());
 	}
