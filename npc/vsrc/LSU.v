@@ -23,7 +23,7 @@ reg [DATA_WIDTH-1:0] rdata_word;
 reg [DATA_WIDTH-1:0] rdata_word_n;
 reg read_out;
 
-assign reqValid = lsu_en;
+assign reqValid = lsu_en&ready_r;
 assign mem_wen = wen;
 assign rdata_word = mem_rdata;
 assign mem_addr = addr;
