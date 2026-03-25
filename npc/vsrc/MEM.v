@@ -15,8 +15,8 @@ import "DPI-C" function void pmem_write(int waddr, int wdata, byte wmask);
 always @(posedge clk) begin
     if (reqValid && !wen)
         rdata <= pmem_read(addr);
-    else if(respValid)
-        rdata <= 0;
+    // else if(respValid)
+    //     rdata <= 0;
     if (reqValid && wen) begin
         pmem_write(addr, wdata, {4'b0,wmask});
     end
