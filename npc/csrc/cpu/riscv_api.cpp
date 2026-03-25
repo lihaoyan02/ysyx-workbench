@@ -27,3 +27,10 @@ uint32_t core_read_reg(uint32_t idx) {
 	svSetScope(scope);
 	return read_reg(idx);
 }
+
+uint32_t core_read_state() {
+	const svScope scope = svGetScopeFromName("TOP.top.u_IFU");
+	assert(scope); 
+	svSetScope(scope);
+	return read_state();
+}

@@ -115,6 +115,17 @@ extern "C" void npctrap(int a0) {
 	npc_state.halt_pc = top->pc;
 }
 
+static void exec_one_inst() {
+	for(int i =0; i<5; i++) {
+		single_cycle();
+		uint32_t current_state = core_read_state();
+		if(current_state==0) {
+			return;
+		}
+	}
+	panic("CPU don't finish inst in 5 cycle");
+	
+}
 static void exec_once(Decode *s) {
 	single_cycle();
 	s->inst = core_read_inst();
