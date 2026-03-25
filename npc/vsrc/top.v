@@ -6,7 +6,7 @@ module top #(INST_WIDTH = 32, DATA_WIDTH = 32) (
 
 import "DPI-C" function void npctrap(int a0);
 
-wire j_pc, j_en, wb_en, ebreak_flag, idu_en, lsu_en, lsu_wen, csr_wen, lsu_ready;
+wire j_pc, j_en, wb_en, ebreak_flag, inst_valid, lsu_en, lsu_wen, csr_wen, lsu_ready;
 wire [DATA_WIDTH-1:0] alu_out;
 wire [INST_WIDTH-1:0] inst_fetch;
 wire [DATA_WIDTH-1:0] imm;
@@ -37,13 +37,13 @@ wire csr_event;
 		.j_pc_addr(alu_out),
 		.ready_in(lsu_ready),
 		.pc(pc),
-		.ready_out(idu_en),
+		.inst_valid(inst_valid),
 		.inst_fetch(inst_fetch)
 	);
 
 	IDU u_IDU (
 		.inst_fetch(inst_fetch),
-		.en(idu_en),
+		.en(inst_valid),
 		.imm(imm),
 		.rd(rd),
 		.rs1(rs1),
@@ -66,7 +66,7 @@ wire csr_event;
 	RegisterFile u_gpr (
 		.clk(clk),
 		.rst(rst),
-		.wen(wb_en&idu_en),
+		.wen(wb_en),
 		.ready_in(lsu_ready),
 		.wdata(wb_data),
 		.waddr(rd),
@@ -101,19 +101,42 @@ wire csr_event;
 		.j_pc(j_pc)
 	);
 
+	wire reqValid, mem_wen, respValid;
+	wire [DATA_WIDTH-1:0] mem_addr;
+	wire [DATA_WIDTH-1:0] mem_wdata;
+	wire [DATA_WIDTH-1:0] mem_rdata;
+	wire [3:0] wmask;
 	LSU u_LSU (
 		.lsu_en(lsu_en),
 		.clk(clk),
 		.wen(lsu_wen),
 		.lsu_ctrl(lsu_ctrl),
 		.wdata(rs2_data),
-		.waddr(alu_out),
-
-		.raddr(alu_out),
+		.addr(alu_out),
 		.rdata(lsu_rdata),
-		.ready_out(lsu_ready)
+		.ready_out(lsu_ready),
+
+		.reqValid(reqValid),
+		.mem_addr(mem_addr),
+		.mem_wen(mem_wen),
+		.mem_wdata(mem_wdata),
+		.mem_wmask(wmask),
+		.respValid(respValid),
+		.mem_rdata(mem_rdata)
+
 	);
 
+	MEM u_mem (
+		.clk(clk),
+		.wen(mem_wen),
+		.reqValid(reqValid),
+		.addr(mem_addr),
+		.wdata(mem_wdata),
+		.wmask(wmask),
+		.rdata(mem_rdata),
+		.respValid(respValid)
+	);
+	
 	WBU u_WBU (
 		.alu_out(alu_out),
 		.mem_out(lsu_rdata),

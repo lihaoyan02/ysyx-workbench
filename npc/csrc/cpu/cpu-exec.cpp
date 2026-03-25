@@ -116,7 +116,7 @@ extern "C" void npctrap(int a0) {
 }
 
 static void exec_one_inst() {
-	for(int i =0; i<5; i++) {
+	for(int i =0; i<10; i++) {
 		single_cycle();
 		uint32_t current_state = core_read_state();
 		if(current_state==1) {
@@ -195,7 +195,6 @@ void cpu_exec(uint64_t n) {
 					ANSI_FMT("HIT BAD TRAP", ANSI_FG_RED)),
 					npc_state.halt_pc);
 		case NPC_QUIT: 
-		IFDEF(CONFIG_TRACE_WAVE,tfp->close());
 		statistic();
 	IFDEF(CONFIG_FTRACE, free_fp());
 	}
