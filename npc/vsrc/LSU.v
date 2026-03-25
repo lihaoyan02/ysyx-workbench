@@ -35,6 +35,8 @@ always @(posedge clk) begin
 	else if (respValid) begin
 		ready_r <= 1;
 	end
+	else
+		ready_r <= 1;
 end
 assign ready_out = ~((lsu_en & ~wen) | ~ready_r) | respValid;
 
