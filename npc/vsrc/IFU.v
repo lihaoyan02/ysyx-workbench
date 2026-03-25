@@ -3,6 +3,7 @@ module IFU #(INST_WIDTH = 32, ADDR_WIDTH = 32)(
 	input rst,
 	input j_pc,
 	input [ADDR_WIDTH-1:0] j_pc_addr,
+	input ready_in,
 	output reg [ADDR_WIDTH-1:0] pc,
 	output reg [INST_WIDTH-1:0] inst_fetch,
 	output reg idu_en
@@ -21,7 +22,7 @@ always @(*) begin
 		IDLE:
 			next_state = WAIT;
 		WAIT:
-			next_state = IDLE;
+			next_state = ready_in ? IDLE : WAIT;
 	endcase
 end
 
