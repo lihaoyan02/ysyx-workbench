@@ -201,5 +201,6 @@ void cpu_exec(uint64_t n) {
 }
 
 extern "C" void unknow_inst() {
+	IFDEF(CONFIG_TRACE_WAVE,tfp->close());
 	Assert(npc_state.state != NPC_RUNNING,"Unknown instruction at pc=0x%08x",top->pc);
 }
