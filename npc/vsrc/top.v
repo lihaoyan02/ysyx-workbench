@@ -66,7 +66,7 @@ wire csr_event;
 	RegisterFile u_gpr (
 		.clk(clk),
 		.rst(rst),
-		.wen(wb_en&inst_valid),
+		.wen(wb_en),
 		.ready_in(lsu_ready),
 		.wdata(wb_data),
 		.waddr(rd),
