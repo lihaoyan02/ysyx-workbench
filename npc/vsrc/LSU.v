@@ -27,7 +27,17 @@ assign reqValid = lsu_en;
 assign mem_wen = wen;
 assign rdata_word = mem_rdata;
 assign mem_addr = addr;
-assign ready_out = ~(lsu_en & ~wen & ~respValid);
+reg ready_r;
+always @(posedge clk) begin
+	if (lsu_en & ~wen) begin
+		ready_r <= 0;
+	end
+	else if (respValid) begin
+		ready_r <= 1;
+	end
+end
+assign ready_out = ~((lsu_en & ~wen) | ~ready_r) | respValid;
+
 always @(*) begin
 	if(lsu_en&wen) begin
 		case (lsu_ctrl)
