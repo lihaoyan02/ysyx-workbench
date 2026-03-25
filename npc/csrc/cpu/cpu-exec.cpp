@@ -126,8 +126,9 @@ static void exec_one_inst() {
 	panic("CPU don't finish inst in 5 cycle");
 	
 }
+
 static void exec_once(Decode *s) {
-	single_cycle();
+	exec_one_inst();
 	s->inst = core_read_inst();
 	s->pc = top->pc;
 	s->dnpc = core_read_dnpc(); 
