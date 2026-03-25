@@ -73,6 +73,8 @@ always @(*) begin
 				endcase
 			end
 			3'b010: begin
+				if(addr[1:0]!=2'b00)
+					$finish;
 				mem_wmask = 4'b1111;
 				mem_wdata = wdata;
 			end
