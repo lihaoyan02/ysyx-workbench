@@ -67,6 +67,7 @@ wire csr_event;
 		.clk(clk),
 		.rst(rst),
 		.wen(wb_en),
+		.ready_in(lsu_ready),
 		.wdata(wb_data),
 		.waddr(rd),
 		.raddr1(rs1),
