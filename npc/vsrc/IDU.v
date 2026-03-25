@@ -49,6 +49,8 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 	import "DPI-C" function void unknow_inst(); 
 
 		always @(*) begin
+			lsu_en = 1'b0;
+			lsu_wen = 1'b0;
 			if (en) begin
 				// default value
 				alu_ctrl = `ALU_IDLE;
@@ -57,9 +59,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 				wb_en = 0; // if wb
 				wb_ctrl = WB_IDLE; //from where to wb
 				j_en = 1'b0; // if jump
-				j_cond = `J_UNCOND; // if conditional jump
-				lsu_en = 1'b0;
-				lsu_wen = 1'b0;
+				j_cond = `J_UNCOND; // if conditional jump				
 				ebreak_flag = 1'b0;
 				csr_wen = 1'b0;
 				csr_event = 1'b0;
