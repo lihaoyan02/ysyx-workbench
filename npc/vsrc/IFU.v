@@ -70,7 +70,7 @@ endfunction
 export "DPI-C" function read_dnpc;
 
 function int read_state();
-	return {31'b0,state};
+	return {31'b0,state&(~next_state)};
 endfunction
 
 export "DPI-C" function read_state;
