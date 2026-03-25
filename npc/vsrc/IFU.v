@@ -6,7 +6,7 @@ module IFU #(INST_WIDTH = 32, ADDR_WIDTH = 32)(
 	input ready_in,
 	output reg [ADDR_WIDTH-1:0] pc,
 	output reg [INST_WIDTH-1:0] inst_fetch,
-	output reg idu_en
+	output reg ready_out
 );
 localparam IDLE = 1'b0, WAIT = 1'b1;
 reg state, next_state;
@@ -44,17 +44,18 @@ always @(posedge clk) begin
 	rst_r <= rst;
 end
 
+assign ready_out = state==WAIT;
 always @(posedge clk) begin
 	if (rst) begin
 		inst_fetch <= 32'b0;
-		idu_en <= 0;
+		//idu_en <= 0;
 	end
 	else if(state==IDLE) begin
 		inst_fetch <= pmem_read(pc);
-		idu_en <= 1;
+		//idu_en <= 1;
 	end
-	else
-		idu_en <= 0;
+	// else
+	// 	idu_en <= 0;
 end
 
 function int read_inst();

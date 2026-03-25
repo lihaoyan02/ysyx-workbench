@@ -37,7 +37,7 @@ wire csr_event;
 		.j_pc_addr(alu_out),
 		.ready_in(lsu_ready),
 		.pc(pc),
-		.idu_en(idu_en),
+		.ready_out(idu_en),
 		.inst_fetch(inst_fetch)
 	);
 
@@ -66,7 +66,7 @@ wire csr_event;
 	RegisterFile u_gpr (
 		.clk(clk),
 		.rst(rst),
-		.wen(wb_en),
+		.wen(wb_en&idu_en),
 		.ready_in(lsu_ready),
 		.wdata(wb_data),
 		.waddr(rd),
