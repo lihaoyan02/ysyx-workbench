@@ -119,7 +119,7 @@ static void exec_one_inst() {
 	for(int i =0; i<5; i++) {
 		single_cycle();
 		uint32_t current_state = core_read_state();
-		if(current_state==0) {
+		if(current_state==1) {
 			return;
 		}
 	}
