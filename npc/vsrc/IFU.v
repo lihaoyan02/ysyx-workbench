@@ -44,7 +44,7 @@ always @(posedge clk) begin
 	rst_r <= rst;
 end
 
-assign inst_valid = state==WAIT;
+//assign inst_valid = state==WAIT;
 always @(posedge clk) begin
 	if (rst) begin
 		inst_fetch <= 32'b0;
@@ -52,10 +52,10 @@ always @(posedge clk) begin
 	end
 	else if(state==IDLE) begin
 		inst_fetch <= pmem_read(pc);
-		//idu_en <= 1;
+		inst_valid <= 1;
 	end
-	// else
-	// 	idu_en <= 0;
+	else
+		inst_valid <= 0;
 end
 
 function int read_inst();
