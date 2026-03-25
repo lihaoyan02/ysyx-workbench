@@ -26,16 +26,18 @@ reg read_out;
 assign reqValid = lsu_en;
 assign mem_wdata = wdata;
 assign mem_wen = wen;
-assign rdata = mem_rdata;
+assign rdata_word = mem_rdata;
 assign mem_addr = addr;
 assign ready_out = ~(lsu_en & ~wen & ~respValid);
 always @(*) begin
-	case (lsu_ctrl)
-		3'b000: mem_wmask = 4'b1;
-		3'b001: mem_wmask = 4'b11;
-		3'b010: mem_wmask = 4'b1111;
-		default: $finish;
-	endcase
+	if(lsu_en&wen) begin
+		case (lsu_ctrl)
+			3'b000: mem_wmask = 4'b1;
+			3'b001: mem_wmask = 4'b11;
+			3'b010: mem_wmask = 4'b1111;
+			default: $finish;
+		endcase
+	end
 end
 /*
 always @(posedge clk) begin
@@ -104,7 +106,7 @@ always @(posedge clk) begin
 end
 
 assign ready_out = ~(lsu_en & ~wen & ~read_out);
-
+*/
 always @(*) begin
 	rdata = 32'b0;
 	if(lsu_en) begin
@@ -141,6 +143,6 @@ always @(*) begin
 		end
 	end
 end
-*/
+
 
 endmodule
