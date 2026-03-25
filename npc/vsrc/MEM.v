@@ -17,6 +17,22 @@ always @(posedge clk) begin
     if (reqValid && wen) begin
         pmem_write(addr, wdata, {4'b0,wmask});
     end
-    respValid <= reqValid;
 end
+
+always @(posedge clk) begin
+    if (reqValid && wen) begin
+        respValid <= reqValid;
+    end
+    else
+        respValid <= shift_reg[0];
+end
+reg [2:0] shift_reg;
+always @(posedge clk) begin
+    if (reqValid && !wen) begin
+        shift_reg <= {reqValid,shift_reg[2:1]};
+    end
+    else
+        shift_reg <= {1'b0,shift_reg[2:1]};
+end
+
 endmodule
