@@ -36,7 +36,7 @@ always @(posedge clk) begin
 	if (rst) pc <= 32'h80000000;//{ADDR_WIDTH{1'b0}}; 
 	//else if(rst_r)
 		//pc <= 32'h80000000;
-	else if(state==WAIT)
+	else if(state==WAIT & next_state==IDLE)
 		pc <= next_pc;
 end
 
