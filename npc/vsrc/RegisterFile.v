@@ -2,6 +2,7 @@ module RegisterFile #(ADDR_WIDTH = 5, DATA_WIDTH = 32, REG_NUM = 16) (
 	input clk,
 	input rst,
 	input wen,
+	input ready_in,
 	input [DATA_WIDTH-1:0] wdata,
 	input [ADDR_WIDTH-1:0] waddr,
 
@@ -18,7 +19,7 @@ integer i = 0;
 				rf[i] <= {DATA_WIDTH{1'b0}};
 			end
 		end 
-		else if(wen && waddr[3:0] != 4'b0) 
+		else if(ready_in & wen && waddr[3:0] != 4'b0) 
 			rf[waddr[3:0]] <= wdata;
 	end
 

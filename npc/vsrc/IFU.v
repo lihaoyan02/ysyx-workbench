@@ -3,9 +3,10 @@ module IFU #(INST_WIDTH = 32, ADDR_WIDTH = 32)(
 	input rst,
 	input j_pc,
 	input [ADDR_WIDTH-1:0] j_pc_addr,
+	input ready_in,
 	output reg [ADDR_WIDTH-1:0] pc,
 	output reg [INST_WIDTH-1:0] inst_fetch,
-	output reg idu_en
+	output reg ready_out
 );
 localparam IDLE = 1'b0, WAIT = 1'b1;
 reg state, next_state;
@@ -21,7 +22,7 @@ always @(*) begin
 		IDLE:
 			next_state = WAIT;
 		WAIT:
-			next_state = IDLE;
+			next_state = ready_in ? IDLE : WAIT;
 	endcase
 end
 
@@ -35,7 +36,7 @@ always @(posedge clk) begin
 	if (rst) pc <= 32'h80000000;//{ADDR_WIDTH{1'b0}}; 
 	//else if(rst_r)
 		//pc <= 32'h80000000;
-	else if(state==WAIT)
+	else if(state==WAIT & next_state==IDLE)
 		pc <= next_pc;
 end
 
@@ -43,17 +44,18 @@ always @(posedge clk) begin
 	rst_r <= rst;
 end
 
+assign ready_out = state==WAIT;
 always @(posedge clk) begin
 	if (rst) begin
 		inst_fetch <= 32'b0;
-		idu_en <= 0;
+		//idu_en <= 0;
 	end
 	else if(state==IDLE) begin
 		inst_fetch <= pmem_read(pc);
-		idu_en <= 1;
+		//idu_en <= 1;
 	end
-	else
-		idu_en <= 0;
+	// else
+	// 	idu_en <= 0;
 end
 
 function int read_inst();
@@ -69,7 +71,7 @@ endfunction
 export "DPI-C" function read_dnpc;
 
 function int read_state();
-	return {31'b0,state};
+	return {31'b0,state&(~next_state)};
 endfunction
 
 export "DPI-C" function read_state;

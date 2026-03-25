@@ -49,22 +49,21 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 	import "DPI-C" function void unknow_inst(); 
 
 		always @(*) begin
-			// default value
-			alu_ctrl = `ALU_IDLE;
-			alu_op_ctrl = `OP_RS1_RS2; // if choose imm
-			imm = 32'b0;
-			wb_en = 0; // if wb
-			wb_ctrl = WB_IDLE; //from where to wb
-			j_en = 1'b0; // if jump
-			j_cond = `J_UNCOND; // if conditional jump
 			lsu_en = 1'b0;
 			lsu_wen = 1'b0;
-			ebreak_flag = 1'b0;
-			csr_wen = 1'b0;
-			csr_event = 1'b0;
-			csr_addr = inst_fetch[31:20];
-
 			if (en) begin
+				// default value
+				alu_ctrl = `ALU_IDLE;
+				alu_op_ctrl = `OP_RS1_RS2; // if choose imm
+				imm = 32'b0;
+				wb_en = 0; // if wb
+				wb_ctrl = WB_IDLE; //from where to wb
+				j_en = 1'b0; // if jump
+				j_cond = `J_UNCOND; // if conditional jump				
+				ebreak_flag = 1'b0;
+				csr_wen = 1'b0;
+				csr_event = 1'b0;
+				csr_addr = inst_fetch[31:20];
 				case (opcode)
 					7'b0010111: begin //auipc
 						alu_ctrl = `ALU_ADD;

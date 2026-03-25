@@ -191,15 +191,17 @@ void cpu_exec(uint64_t n) {
 		IFDEF(CONFIG_IRINGTRACE, iringbuf_print()); 
 		reg_display();
 		case NPC_END:
-		IFDEF(CONFIG_TRACE_WAVE,tfp->close());
 		Log("npc: %s at pc = 0x%08x", (npc_state.halt_ret==0 ? ANSI_FMT("HIT GOOD TRAP", ANSI_FG_GREEN) :
 					ANSI_FMT("HIT BAD TRAP", ANSI_FG_RED)),
 					npc_state.halt_pc);
-		case NPC_QUIT: statistic();
+		case NPC_QUIT: 
+		IFDEF(CONFIG_TRACE_WAVE,tfp->close());
+		statistic();
 	IFDEF(CONFIG_FTRACE, free_fp());
 	}
 }
 
 extern "C" void unknow_inst() {
+	IFDEF(CONFIG_TRACE_WAVE,tfp->close());
 	Assert(npc_state.state != NPC_RUNNING,"Unknown instruction at pc=0x%08x",top->pc);
 }

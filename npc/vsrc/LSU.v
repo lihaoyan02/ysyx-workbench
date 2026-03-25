@@ -6,13 +6,15 @@ module LSU #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
 	input [DATA_WIDTH-1:0] wdata,
 	input [ADDR_WIDTH-1:0] waddr,
 	input [ADDR_WIDTH-1:0] raddr,
-	output reg [DATA_WIDTH-1:0] rdata
+	output reg [DATA_WIDTH-1:0] rdata,
+	output ready_out
 );
 import "DPI-C" function int pmem_read(int raddr);
 import "DPI-C" function void pmem_write(int waddr, int wdata, byte wmask);
 
 reg [DATA_WIDTH-1:0] rdata_word;
 reg [DATA_WIDTH-1:0] rdata_word_n;
+reg read_out;
 
 always @(posedge clk) begin
 	if(lsu_en) begin
@@ -60,13 +62,31 @@ always @(posedge clk) begin
 	end
 end
 
+always @(posedge clk) begin
+	if(lsu_en & ~wen) begin
+		read_out <= 1;
+		case (lsu_ctrl)
+			3'b100, 3'b000: begin
+				rdata_word <= pmem_read(raddr);
+				rdata_word_n <= 32'b0;
+			end
+			3'b010, 3'b101, 3'b001: begin
+				 rdata_word <= pmem_read(raddr);
+				 rdata_word_n <= pmem_read(raddr);
+			end
+			default: $finish;
+		endcase
+	end
+	else
+		read_out <= 0;
+end
+
+assign ready_out = ~(lsu_en & ~wen & ~read_out);
+
 always @(*) begin
 	rdata = 32'b0;
-	rdata_word = 32'b0;
-	rdata_word_n = 32'b0;
 	if(lsu_en) begin
 		if (~wen) begin // write enable : store data
-			rdata_word = pmem_read(raddr);
 			case (lsu_ctrl)
 				3'b100: rdata = raddr[1:0]==2'b00 ? {24'b0, rdata_word[7:0]} :
 												raddr[1:0]==2'b01 ? {24'b0, rdata_word[15:8]} :
@@ -77,26 +97,23 @@ always @(*) begin
 												raddr[1:0]==2'b10 ? {{24{rdata_word[23]}}, rdata_word[23:16]} :
 												raddr[1:0]==2'b11 ? {{24{rdata_word[31]}}, rdata_word[31:24]} : 32'b0; //lb 
 				3'b010: begin //lw
-					rdata_word_n = pmem_read(raddr);
 					rdata = raddr[1:0]==2'b00 ? rdata_word : 
 									raddr[1:0]==2'b01 ? {rdata_word_n[7:0], rdata_word[31:8]} :
 									raddr[1:0]==2'b10 ? {rdata_word_n[15:0], rdata_word[31:16]} :
 									raddr[1:0]==2'b11 ? {rdata_word_n[23:0], rdata_word[31:24]} : 32'b0;
-							end
+				end
 				3'b101: begin //lhu 
-					rdata_word_n = pmem_read(raddr); 
 					rdata = raddr[1:0]==2'b00 ? {16'b0, rdata_word[15:0]} :
 									raddr[1:0]==2'b01 ? {16'b0, rdata_word[23:8]} :
 									raddr[1:0]==2'b10 ? {16'b0, rdata_word[31:16]} :
 									raddr[1:0]==2'b11 ? {16'b0, rdata_word_n[7:0], rdata_word[31:24]} : 32'b0;  
-							end
+				end
 				3'b001: begin //lh 
-					rdata_word_n = pmem_read(raddr); 
 					rdata = raddr[1:0]==2'b00 ? {{16{rdata_word[15]}}, rdata_word[15:0]} :
 									raddr[1:0]==2'b01 ? {{16{rdata_word[23]}}, rdata_word[23:8]} :
 									raddr[1:0]==2'b10 ? {{16{rdata_word[31]}}, rdata_word[31:16]} :
 									raddr[1:0]==2'b11 ? {{16{rdata_word_n[7]}},rdata_word_n[7:0], rdata_word[31:24]} : 32'b0;  
-								end
+				end
 				default: $finish;
 			endcase
 		end
