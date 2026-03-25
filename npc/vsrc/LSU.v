@@ -62,12 +62,14 @@ always @(*) begin
 					mem_wdata = wdata<<8;
 				end
 				2'b10: begin
-					mem_wmask = 4'b1100;
-					mem_wdata = wdata<<16;
+					$finish;
+					// mem_wmask = 4'b1100;
+					// mem_wdata = wdata<<16;
 				end
 				2'b11: begin
-					mem_wmask = 4'b1000;
-					mem_wdata = wdata<<24;
+					$finish;
+					// mem_wmask = 4'b1000;
+					// mem_wdata = wdata<<24;
 				end
 				endcase
 			end
