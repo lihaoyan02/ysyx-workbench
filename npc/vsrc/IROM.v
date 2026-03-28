@@ -39,7 +39,7 @@ assign rand_val = lfsr[2:0];
 reg [ADDR_WIDTH-1:0] saved_addr;
 always @(posedge clk) begin
     if (rst)
-        lfsr <= 4'b1;
+        lfsr <= 4'b10;
     else if (state==IDLE & reqValid) begin
         lfsr <= {lfsr[0] ^ lfsr[2],lfsr[3:1]};
     end
