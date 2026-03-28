@@ -7,6 +7,7 @@ module IFU #(INST_WIDTH = 32, ADDR_WIDTH = 32)(
 	output reg [ADDR_WIDTH-1:0] pc,
 	output reg [INST_WIDTH-1:0] inst_fetch,
 	output reg inst_valid,
+	output wb_valid,
 
 	output reqValid,
 	output [ADDR_WIDTH-1:0] mem_addr,
@@ -22,6 +23,7 @@ always @(posedge clk) begin
 		state <= next_state;
 end
 
+assign wb_valid = state==WAIT & next_state==IDLE;
 reg inst_r;
 always @(*) begin
 	case (state)
@@ -54,7 +56,7 @@ always @(posedge clk) begin
 	if (rst) pc <= 32'h80000000;//{ADDR_WIDTH{1'b0}}; 
 	//else if(rst_r)
 		//pc <= 32'h80000000;
-	else if(state==WAIT & next_state==IDLE)
+	else if(wb_valid)
 		pc <= next_pc;
 end
 

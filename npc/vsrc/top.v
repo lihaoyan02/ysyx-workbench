@@ -7,7 +7,7 @@ module top #(INST_WIDTH = 32, DATA_WIDTH = 32) (
 import "DPI-C" function void npctrap(int a0);
 
 wire j_pc, j_en, wb_en, ebreak_flag, inst_valid, lsu_en, lsu_wen, csr_wen, lsu_ready;
-wire irom_reqValid, irom_respValid;
+wire irom_reqValid, irom_respValid, wb_valid;
 wire [DATA_WIDTH-1:0] irom_addr;
 wire [DATA_WIDTH-1:0] irom_data;
 wire [DATA_WIDTH-1:0] alu_out;
@@ -42,6 +42,7 @@ wire csr_event;
 		.pc(pc),
 		.inst_valid(inst_valid),
 		.inst_fetch(inst_fetch),
+		.wb_valid(wb_valid),
 
 		.reqValid(irom_reqValid),
 		.mem_addr(irom_addr),
@@ -82,8 +83,8 @@ wire csr_event;
 	RegisterFile u_gpr (
 		.clk(clk),
 		.rst(rst),
+		.en(wb_valid),
 		.wen(wb_en),
-		.ready_in(lsu_ready),
 		.wdata(wb_data),
 		.waddr(rd),
 		.raddr1(rs1),
