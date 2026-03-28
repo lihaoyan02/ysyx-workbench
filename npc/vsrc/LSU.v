@@ -9,7 +9,7 @@ module LSU #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
 	output reg [DATA_WIDTH-1:0] rdata,
 	output ready_out,
 
-	output reqValid,
+	output reg reqValid,
 	input reqReady,
 	output [ADDR_WIDTH-1:0] mem_addr,
 	output mem_wen,
@@ -44,6 +44,12 @@ always @(*) begin
 end
 
 assign reqValid = lsu_en & (state==IDLE);
+// always @(*) begin
+// 	if(lsu_en & (state==IDLE))
+// 		reqValid = 1;
+// 	else if(state==WAIT)
+// 		reqValid = 0;
+// end
 
 reg [DATA_WIDTH-1:0] rdata_word;
 reg [DATA_WIDTH-1:0] rdata_word_n;
