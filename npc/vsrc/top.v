@@ -109,6 +109,7 @@ wire csr_event;
 	LSU u_LSU (
 		.lsu_en(lsu_en),
 		.clk(clk),
+		.rst(rst),
 		.wen(lsu_wen),
 		.lsu_ctrl(lsu_ctrl),
 		.wdata(rs2_data),
