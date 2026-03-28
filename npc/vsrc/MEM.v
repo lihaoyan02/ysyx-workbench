@@ -80,7 +80,7 @@ always @(posedge clk) begin
         saved_wdata <= wdata;
         saved_wmask <= wmask;        
     end
-    else if (state==WAIT & cnt == 0) begin //cnt == 0
+    else if (state==WAIT & cnt == 0 & ~respValid) begin //cnt == 0
         if (saved_wen) begin
             pmem_write(saved_addr, saved_wdata, {4'b0,saved_wmask});
         end     
