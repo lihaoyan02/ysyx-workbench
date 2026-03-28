@@ -146,6 +146,7 @@ wire csr_event;
 
 	MEM u_mem (
 		.clk(clk),
+		.rst(rst),
 		.wen(mem_wen),
 		.reqValid(reqValid),
 		.addr(mem_addr),

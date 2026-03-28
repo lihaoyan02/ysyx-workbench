@@ -1,5 +1,6 @@
 module MEM #(DATA_WIDTH = 32, ADDR_WIDTH=32, SHIFT_LEN=4) (
 	input clk,
+    input rst,
 	input wen,
     input reqValid,
     input [ADDR_WIDTH-1:0] addr,
@@ -20,30 +21,102 @@ import "DPI-C" function void pmem_write(int waddr, int wdata, byte wmask);
 //   respValid <= reqValid;
 // end
 
+reg state, next_state;
+localparam IDLE=1'b0, WAIT=1'b1;
+
 always @(posedge clk) begin
-    if (reqValid && !wen)
-        rdata <= pmem_read(addr);
-    // else if(respValid)
-    //     rdata <= 0;
-    if (reqValid && wen) begin
-        pmem_write(addr, wdata, {4'b0,wmask});
+    if (rst)
+        state <= IDLE;
+    else
+        state <= next_state;
+end
+
+always @(*) begin
+    case (state)
+        IDLE: next_state = reqValid ? WAIT : IDLE;
+        WAIT: next_state = respValid ? IDLE : WAIT;
+    endcase
+end
+// save mem access info
+
+reg [2:0] cnt;
+reg [3:0] lfsr;
+wire [2:0] rand_val;
+assign rand_val = lfsr[2:0];
+reg saved_wen;
+reg [ADDR_WIDTH-1:0] saved_addr;
+reg [DATA_WIDTH-1:0] saved_wdata;
+reg [3:0] saved_wmask;
+always @(posedge clk) begin
+    if (rst)
+        lfsr <= 4'b1;
+    else if (state==IDLE & reqValid) begin
+        lfsr <= {lfsr[0] ^ lfsr[2],lfsr[3:1]};
     end
 end
 
 always @(posedge clk) begin
-    if (reqValid && wen) begin
-        respValid <= reqValid;
+    if (state==IDLE & reqValid) begin
+        cnt <= rand_val==0 ? 0 : rand_val - 1;
     end
-    else
-        respValid <= shift_reg[0];
+    else if(cnt != 0)
+        cnt <= cnt - 1;
 end
-reg [SHIFT_LEN-1:0] shift_reg;
+
 always @(posedge clk) begin
-    if (reqValid && !wen) begin
-        shift_reg <= {reqValid,shift_reg[SHIFT_LEN-1:1]};
+    rdata <= 32'b0;
+    respValid <= 0;
+    if (state==IDLE & reqValid & rand_val==0) begin // cnt==0 direct out
+        if (saved_wen)
+            pmem_write(addr, wdata, {4'b0,wmask});    
+        else
+            rdata <= pmem_read(addr);
+        respValid <= 1;
     end
-    else
-        shift_reg <= {1'b0,shift_reg[SHIFT_LEN-1:1]};
+    else if (state==IDLE & reqValid & rand_val !=0) begin // save mem access info and init cnt
+        cnt <= rand_val - 1;
+        saved_wen <= wen;
+        saved_addr <= addr;
+        saved_wdata <= wdata;
+        saved_wmask <= wmask;        
+    end
+    else if (state==WAIT & cnt == 0) begin //cnt == 0
+        if (saved_wen) begin
+            pmem_write(saved_addr, saved_wdata, {4'b0,saved_wmask});
+        end     
+        else
+            rdata <= pmem_read(saved_addr);
+        respValid <= 1;
+    end
+    else if (state==WAIT & cnt!=0) begin
+        cnt <= cnt -1;
+    end
 end
+
+// always @(posedge clk) begin
+//     if (reqValid && !wen)
+//         rdata <= pmem_read(addr);
+//     // else if(respValid)
+//     //     rdata <= 0;
+//     if (reqValid && wen) begin
+//         pmem_write(addr, wdata, {4'b0,wmask});
+//     end
+// end
+
+// always @(posedge clk) begin
+//     if (reqValid && wen) begin
+//         respValid <= reqValid;
+//     end
+//     else
+//         respValid <= shift_reg[0];
+// end
+// reg [SHIFT_LEN-1:0] shift_reg;
+// always @(posedge clk) begin
+//     if (reqValid && !wen) begin
+//         shift_reg <= {reqValid,shift_reg[SHIFT_LEN-1:1]};
+//     end
+//     else
+//         shift_reg <= {1'b0,shift_reg[SHIFT_LEN-1:1]};
+// end
 
 endmodule
