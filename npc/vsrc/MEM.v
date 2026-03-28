@@ -1,4 +1,4 @@
-module MEM #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
+module MEM #(DATA_WIDTH = 32, ADDR_WIDTH=32, SHIFT_LEN=4) (
 	input clk,
 	input wen,
     input reqValid,
@@ -11,6 +11,14 @@ module MEM #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
 
 import "DPI-C" function int pmem_read(int raddr);
 import "DPI-C" function void pmem_write(int waddr, int wdata, byte wmask);
+
+// always @(posedge clock) begin
+//   rdata <= (reqValid && !wen) ? pmem_read(addr) : 32'b0;
+//   if (reqValid && wen) begin
+//     pmem_write(addr, wdata, wmask);
+//   end
+//   respValid <= reqValid;
+// end
 
 always @(posedge clk) begin
     if (reqValid && !wen)
@@ -29,13 +37,13 @@ always @(posedge clk) begin
     else
         respValid <= shift_reg[0];
 end
-reg [2:0] shift_reg;
+reg [SHIFT_LEN-1:0] shift_reg;
 always @(posedge clk) begin
     if (reqValid && !wen) begin
-        shift_reg <= {reqValid,shift_reg[2:1]};
+        shift_reg <= {reqValid,shift_reg[SHIFT_LEN-1:1]};
     end
     else
-        shift_reg <= {1'b0,shift_reg[2:1]};
+        shift_reg <= {1'b0,shift_reg[SHIFT_LEN-1:1]};
 end
 
 endmodule

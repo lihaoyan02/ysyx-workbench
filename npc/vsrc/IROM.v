@@ -9,6 +9,11 @@ module IROM #(DATA_WIDTH = 32, ADDR_WIDTH=32, SHIFT_LEN=2) (
 
 import "DPI-C" function int pmem_read(int raddr);
 
+// always @(posedge clock) begin
+//   rdata <= reqValid ? pmem_read(addr) : 32'b0;
+//   respValid <= reqValid;
+// end
+
 always @(posedge clk) begin
     if (reqValid)
         rdata <= pmem_read(addr);
