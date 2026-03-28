@@ -23,7 +23,7 @@ module LSU #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
 reg state, next_state;
 localparam IDLE = 1'b0, WAIT = 1'b1;
 
-assign ready_out = state==WAIT & respValid;
+assign ready_out = (state==WAIT & respValid) & (state==IDLE & ~reqValid);
 
 always @(posedge clk) begin
 	if (rst)
