@@ -67,7 +67,7 @@ always @(posedge clk) begin
     rdata <= 32'b0;
     respValid <= 0;
     if (state==IDLE & reqValid & rand_val==0) begin // cnt==0 direct out
-        if (saved_wen)
+        if (wen)
             pmem_write(addr, wdata, {4'b0,wmask});    
         else
             rdata <= pmem_read(addr);
