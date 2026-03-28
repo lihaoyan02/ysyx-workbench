@@ -59,7 +59,7 @@ wire csr_event;
 	);
 	IDU u_IDU (
 		.inst_fetch(inst_fetch),
-		.en(inst_valid),
+		.inst_valid(inst_valid),
 		.imm(imm),
 		.rd(rd),
 		.rs1(rs1),

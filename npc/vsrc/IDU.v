@@ -1,7 +1,7 @@
 `include "alu_opcodes.v"
 module IDU #(INST_WIDTH = 32, REGADDR_WIDTH = 5, DATA_WIDTH = 32) (
 	input [INST_WIDTH-1:0] inst_fetch,
-	input en,
+	input inst_valid,
 	output reg [DATA_WIDTH-1:0] imm,
 	output [REGADDR_WIDTH-1:0] rd,
 	output [REGADDR_WIDTH-1:0] rs1, 	
@@ -52,7 +52,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 			lsu_en = 1'b0;
 			lsu_wen = 1'b0;
 			
-			if (en) begin
+			if (inst_valid) begin
 				// default value
 				alu_ctrl = `ALU_IDLE;
 				alu_op_ctrl = `OP_RS1_RS2; // if choose imm
