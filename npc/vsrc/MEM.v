@@ -93,30 +93,4 @@ always @(posedge clk) begin
     end
 end
 
-// always @(posedge clk) begin
-//     if (reqValid && !wen)
-//         rdata <= pmem_read(addr);
-//     // else if(respValid)
-//     //     rdata <= 0;
-//     if (reqValid && wen) begin
-//         pmem_write(addr, wdata, {4'b0,wmask});
-//     end
-// end
-
-// always @(posedge clk) begin
-//     if (reqValid && wen) begin
-//         respValid <= reqValid;
-//     end
-//     else
-//         respValid <= shift_reg[0];
-// end
-// reg [SHIFT_LEN-1:0] shift_reg;
-// always @(posedge clk) begin
-//     if (reqValid && !wen) begin
-//         shift_reg <= {reqValid,shift_reg[SHIFT_LEN-1:1]};
-//     end
-//     else
-//         shift_reg <= {1'b0,shift_reg[SHIFT_LEN-1:1]};
-// end
-
 endmodule
