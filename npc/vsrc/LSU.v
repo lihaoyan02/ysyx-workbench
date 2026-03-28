@@ -56,12 +56,14 @@ end
 
 reg [DATA_WIDTH-1:0] rdata_word;
 reg [DATA_WIDTH-1:0] rdata_word_n;
-assign mem_wen = wen;
+//assign mem_wen = wen;
 assign rdata_word = mem_rdata;
-assign mem_addr = addr;
+//assign mem_addr = addr;
 
 always @(*) begin
 	if(lsu_en&wen) begin
+		mem_addr = addr;
+		mem_wen = wen;
 		case (lsu_ctrl)
 			3'b000: begin
 				case (addr[1:0])
