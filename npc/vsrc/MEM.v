@@ -41,7 +41,7 @@ end
 // save mem access info
 
 reg [2:0] cnt;
-reg [3:0] lfsr;
+
 wire [2:0] rand_val;
 assign rand_val = lfsr[2:0];
 reg saved_wen;
@@ -51,12 +51,22 @@ reg [3:0] saved_wmask;
 wire req_handshaked;
 assign req_handshaked = reqValid & reqReady;
 always @(*) begin
-    if (reqValid)
+    if (reqValid & lfsr_rdy[0])
         reqReady = 1;
     else
         reqReady = 0;
 end
 
+reg [3:0] lfsr_rdy;
+always @(posedge clk) begin
+    if (rst)
+        lfsr_rdy <= 4'b1;
+    else if (state==IDLE & reqValid) begin
+        lfsr_rdy <= {lfsr_rdy[0] ^ lfsr_rdy[2],lfsr_rdy[3:1]};
+    end
+end
+
+reg [3:0] lfsr;
 always @(posedge clk) begin
     if (rst)
         lfsr <= 4'b1;
