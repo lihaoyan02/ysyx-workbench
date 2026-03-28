@@ -3,6 +3,7 @@ module MEM #(DATA_WIDTH = 32, ADDR_WIDTH=32, SHIFT_LEN=4) (
     input rst,
 	input wen,
     input reqValid,
+    output reg reqReady,
     input [ADDR_WIDTH-1:0] addr,
 	input [DATA_WIDTH-1:0] wdata,
 	input [3:0] wmask,
@@ -33,7 +34,7 @@ end
 
 always @(*) begin
     case (state)
-        IDLE: next_state = reqValid ? WAIT : IDLE;
+        IDLE: next_state = req_handshaked ? WAIT : IDLE;
         WAIT: next_state = respValid ? IDLE : WAIT;
     endcase
 end
@@ -47,33 +48,42 @@ reg saved_wen;
 reg [ADDR_WIDTH-1:0] saved_addr;
 reg [DATA_WIDTH-1:0] saved_wdata;
 reg [3:0] saved_wmask;
+wire req_handshaked;
+assign req_handshaked = reqValid & reqReady;
+always @(*) begin
+    if (reqValid)
+        reqReady = 1;
+    else
+        reqReady = 0;
+end
+
 always @(posedge clk) begin
     if (rst)
         lfsr <= 4'b1;
-    else if (state==IDLE & reqValid) begin
+    else if (state==IDLE & req_handshaked) begin
         lfsr <= {lfsr[0] ^ lfsr[2],lfsr[3:1]};
     end
 end
 
 always @(posedge clk) begin
-    if (state==IDLE & reqValid) begin
+    if (state==IDLE & req_handshaked) begin
         cnt <= rand_val==0 ? 0 : rand_val - 1;
     end
-    else if(cnt != 0)
+    else if(cnt != 0 & state==WAIT)
         cnt <= cnt - 1;
 end
 
 always @(posedge clk) begin
     rdata <= 32'b0;
     respValid <= 0;
-    if (state==IDLE & reqValid & rand_val==0) begin // cnt==0 direct out
+    if (state==IDLE & req_handshaked & rand_val==0) begin // cnt==0 direct out
         if (wen)
             pmem_write(addr, wdata, {4'b0,wmask});    
         else
             rdata <= pmem_read(addr);
         respValid <= 1;
     end
-    else if (state==IDLE & reqValid & rand_val !=0) begin // save mem access info and init cnt
+    else if (state==IDLE & req_handshaked & rand_val !=0) begin // save mem access info and init cnt
         cnt <= rand_val - 1;
         saved_wen <= wen;
         saved_addr <= addr;

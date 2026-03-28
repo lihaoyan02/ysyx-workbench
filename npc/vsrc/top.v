@@ -118,7 +118,7 @@ wire csr_event;
 		.j_pc(j_pc)
 	);
 
-	wire reqValid, mem_wen, respValid;
+	wire reqValid, mem_wen, respValid, reqReady;
 	wire [DATA_WIDTH-1:0] mem_addr;
 	wire [DATA_WIDTH-1:0] mem_wdata;
 	wire [DATA_WIDTH-1:0] mem_rdata;
@@ -135,6 +135,7 @@ wire csr_event;
 		.ready_out(lsu_ready),
 
 		.reqValid(reqValid),
+		.reqReady(reqReady),
 		.mem_addr(mem_addr),
 		.mem_wen(mem_wen),
 		.mem_wdata(mem_wdata),
@@ -149,6 +150,7 @@ wire csr_event;
 		.rst(rst),
 		.wen(mem_wen),
 		.reqValid(reqValid),
+		.reqReady(reqReady),
 		.addr(mem_addr),
 		.wdata(mem_wdata),
 		.wmask(wmask),

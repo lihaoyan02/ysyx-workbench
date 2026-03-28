@@ -10,6 +10,7 @@ module LSU #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
 	output ready_out,
 
 	output reqValid,
+	input reqReady,
 	output [ADDR_WIDTH-1:0] mem_addr,
 	output mem_wen,
 	output [DATA_WIDTH-1:0] mem_wdata,
@@ -22,7 +23,8 @@ reg state, next_state;
 localparam IDLE = 1'b0, WAIT = 1'b1;
 
 assign ready_out = (state==WAIT & respValid) | (state==IDLE & ~reqValid);
-
+wire req_handshaked;
+assign req_handshaked = reqValid & reqReady;
 always @(posedge clk) begin
 	if (rst)
 		state <= IDLE;
@@ -33,7 +35,7 @@ end
 always @(*) begin
 	case (state)
 		IDLE: begin
-			next_state =  reqValid ? WAIT : IDLE;
+			next_state =  req_handshaked ? WAIT : IDLE;
 		end
 		WAIT: begin
 			next_state = respValid ? IDLE : WAIT;

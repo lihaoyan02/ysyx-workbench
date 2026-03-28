@@ -48,9 +48,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 
 	import "DPI-C" function void unknow_inst(); 
 
-		always @(*) begin
-			lsu_en = 1'b0;
-			lsu_wen = 1'b0;
+		always @(*) begin			
 			
 			if (inst_valid) begin
 				// default value
@@ -58,6 +56,8 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 				rs1 = inst_fetch[19:15];
 				rs2 = inst_fetch[24:20];
 
+				lsu_en = 1'b0;
+				lsu_wen = 1'b0;
 				alu_ctrl = `ALU_IDLE;
 				alu_op_ctrl = `OP_RS1_RS2; // if choose imm
 				imm = 32'b0;
