@@ -167,6 +167,7 @@ static void statistic() {
 }
 
 void assert_fail_msg() {
+	IFDEF(CONFIG_TRACE_WAVE,tfp->close());
 	IFDEF(CONFIG_FTRACE, ftrace_print(); free_fp());
 	IFDEF(CONFIG_IRINGTRACE, iringbuf_print()); 
 	reg_display();
@@ -201,6 +202,5 @@ void cpu_exec(uint64_t n) {
 }
 
 extern "C" void unknow_inst() {
-	IFDEF(CONFIG_TRACE_WAVE,tfp->close());
 	Assert(npc_state.state != NPC_RUNNING,"Unknown instruction at pc=0x%08x",top->pc);
 }
