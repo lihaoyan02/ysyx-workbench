@@ -7,6 +7,9 @@ module top #(INST_WIDTH = 32, DATA_WIDTH = 32) (
 import "DPI-C" function void npctrap(int a0);
 
 wire j_pc, j_en, wb_en, ebreak_flag, inst_valid, lsu_en, lsu_wen, csr_wen, lsu_ready;
+wire irom_reqValid, irom_respValid;
+wire [DATA_WIDTH-1:0] irom_addr;
+wire [DATA_WIDTH-1:0] irom_data;
 wire [DATA_WIDTH-1:0] alu_out;
 wire [INST_WIDTH-1:0] inst_fetch;
 wire [DATA_WIDTH-1:0] imm;
@@ -38,9 +41,22 @@ wire csr_event;
 		.ready_in(lsu_ready),
 		.pc(pc),
 		.inst_valid(inst_valid),
-		.inst_fetch(inst_fetch)
+		.inst_fetch(inst_fetch),
+
+		.reqValid(irom_reqValid),
+		.mem_addr(irom_addr),
+		.respValid(irom_respValid),
+		.mem_rdata(irom_data)
 	);
 
+	IROM u_IROM(
+		.clk(clk),
+		.rst(rst),
+		.reqValid(irom_reqValid),
+		.addr(irom_addr),
+		.rdata(irom_data),
+		.respValid(irom_respValid)
+	);
 	IDU u_IDU (
 		.inst_fetch(inst_fetch),
 		.en(inst_valid),
