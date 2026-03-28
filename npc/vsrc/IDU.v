@@ -1,11 +1,11 @@
 `include "alu_opcodes.v"
 module IDU #(INST_WIDTH = 32, REGADDR_WIDTH = 5, DATA_WIDTH = 32) (
 	input [INST_WIDTH-1:0] inst_fetch,
-	input en,
+	input inst_valid,
 	output reg [DATA_WIDTH-1:0] imm,
-	output [REGADDR_WIDTH-1:0] rd,
-	output [REGADDR_WIDTH-1:0] rs1, 	
-	output [REGADDR_WIDTH-1:0] rs2,
+	output reg [REGADDR_WIDTH-1:0] rd,
+	output reg [REGADDR_WIDTH-1:0] rs1, 	
+	output reg [REGADDR_WIDTH-1:0] rs2,
 	output reg [3:0] alu_ctrl,
 	output reg [1:0] alu_op_ctrl,  //choose imm in ALU
 	output reg [2:0] wb_ctrl,
@@ -51,20 +51,24 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 		always @(*) begin
 			lsu_en = 1'b0;
 			lsu_wen = 1'b0;
-			alu_ctrl = `ALU_IDLE;
-			alu_op_ctrl = `OP_RS1_RS2; // if choose imm
-			imm = 32'b0;
-			wb_en = 0; // if wb
-			wb_ctrl = WB_IDLE; //from where to wb
-			j_en = 1'b0; // if jump
-			j_cond = `J_UNCOND; // if conditional jump				
-			ebreak_flag = 1'b0;
-			csr_wen = 1'b0;
-			csr_event = 1'b0;
-			csr_addr = inst_fetch[31:20];
-			if (en) begin
+			
+			if (inst_valid) begin
 				// default value
-				
+				rd = inst_fetch[11:7];
+				rs1 = inst_fetch[19:15];
+				rs2 = inst_fetch[24:20];
+
+				alu_ctrl = `ALU_IDLE;
+				alu_op_ctrl = `OP_RS1_RS2; // if choose imm
+				imm = 32'b0;
+				wb_en = 0; // if wb
+				wb_ctrl = WB_IDLE; //from where to wb
+				j_en = 1'b0; // if jump
+				j_cond = `J_UNCOND; // if conditional jump				
+				ebreak_flag = 1'b0;
+				csr_wen = 1'b0;
+				csr_event = 1'b0;
+				csr_addr = inst_fetch[31:20];
 				case (opcode)
 					7'b0010111: begin //auipc
 						alu_ctrl = `ALU_ADD;
@@ -271,7 +275,5 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 		end
 	end
 
-	assign rd = inst_fetch[11:7];
-	assign rs1 = inst_fetch[19:15];
-	assign rs2 = inst_fetch[24:20];
+
 endmodule
