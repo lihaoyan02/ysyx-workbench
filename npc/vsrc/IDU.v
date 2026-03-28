@@ -3,9 +3,9 @@ module IDU #(INST_WIDTH = 32, REGADDR_WIDTH = 5, DATA_WIDTH = 32) (
 	input [INST_WIDTH-1:0] inst_fetch,
 	input inst_valid,
 	output reg [DATA_WIDTH-1:0] imm,
-	output [REGADDR_WIDTH-1:0] rd,
-	output [REGADDR_WIDTH-1:0] rs1, 	
-	output [REGADDR_WIDTH-1:0] rs2,
+	output reg [REGADDR_WIDTH-1:0] rd,
+	output reg [REGADDR_WIDTH-1:0] rs1, 	
+	output reg [REGADDR_WIDTH-1:0] rs2,
 	output reg [3:0] alu_ctrl,
 	output reg [1:0] alu_op_ctrl,  //choose imm in ALU
 	output reg [2:0] wb_ctrl,
@@ -54,6 +54,10 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 			
 			if (inst_valid) begin
 				// default value
+				rd = inst_fetch[11:7];
+				rs1 = inst_fetch[19:15];
+				rs2 = inst_fetch[24:20];
+
 				alu_ctrl = `ALU_IDLE;
 				alu_op_ctrl = `OP_RS1_RS2; // if choose imm
 				imm = 32'b0;
@@ -271,7 +275,5 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 		end
 	end
 
-	assign rd = inst_fetch[11:7];
-	assign rs1 = inst_fetch[19:15];
-	assign rs2 = inst_fetch[24:20];
+
 endmodule
