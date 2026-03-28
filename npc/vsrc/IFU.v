@@ -42,7 +42,7 @@ always @(posedge clk) begin
 end
 assign reqValid = ~rst & state==IDLE;
 assign mem_addr = pc;
-assign inst_fetch = respValid ? mem_rdata : 0;
+assign inst_fetch = respValid ? mem_rdata : inst_fetch_r;
 assign inst_valid = respValid;
 //import "DPI-C" function int pmem_read(int raddr);
 //reg rst_r;
