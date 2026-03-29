@@ -2,10 +2,32 @@ module IROM #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
 	input clk,
     input rst,
     input reqValid,
+    output reg reqReady,
     input [ADDR_WIDTH-1:0] addr,
 	output reg [DATA_WIDTH-1:0] rdata,
-	output respValid
+	output respValid,
+    input respReady
 );
+
+wire req_handshaked, resp_handshaked;
+assign req_handshaked = reqValid & reqReady;
+assign resp_handshaked = respValid & respReady;
+
+always @(*) begin
+    if (reqValid & lfsr_rdy[0])
+        reqReady = 1;
+    else
+        reqReady = 0;
+end
+
+reg [3:0] lfsr_rdy;
+always @(posedge clk) begin
+    if (rst)
+        lfsr_rdy <= 4'b1;
+    else if (state==IDLE & reqValid) begin
+        lfsr_rdy <= {lfsr_rdy[0] ^ lfsr_rdy[2],lfsr_rdy[3:1]};
+    end
+end
 
 import "DPI-C" function int pmem_read(int raddr);
 
@@ -26,8 +48,8 @@ end
 
 always @(*) begin
     case (state)
-        IDLE: next_state = reqValid ? WAIT : IDLE;
-        WAIT: next_state = respValid ? IDLE : WAIT;
+        IDLE: next_state = req_handshaked ? WAIT : IDLE;
+        WAIT: next_state = resp_handshaked ? IDLE : WAIT;
     endcase
 end
 // save mem access info
@@ -40,13 +62,13 @@ reg [ADDR_WIDTH-1:0] saved_addr;
 always @(posedge clk) begin
     if (rst)
         lfsr <= 4'b10;
-    else if (state==IDLE & reqValid) begin
+    else if (state==IDLE & req_handshaked) begin
         lfsr <= {lfsr[0] ^ lfsr[2],lfsr[3:1]};
     end
 end
 
 always @(posedge clk) begin
-    if (state==IDLE & reqValid) begin
+    if (state==IDLE & req_handshaked) begin
         cnt <= rand_val==0 ? 0 : rand_val - 1;
     end
     else if(cnt != 0)
@@ -54,13 +76,15 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-    rdata <= 32'b0;
-    respValid <= 0;
-    if (state==IDLE & reqValid & rand_val==0) begin // cnt==0 direct out
+    if (rst) begin
+        rdata <= 32'b0;
+        respValid <= 0;
+    end
+    if (state==IDLE & req_handshaked & rand_val==0) begin // cnt==0 direct out
         rdata <= pmem_read(addr);
         respValid <= 1;
     end
-    else if (state==IDLE & reqValid & rand_val !=0) begin // save mem access info and init cnt
+    else if (state==IDLE & req_handshaked & rand_val !=0) begin // save mem access info and init cnt
         cnt <= rand_val - 1;
         saved_addr <= addr;      
     end
@@ -69,7 +93,13 @@ always @(posedge clk) begin
         respValid <= 1;
     end
     else if (state==WAIT & cnt!=0) begin
+        rdata <= 32'b0;
+        respValid <= 0;
         cnt <= cnt -1;
+    end
+    else if (resp_handshaked) begin
+        rdata <= 0;
+        respValid <= 0;
     end
 end
 
