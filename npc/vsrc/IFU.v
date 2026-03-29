@@ -10,10 +10,16 @@ module IFU #(INST_WIDTH = 32, ADDR_WIDTH = 32)(
 	output wb_valid,
 
 	output reqValid,
+	input reqReady,
 	output [ADDR_WIDTH-1:0] mem_addr,
 	input respValid,
+	output respReady,
 	input [INST_WIDTH-1:0] mem_rdata
 );
+wire req_handshaked, resp_handshaked;
+assign req_handshaked = reqValid & reqReady;
+assign resp_handshaked = respValid & respReady;
+assign respReady = respValid;
 localparam IDLE = 1'b0, WAIT = 1'b1;
 reg state, next_state;
 always @(posedge clk) begin
@@ -28,14 +34,14 @@ reg inst_r;
 always @(*) begin
 	case (state)
 		IDLE:
-			next_state = WAIT;
+			next_state = req_handshaked ? WAIT : IDLE;
 		WAIT:
-			next_state = (ready_in & respValid) | (ready_in & inst_r) ? IDLE : WAIT;
+			next_state = (ready_in & resp_handshaked) | (ready_in & inst_r) ? IDLE : WAIT;
 	endcase
 end
 
 always @(posedge clk) begin
-	if (state==WAIT & respValid) begin
+	if (state==WAIT & resp_handshaked) begin
 		inst_r <= 1;
 	end
 	else if (state==IDLE) begin
@@ -44,8 +50,8 @@ always @(posedge clk) begin
 end
 assign reqValid = ~rst & state==IDLE;
 assign mem_addr = pc;
-assign inst_fetch = respValid ? mem_rdata : 0;
-assign inst_valid = respValid;
+assign inst_fetch = resp_handshaked ? mem_rdata : 0;
+assign inst_valid = resp_handshaked;
 //import "DPI-C" function int pmem_read(int raddr);
 //reg rst_r;
 wire [ADDR_WIDTH-1:0] next_pc;
@@ -65,7 +71,7 @@ always @(posedge clk) begin
 	if (rst) begin
 		inst_fetch_r <= 0;
 	end
-	else if (respValid) begin
+	else if (resp_handshaked) begin
 		inst_fetch_r <= inst_fetch;
 	end
 end
@@ -88,7 +94,7 @@ end
 // end
 
 function int read_inst();
-	return respValid ? inst_fetch : inst_fetch_r;
+	return resp_handshaked ? inst_fetch : inst_fetch_r;
 endfunction
 
 export "DPI-C" function read_inst;
