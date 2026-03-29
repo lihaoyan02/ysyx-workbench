@@ -16,7 +16,7 @@ module LSU #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
 	output [DATA_WIDTH-1:0] mem_wdata,
 	output [3:0] mem_wmask,
 	input respValid,
-	output respReady,
+	output reg respReady,
 	input [DATA_WIDTH-1:0] mem_rdata
 );
 
@@ -27,7 +27,17 @@ assign ready_out = (state==WAIT & resp_handshaked) | (state==IDLE & ~reqValid);
 wire req_handshaked, resp_handshaked;
 assign req_handshaked = reqValid & reqReady;
 assign resp_handshaked = respValid & respReady;
-assign respReady = respValid & state==WAIT;
+//assign respReady = respValid & state==WAIT;
+always @(posedge clk) begin
+	if (rst) begin
+		respReady <= 0;
+	end
+	else if (respValid) begin
+		respReady <= 1;
+	end
+	else if (resp_handshaked)
+		respReady <= 0;
+end
 always @(posedge clk) begin
 	if (rst)
 		state <= IDLE;
