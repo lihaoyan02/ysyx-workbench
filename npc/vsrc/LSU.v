@@ -27,22 +27,22 @@ assign ready_out = (state==WAIT & resp_handshaked) | (state==IDLE & ~reqValid);
 wire req_handshaked, resp_handshaked;
 assign req_handshaked = reqValid & reqReady;
 assign resp_handshaked = respValid & respReady;
-//assign respReady = respValid & state==WAIT;
-reg [2:0] shiftval;
-always @(posedge clk) begin
-	if (rst) begin
-		respReady <= 0;
-		shiftval <= 0;
-	end
-	else if (respValid) begin
-		shiftval <= {1'b1,shiftval[2:1]};
-		respReady <= shiftval[0];
-	end
-	else if (resp_handshaked) begin
-		respReady <= 0;
-		shiftval <= 0;
-	end
-end
+assign respReady = respValid & state==WAIT;
+// reg [2:0] shiftval;
+// always @(posedge clk) begin
+// 	if (rst) begin
+// 		respReady <= 0;
+// 		shiftval <= 0;
+// 	end
+// 	else if (respValid) begin
+// 		shiftval <= {1'b1,shiftval[2:1]};
+// 		respReady <= shiftval[0];
+// 	end
+// 	else if (resp_handshaked) begin
+// 		respReady <= 0;
+// 		shiftval <= 0;
+// 	end
+// end
 always @(posedge clk) begin
 	if (rst)
 		state <= IDLE;
