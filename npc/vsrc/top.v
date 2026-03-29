@@ -1,5 +1,3 @@
-`define MEM_MUTI_CYCLE
-
 module top #(INST_WIDTH = 32, DATA_WIDTH = 32) (
 	input clk,
 	input rst,
