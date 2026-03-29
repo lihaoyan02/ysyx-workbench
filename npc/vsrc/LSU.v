@@ -153,31 +153,65 @@ always @(*) begin
 	rdata = 32'b0;
 	if (respValid & ~wen_r) begin // write enable : store data
 		case (lsu_ctrl_r)
-			3'b100: rdata = addr2_r==2'b00 ? {24'b0, rdata_word[7:0]} :
-											addr2_r==2'b01 ? {24'b0, rdata_word[15:8]} :
-											addr2_r==2'b10 ? {24'b0, rdata_word[23:16]} :
-											addr2_r==2'b11 ? {24'b0, rdata_word[31:24]} : 32'b0; //lbu 
-			3'b000: rdata = addr2_r==2'b00 ? {{24{rdata_word[7]}}, rdata_word[7:0]} :
-											addr2_r==2'b01 ? {{24{rdata_word[15]}}, rdata_word[15:8]} :
-											addr2_r==2'b10 ? {{24{rdata_word[23]}}, rdata_word[23:16]} :
-											addr2_r==2'b11 ? {{24{rdata_word[31]}}, rdata_word[31:24]} : 32'b0; //lb 
+			3'b100: begin
+				case (addr2_r)
+					2'b00: rdata = {24'b0, rdata_word[7:0]};
+					2'b01: rdata = {24'b0, rdata_word[15:8]};
+					2'b10: rdata = {24'b0, rdata_word[23:16]};
+					2'b11: rdata = {24'b0, rdata_word[31:24]}; 
+				endcase
+				// rdata = addr2_r==2'b00 ? {24'b0, rdata_word[7:0]} :
+				// 							addr2_r==2'b01 ? {24'b0, rdata_word[15:8]} :
+				// 							addr2_r==2'b10 ? {24'b0, rdata_word[23:16]} :
+				// 							addr2_r==2'b11 ? {24'b0, rdata_word[31:24]} : 32'b0; //lbu 
+			end
+			3'b000: begin
+				case (addr2_r)
+					2'b00: rdata = {{24{rdata_word[7]}}, rdata_word[7:0]};
+					2'b01: rdata = {{24{rdata_word[15]}}, rdata_word[15:8]};
+					2'b10: rdata = {{24{rdata_word[23]}}, rdata_word[23:16]};
+					2'b11: rdata = {{24{rdata_word[31]}}, rdata_word[31:24]}; 
+				endcase
+				// rdata = addr2_r==2'b00 ? {{24{rdata_word[7]}}, rdata_word[7:0]} :
+				// 							addr2_r==2'b01 ? {{24{rdata_word[15]}}, rdata_word[15:8]} :
+				// 							addr2_r==2'b10 ? {{24{rdata_word[23]}}, rdata_word[23:16]} :
+				// 							addr2_r==2'b11 ? {{24{rdata_word[31]}}, rdata_word[31:24]} : 32'b0; //lb 
+			end
 			3'b010: begin //lw
-				rdata = addr2_r==2'b00 ? rdata_word : 
-								addr2_r==2'b01 ? {rdata_word_n[7:0], rdata_word[31:8]} :
-								addr2_r==2'b10 ? {rdata_word_n[15:0], rdata_word[31:16]} :
-								addr2_r==2'b11 ? {rdata_word_n[23:0], rdata_word[31:24]} : 32'b0;
+				case (addr2_r)
+					2'b00: rdata = rdata_word;
+					2'b01: $finish;
+					2'b10: $finish;
+					2'b11: $finish;
+				endcase
+				// rdata = addr2_r==2'b00 ? rdata_word : 
+				// 				addr2_r==2'b01 ? {rdata_word_n[7:0], rdata_word[31:8]} :
+				// 				addr2_r==2'b10 ? {rdata_word_n[15:0], rdata_word[31:16]} :
+				// 				addr2_r==2'b11 ? {rdata_word_n[23:0], rdata_word[31:24]} : 32'b0;
 			end
 			3'b101: begin //lhu 
-				rdata = addr2_r==2'b00 ? {16'b0, rdata_word[15:0]} :
-								addr2_r==2'b01 ? {16'b0, rdata_word[23:8]} :
-								addr2_r==2'b10 ? {16'b0, rdata_word[31:16]} :
-								addr2_r==2'b11 ? {16'b0, rdata_word_n[7:0], rdata_word[31:24]} : 32'b0;  
+				case (addr2_r)
+					2'b00: rdata = {16'b0, rdata_word[15:0]};
+					2'b01: $finish;
+					2'b10: rdata = {16'b0, rdata_word[31:16]};
+					2'b11: $finish;
+				endcase
+				// rdata = addr2_r==2'b00 ? {16'b0, rdata_word[15:0]} :
+				// 				addr2_r==2'b01 ? {16'b0, rdata_word[23:8]} :
+				// 				addr2_r==2'b10 ? {16'b0, rdata_word[31:16]} :
+				// 				addr2_r==2'b11 ? {16'b0, rdata_word_n[7:0], rdata_word[31:24]} : 32'b0;  
 			end
 			3'b001: begin //lh 
-				rdata = addr2_r==2'b00 ? {{16{rdata_word[15]}}, rdata_word[15:0]} :
-								addr2_r==2'b01 ? {{16{rdata_word[23]}}, rdata_word[23:8]} :
-								addr2_r==2'b10 ? {{16{rdata_word[31]}}, rdata_word[31:16]} :
-								addr2_r==2'b11 ? {{16{rdata_word_n[7]}},rdata_word_n[7:0], rdata_word[31:24]} : 32'b0;  
+				case (addr2_r)
+					2'b00: rdata = {{16{rdata_word[15]}}, rdata_word[15:0]};
+					2'b01: $finish;
+					2'b10: rdata = {{16{rdata_word[31]}}, rdata_word[31:16]};
+					2'b11: $finish;
+				endcase
+				// rdata = addr2_r==2'b00 ? {{16{rdata_word[15]}}, rdata_word[15:0]} :
+				// 				addr2_r==2'b01 ? {{16{rdata_word[23]}}, rdata_word[23:8]} :
+				// 				addr2_r==2'b10 ? {{16{rdata_word[31]}}, rdata_word[31:16]} :
+				// 				addr2_r==2'b11 ? {{16{rdata_word_n[7]}},rdata_word_n[7:0], rdata_word[31:24]} : 32'b0;  
 			end
 			default: $finish;
 		endcase
