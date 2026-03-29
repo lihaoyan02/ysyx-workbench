@@ -8,7 +8,8 @@ module MEM #(DATA_WIDTH = 32, ADDR_WIDTH=32, SHIFT_LEN=4) (
 	input [DATA_WIDTH-1:0] wdata,
 	input [3:0] wmask,
 	output reg [DATA_WIDTH-1:0] rdata,
-	output respValid
+	output respValid,
+    input respReady
 );
 
 import "DPI-C" function int pmem_read(int raddr);
@@ -35,7 +36,7 @@ end
 always @(*) begin
     case (state)
         IDLE: next_state = req_handshaked ? WAIT : IDLE;
-        WAIT: next_state = respValid ? IDLE : WAIT;
+        WAIT: next_state = resp_handshaked ? IDLE : WAIT;
     endcase
 end
 // save mem access info
@@ -48,8 +49,9 @@ reg saved_wen;
 reg [ADDR_WIDTH-1:0] saved_addr;
 reg [DATA_WIDTH-1:0] saved_wdata;
 reg [3:0] saved_wmask;
-wire req_handshaked;
+wire req_handshaked, resp_handshaked;
 assign req_handshaked = reqValid & reqReady;
+assign resp_handshaked = respValid & respReady;
 always @(*) begin
     if (reqValid & lfsr_rdy[0])
         reqReady = 1;
@@ -110,6 +112,9 @@ always @(posedge clk) begin
     end
     else if (state==WAIT & cnt!=0) begin
         cnt <= cnt -1;
+    end
+    else if (resp_handshaked) begin
+        respValid <= 0;
     end
 end
 

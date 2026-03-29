@@ -16,15 +16,18 @@ module LSU #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
 	output [DATA_WIDTH-1:0] mem_wdata,
 	output [3:0] mem_wmask,
 	input respValid,
+	output respReady,
 	input [DATA_WIDTH-1:0] mem_rdata
 );
 
 reg state, next_state;
 localparam IDLE = 1'b0, WAIT = 1'b1;
 
-assign ready_out = (state==WAIT & respValid) | (state==IDLE & ~reqValid);
-wire req_handshaked;
+assign ready_out = (state==WAIT & resp_handshaked) | (state==IDLE & ~reqValid);
+wire req_handshaked, resp_handshaked;
 assign req_handshaked = reqValid & reqReady;
+assign resp_handshaked = respValid & respReady;
+assign respReady = respValid & state==WAIT;
 always @(posedge clk) begin
 	if (rst)
 		state <= IDLE;
@@ -38,7 +41,7 @@ always @(*) begin
 			next_state =  req_handshaked ? WAIT : IDLE;
 		end
 		WAIT: begin
-			next_state = respValid ? IDLE : WAIT;
+			next_state = resp_handshaked ? IDLE : WAIT;
 		end
 	endcase
 end
@@ -108,8 +111,6 @@ always @(*) begin
 				end
 				2'b01: begin
 					$finish;
-					// mem_wmask = 4'b110;
-					// mem_wdata = wdata<<8;
 				end
 				2'b10: begin
 					mem_wmask = 4'b1100;
@@ -117,8 +118,6 @@ always @(*) begin
 				end
 				2'b11: begin
 					$finish;
-					// mem_wmask = 4'b1000;
-					// mem_wdata = wdata<<24;
 				end
 				endcase
 			end
@@ -151,7 +150,7 @@ always @(posedge clk) begin //latch the info
 end
 always @(*) begin
 	rdata = 32'b0;
-	if (respValid & ~wen_r) begin // write enable : store data
+	if (resp_handshaked & ~wen_r) begin // write enable : store data
 		case (lsu_ctrl_r)
 			3'b100: begin
 				case (addr2_r)
@@ -160,10 +159,6 @@ always @(*) begin
 					2'b10: rdata = {24'b0, rdata_word[23:16]};
 					2'b11: rdata = {24'b0, rdata_word[31:24]}; 
 				endcase
-				// rdata = addr2_r==2'b00 ? {24'b0, rdata_word[7:0]} :
-				// 							addr2_r==2'b01 ? {24'b0, rdata_word[15:8]} :
-				// 							addr2_r==2'b10 ? {24'b0, rdata_word[23:16]} :
-				// 							addr2_r==2'b11 ? {24'b0, rdata_word[31:24]} : 32'b0; //lbu 
 			end
 			3'b000: begin
 				case (addr2_r)
@@ -172,10 +167,6 @@ always @(*) begin
 					2'b10: rdata = {{24{rdata_word[23]}}, rdata_word[23:16]};
 					2'b11: rdata = {{24{rdata_word[31]}}, rdata_word[31:24]}; 
 				endcase
-				// rdata = addr2_r==2'b00 ? {{24{rdata_word[7]}}, rdata_word[7:0]} :
-				// 							addr2_r==2'b01 ? {{24{rdata_word[15]}}, rdata_word[15:8]} :
-				// 							addr2_r==2'b10 ? {{24{rdata_word[23]}}, rdata_word[23:16]} :
-				// 							addr2_r==2'b11 ? {{24{rdata_word[31]}}, rdata_word[31:24]} : 32'b0; //lb 
 			end
 			3'b010: begin //lw
 				case (addr2_r)
@@ -184,10 +175,6 @@ always @(*) begin
 					2'b10: $finish;
 					2'b11: $finish;
 				endcase
-				// rdata = addr2_r==2'b00 ? rdata_word : 
-				// 				addr2_r==2'b01 ? {rdata_word_n[7:0], rdata_word[31:8]} :
-				// 				addr2_r==2'b10 ? {rdata_word_n[15:0], rdata_word[31:16]} :
-				// 				addr2_r==2'b11 ? {rdata_word_n[23:0], rdata_word[31:24]} : 32'b0;
 			end
 			3'b101: begin //lhu 
 				case (addr2_r)
@@ -196,10 +183,6 @@ always @(*) begin
 					2'b10: rdata = {16'b0, rdata_word[31:16]};
 					2'b11: $finish;
 				endcase
-				// rdata = addr2_r==2'b00 ? {16'b0, rdata_word[15:0]} :
-				// 				addr2_r==2'b01 ? {16'b0, rdata_word[23:8]} :
-				// 				addr2_r==2'b10 ? {16'b0, rdata_word[31:16]} :
-				// 				addr2_r==2'b11 ? {16'b0, rdata_word_n[7:0], rdata_word[31:24]} : 32'b0;  
 			end
 			3'b001: begin //lh 
 				case (addr2_r)
@@ -208,10 +191,6 @@ always @(*) begin
 					2'b10: rdata = {{16{rdata_word[31]}}, rdata_word[31:16]};
 					2'b11: $finish;
 				endcase
-				// rdata = addr2_r==2'b00 ? {{16{rdata_word[15]}}, rdata_word[15:0]} :
-				// 				addr2_r==2'b01 ? {{16{rdata_word[23]}}, rdata_word[23:8]} :
-				// 				addr2_r==2'b10 ? {{16{rdata_word[31]}}, rdata_word[31:16]} :
-				// 				addr2_r==2'b11 ? {{16{rdata_word_n[7]}},rdata_word_n[7:0], rdata_word[31:24]} : 32'b0;  
 			end
 			default: $finish;
 		endcase
