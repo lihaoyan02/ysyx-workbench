@@ -107,8 +107,9 @@ always @(*) begin
 					mem_wdata = wdata;
 				end
 				2'b01: begin
-					mem_wmask = 4'b110;
-					mem_wdata = wdata<<8;
+					$finish;
+					// mem_wmask = 4'b110;
+					// mem_wdata = wdata<<8;
 				end
 				2'b10: begin
 					mem_wmask = 4'b1100;
