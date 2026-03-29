@@ -73,7 +73,7 @@ reg [DATA_WIDTH-1:0] saved_wdata;
 reg [3:0] saved_wmask;
 
 always @(*) begin
-    if (reqValid & lfsr_rdy[0])
+    if (reqValid & lfsr_rdy[0] & state==IDLE)
         reqReady = 1;
     else
         reqReady = 0;

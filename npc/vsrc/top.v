@@ -3,6 +3,7 @@ module top #(INST_WIDTH = 32, DATA_WIDTH = 32) (
 	input rst,
   output [INST_WIDTH-1:0] pc
 );
+`define MEM_MUTI_CYCLE
 
 import "DPI-C" function void npctrap(int a0);
 

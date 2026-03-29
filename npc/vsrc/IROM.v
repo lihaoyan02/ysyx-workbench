@@ -54,7 +54,7 @@ always @(*) begin
 end
 
 always @(*) begin
-    if (reqValid & lfsr_rdy[0])
+    if (reqValid & lfsr_rdy[0] & state==IDLE)
         reqReady = 1;
     else
         reqReady = 0;
