@@ -86,9 +86,11 @@ always @(posedge clk) begin
 end
 
 always @(posedge clk) begin
-    rdata <= 32'b0;
-    // respValid <= 0;
-    if (state==IDLE & req_handshaked & rand_val==0) begin // cnt==0 direct out
+    if (rst) begin
+        rdata <= 32'b0;
+        respValid <= 0; 
+    end
+    else if (state==IDLE & req_handshaked & rand_val==0) begin // cnt==0 direct out
         if (wen)
             pmem_write(addr, wdata, {4'b0,wmask});    
         else
@@ -100,7 +102,8 @@ always @(posedge clk) begin
         saved_wen <= wen;
         saved_addr <= addr;
         saved_wdata <= wdata;
-        saved_wmask <= wmask;        
+        saved_wmask <= wmask;  
+        respValid <= 0;      
     end
     else if (state==WAIT & cnt == 0 & ~respValid) begin //cnt == 0
         if (saved_wen) begin
@@ -114,6 +117,7 @@ always @(posedge clk) begin
         cnt <= cnt -1;
     end
     else if (resp_handshaked) begin
+        rdata <= 0;
         respValid <= 0;
     end
 end
