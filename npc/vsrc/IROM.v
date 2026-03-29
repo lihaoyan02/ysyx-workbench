@@ -10,15 +10,46 @@ module IROM #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
 );
 
 import "DPI-C" function int pmem_read(int raddr);
-
-// always @(posedge clk) begin
-//   rdata <= reqValid ? pmem_read(addr) : 32'b0;
-//   respValid <= reqValid;
-// end
-
 wire req_handshaked, resp_handshaked;
 assign req_handshaked = reqValid & reqReady;
 assign resp_handshaked = respValid & respReady;
+
+/*--------sigle cycle----------*/
+// always @(*) begin
+//     reqReady = reqValid;
+// end 
+// always @(posedge clk) begin
+//     if (rst) begin
+//         rdata <= 0;
+//         respValid <= 0;
+//     end
+//     else if (req_handshaked) begin
+//         rdata <= pmem_read(addr);
+//         respValid <= 1;
+//     end
+//     else if (resp_handshaked) begin
+//         rdata <= 32'b0;
+//         respValid <= 0;
+//     end
+// end
+
+/*----------multi cycle---------*/
+reg state, next_state;
+localparam IDLE=1'b0, WAIT=1'b1;
+
+always @(posedge clk) begin
+    if (rst)
+        state <= IDLE;
+    else
+        state <= next_state;
+end
+
+always @(*) begin
+    case (state)
+        IDLE: next_state = req_handshaked ? WAIT : IDLE;
+        WAIT: next_state = resp_handshaked ? IDLE : WAIT;
+    endcase
+end
 
 always @(*) begin
     if (reqValid & lfsr_rdy[0])
@@ -36,22 +67,6 @@ always @(posedge clk) begin
     end
 end
 
-reg state, next_state;
-localparam IDLE=1'b0, WAIT=1'b1;
-
-always @(posedge clk) begin
-    if (rst)
-        state <= IDLE;
-    else
-        state <= next_state;
-end
-
-always @(*) begin
-    case (state)
-        IDLE: next_state = req_handshaked ? WAIT : IDLE;
-        WAIT: next_state = resp_handshaked ? IDLE : WAIT;
-    endcase
-end
 // save mem access info
 
 reg [2:0] cnt;

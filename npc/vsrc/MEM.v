@@ -14,15 +14,35 @@ module MEM #(DATA_WIDTH = 32, ADDR_WIDTH=32, SHIFT_LEN=4) (
 
 import "DPI-C" function int pmem_read(int raddr);
 import "DPI-C" function void pmem_write(int waddr, int wdata, byte wmask);
+wire req_handshaked, resp_handshaked;
+assign req_handshaked = reqValid & reqReady;
+assign resp_handshaked = respValid & respReady;
 
+/*--------sigle cycle----------*/
+// always @(*) begin
+//     reqReady = reqValid;
+// end
 // always @(posedge clk) begin
-//   rdata <= (reqValid && !wen) ? pmem_read(addr) : 32'b0;
-//   if (reqValid && wen) begin
-//     pmem_write(addr, wdata, {4'b0,wmask});
-//   end
-//   respValid <= reqValid;
+//     if (rst) begin
+//         rdata <= 0;
+//         respValid <= 0;
+//     end
+//     else if (req_handshaked) begin
+//         if (wen) begin
+//             pmem_write(addr, wdata, {4'b0,wmask});
+//         end
+//         else begin
+//             rdata <= pmem_read(addr);
+//         end
+//         respValid <= 1;
+//     end
+//     else if (resp_handshaked) begin
+//         rdata <= 0;
+//         respValid <= 0;
+//     end
 // end
 
+/*----------multi cycle---------*/
 reg state, next_state;
 localparam IDLE=1'b0, WAIT=1'b1;
 
@@ -49,9 +69,7 @@ reg saved_wen;
 reg [ADDR_WIDTH-1:0] saved_addr;
 reg [DATA_WIDTH-1:0] saved_wdata;
 reg [3:0] saved_wmask;
-wire req_handshaked, resp_handshaked;
-assign req_handshaked = reqValid & reqReady;
-assign resp_handshaked = respValid & respReady;
+
 always @(*) begin
     if (reqValid & lfsr_rdy[0])
         reqReady = 1;
