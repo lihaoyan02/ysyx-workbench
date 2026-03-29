@@ -9,6 +9,13 @@ module IROM #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
     input respReady
 );
 
+import "DPI-C" function int pmem_read(int raddr);
+
+// always @(posedge clk) begin
+//   rdata <= reqValid ? pmem_read(addr) : 32'b0;
+//   respValid <= reqValid;
+// end
+
 wire req_handshaked, resp_handshaked;
 assign req_handshaked = reqValid & reqReady;
 assign resp_handshaked = respValid & respReady;
@@ -28,13 +35,6 @@ always @(posedge clk) begin
         lfsr_rdy <= {lfsr_rdy[0] ^ lfsr_rdy[2],lfsr_rdy[3:1]};
     end
 end
-
-import "DPI-C" function int pmem_read(int raddr);
-
-// always @(posedge clk) begin
-//   rdata <= reqValid ? pmem_read(addr) : 32'b0;
-//   respValid <= reqValid;
-// end
 
 reg state, next_state;
 localparam IDLE=1'b0, WAIT=1'b1;
