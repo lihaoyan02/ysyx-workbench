@@ -87,7 +87,7 @@ end
 
 always @(posedge clk) begin
     rdata <= 32'b0;
-    respValid <= 0;
+    // respValid <= 0;
     if (state==IDLE & req_handshaked & rand_val==0) begin // cnt==0 direct out
         if (wen)
             pmem_write(addr, wdata, {4'b0,wmask});    
