@@ -214,6 +214,13 @@ always @(posedge clk) begin
         pmem_write(saved_addr, saved_wdata, {4'b0,saved_wmask});
         BVALID <= 1;
     end
+    else if (AW_handshaked & W_handshaked) begin // save mem access info and init cnt
+        cnt <= rand_val - 1;
+        saved_addr <= AWADDR;
+        saved_wdata <= WDATA;
+        saved_wmask <= WSTRB;
+        BVALID <= 0;      
+    end
     else if (AW_handshaked) begin // save mem access info and init cnt
         cnt <= rand_val - 1;
         saved_addr <= AWADDR;
