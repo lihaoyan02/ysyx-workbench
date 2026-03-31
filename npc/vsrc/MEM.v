@@ -170,7 +170,8 @@ reg [3:0] lfsr_rdy;
 always @(posedge clk) begin
     if (rst)
         lfsr_rdy <= 4'b1;
-    else if ((wstate==WIDLE | wstate==DSHAK | wstate==ASHAK) & AWVALID) begin
+    else if ((wstate==WIDLE | wstate==DSHAK | wstate==ASHAK) & AWVALID |
+    (rstate==IDLE & ARVALID)) begin
         lfsr_rdy <= {lfsr_rdy[0] ^ lfsr_rdy[2],lfsr_rdy[3:1]};
     end
 end
