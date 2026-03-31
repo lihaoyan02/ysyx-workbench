@@ -239,7 +239,7 @@ always @(posedge clk) begin
         RVALID <= 0;
     end
     else if (rstate==IDLE & AR_handshaked & rand_val==0) begin // cnt==0 direct out
-        RDATA <= pmem_read(ARADDR); 
+        //RDATA <= pmem_read(ARADDR); 
         RVALID <= 1;
     end
     else if (rstate==WAIT & cnt == 0 & ~RVALID) begin //cnt == 0
