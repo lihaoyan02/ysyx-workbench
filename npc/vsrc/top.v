@@ -122,11 +122,19 @@ wire csr_event;
 		.j_pc(j_pc)
 	);
 
-	wire reqValid, mem_wen, respValid, reqReady, respReady;
-	wire [DATA_WIDTH-1:0] mem_addr;
-	wire [DATA_WIDTH-1:0] mem_wdata;
-	wire [DATA_WIDTH-1:0] mem_rdata;
-	wire [3:0] wmask;
+	// wire reqValid, mem_wen, respValid, reqReady, respReady;
+	// wire [DATA_WIDTH-1:0] mem_addr;
+	// wire [DATA_WIDTH-1:0] mem_wdata;
+	// wire [DATA_WIDTH-1:0] mem_rdata;
+	// wire [3:0] wmask;
+	wire AWVALID, AWREADY, WVALID, WREADY, BVALID, BREADY, ARVALID, ARREADY,RVALID,RREADY;
+	wire [DATA_WIDTH-1:0] AWADDR;
+	wire [DATA_WIDTH-1:0] WDATA;
+	wire [DATA_WIDTH-1:0] ARADDR;
+	wire [DATA_WIDTH-1:0] RDATA;
+	wire [3:0] WSTRB;
+	wire [1:0] BRESP;
+	wire [1:0] RRESP;
 	LSU u_LSU (
 		.lsu_en(lsu_en),
 		.clk(clk),
@@ -138,30 +146,72 @@ wire csr_event;
 		.rdata(lsu_rdata),
 		.ready_out(lsu_ready),
 
-		.reqValid(reqValid),
-		.reqReady(reqReady),
-		.mem_addr(mem_addr),
-		.mem_wen(mem_wen),
-		.mem_wdata(mem_wdata),
-		.mem_wmask(wmask),
-		.respValid(respValid),
-		.respReady(respReady),
-		.mem_rdata(mem_rdata)
+		// .reqValid(reqValid),
+		// .reqReady(reqReady),
+		// .mem_addr(mem_addr),
+		// .mem_wen(mem_wen),
+		// .mem_wdata(mem_wdata),
+		// .mem_wmask(wmask),
+		// .respValid(respValid),
+		// .respReady(respReady),
+		// .mem_rdata(mem_rdata)
+		.AWVALID(AWVALID),
+		.AWREADY(AWREADY),
+		.AWADDR(AWADDR),
+
+		.WVALID(WVALID),
+		.WREADY(WREADY),
+		.WDATA(WDATA),
+		.WSTRB(WSTRB),
+
+		.BVALID(BVALID),
+		.BREADY(BREADY),
+		.BRESP(BRESP),
+
+		.ARVALID(ARVALID),
+		.ARREADY(ARREADY),
+		.ARADDR(ARADDR),
+
+		.RVALID(RVALID),
+		.RREADY(RREADY),
+		.RDATA(RDATA),
+		.RRESP(RRESP)
 
 	);
 
 	MEM u_mem (
 		.clk(clk),
 		.rst(rst),
-		.wen(mem_wen),
-		.reqValid(reqValid),
-		.reqReady(reqReady),
-		.addr(mem_addr),
-		.wdata(mem_wdata),
-		.wmask(wmask),
-		.rdata(mem_rdata),
-		.respValid(respValid),
-		.respReady(respReady)
+		// .wen(mem_wen),
+		// .reqValid(reqValid),
+		// .reqReady(reqReady),
+		// .addr(mem_addr),
+		// .wdata(mem_wdata),
+		// .wmask(wmask),
+		// .rdata(mem_rdata),
+		// .respValid(respValid),
+		// .respReady(respReady)
+		.AWVALID(AWVALID),
+		.AWREADY(AWREADY),
+		.AWADDR(AWADDR),
+
+		.WVALID(WVALID),
+		.WREADY(WREADY),
+		.WDATA(WDATA),
+		.WSTRB(WSTRB),
+
+		.BVALID(BVALID),
+		.BREADY(BREADY),
+		.BRESP(BRESP),
+
+		.ARVALID(ARVALID),
+		.ARREADY(ARREADY),
+		.ARADDR(ARADDR),
+
+		.RVALID(RVALID),
+		.RREADY(RREADY),
+		.RDATA(RDATA),
+		.RRESP(RRESP)
 	);
 	
 	WBU u_WBU (
