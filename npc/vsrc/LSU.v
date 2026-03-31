@@ -169,7 +169,7 @@ assign WVALID = (lsu_en & wen) | wreq & (wstate==WIDLE | wstate==ASHAK);
 assign WDATA = (lsu_en & wen) ? mem_wdata : wdata_r;
 assign WSTRB = (lsu_en & wen) ? mem_wmask : wstrb_r;
 assign AWADDR = (lsu_en & wen) ? addr : waddr_r;
-assign ARADDR = (lsu_en & ~wen) ? addr : waddr_r;
+assign ARADDR = (lsu_en & ~wen) ? addr : raddr_r;
 assign BREADY = wstate==WWAIT & BVALID;
 assign RREADY = rstate==WAIT & RVALID;
 
