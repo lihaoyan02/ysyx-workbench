@@ -196,7 +196,7 @@ end
 always @(posedge clk) begin
     if (rst) begin
         BVALID <= 0; 
-        BVALID <= 1;
+        BVALID <= 0;
     end
     else if (wstate==WIDLE & AW_handshaked & W_handshaked & rand_val==0) begin // cnt==0 direct out
         pmem_write(AWADDR, WDATA, {4'b0,WSTRB});    
@@ -236,7 +236,7 @@ end
 always @(posedge clk) begin
     if (rst) begin
         RDATA <= 32'b0;
-        RVALID <= 1;
+        RVALID <= 0;
     end
     else if (rstate==IDLE & AR_handshaked & rand_val==0) begin // cnt==0 direct out
         RDATA <= pmem_read(ARADDR); 
