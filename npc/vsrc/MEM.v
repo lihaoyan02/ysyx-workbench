@@ -261,7 +261,6 @@ end
 /*------------read rand val generation------------*/
 reg [3:0] r_lfsr;
 assign r_rand_val = r_lfsr[2:0];
-reg [2:0] r_cnt;
 always @(posedge clk) begin
     if (rst)
         r_lfsr <= 4'b1;
@@ -272,6 +271,7 @@ end
 
 `endif
 
+reg [2:0] r_cnt;
 always @(posedge clk) begin
     if (rstate==IDLE & AR_handshaked) begin
         r_cnt <= r_rand_val==0 ? 0 : r_rand_val - 1;
