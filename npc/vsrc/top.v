@@ -7,9 +7,6 @@ module top #(INST_WIDTH = 32, DATA_WIDTH = 32) (
 import "DPI-C" function void npctrap(int a0);
 
 wire j_pc, j_en, wb_en, ebreak_flag, inst_valid, lsu_en, lsu_wen, csr_wen, lsu_ready, wb_valid;
-// wire irom_reqValid, irom_reqReady, irom_respValid, irom_respReady;
-// wire [DATA_WIDTH-1:0] irom_addr;
-// wire [DATA_WIDTH-1:0] irom_data;
 wire [DATA_WIDTH-1:0] alu_out;
 wire [INST_WIDTH-1:0] inst_fetch;
 wire [DATA_WIDTH-1:0] imm;
@@ -53,12 +50,6 @@ wire [1:0] I_RRESP;
 		.inst_fetch(inst_fetch),
 		.wb_valid(wb_valid),
 
-		// .reqValid(irom_reqValid),
-		// .reqReady(irom_reqReady),
-		// .mem_addr(irom_addr),
-		// .respValid(irom_respValid),
-		// .respReady(irom_respReady),
-		// .mem_rdata(irom_data)
 		.AWVALID(I_AWVALID),
 		.AWREADY(I_AWREADY),
 		.AWADDR(I_AWADDR),
@@ -85,12 +76,6 @@ wire [1:0] I_RRESP;
 	IROM u_IROM(
 		.clk(clk),
 		.rst(rst),
-		// .reqValid(irom_reqValid),
-		// .reqReady(irom_reqReady),
-		// .addr(irom_addr),
-		// .rdata(irom_data),
-		// .respValid(irom_respValid),
-		// .respReady(irom_respReady)
 		.AWVALID(I_AWVALID),
 		.AWREADY(I_AWREADY),
 		.AWADDR(I_AWADDR),
@@ -173,11 +158,6 @@ wire [1:0] I_RRESP;
 		.j_pc(j_pc)
 	);
 
-	// wire reqValid, mem_wen, respValid, reqReady, respReady;
-	// wire [DATA_WIDTH-1:0] mem_addr;
-	// wire [DATA_WIDTH-1:0] mem_wdata;
-	// wire [DATA_WIDTH-1:0] mem_rdata;
-	// wire [3:0] wmask;
 	wire AWVALID, AWREADY, WVALID, WREADY, BVALID, BREADY, ARVALID, ARREADY,RVALID,RREADY;
 	wire [DATA_WIDTH-1:0] AWADDR;
 	wire [DATA_WIDTH-1:0] WDATA;
@@ -197,15 +177,6 @@ wire [1:0] I_RRESP;
 		.rdata(lsu_rdata),
 		.ready_out(lsu_ready),
 
-		// .reqValid(reqValid),
-		// .reqReady(reqReady),
-		// .mem_addr(mem_addr),
-		// .mem_wen(mem_wen),
-		// .mem_wdata(mem_wdata),
-		// .mem_wmask(wmask),
-		// .respValid(respValid),
-		// .respReady(respReady),
-		// .mem_rdata(mem_rdata)
 		.AWVALID(AWVALID),
 		.AWREADY(AWREADY),
 		.AWADDR(AWADDR),
@@ -233,15 +204,7 @@ wire [1:0] I_RRESP;
 	MEM u_mem (
 		.clk(clk),
 		.rst(rst),
-		// .wen(mem_wen),
-		// .reqValid(reqValid),
-		// .reqReady(reqReady),
-		// .addr(mem_addr),
-		// .wdata(mem_wdata),
-		// .wmask(wmask),
-		// .rdata(mem_rdata),
-		// .respValid(respValid),
-		// .respReady(respReady)
+
 		.AWVALID(AWVALID),
 		.AWREADY(AWREADY),
 		.AWADDR(AWADDR),

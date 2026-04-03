@@ -8,13 +8,7 @@ module IFU #(INST_WIDTH = 32, ADDR_WIDTH = 32)(
 	output reg [INST_WIDTH-1:0] inst_fetch,
 	output reg inst_valid,
 	output wb_valid,
-
-	// output reqValid,
-	// input reqReady,
-	// output [ADDR_WIDTH-1:0] mem_addr,
-	// input respValid,
-	// output respReady,
-	// input [INST_WIDTH-1:0] mem_rdata
+	
 	output AWVALID,
 	input AWREADY,
 	output [ADDR_WIDTH-1:0] AWADDR,
@@ -37,10 +31,6 @@ module IFU #(INST_WIDTH = 32, ADDR_WIDTH = 32)(
 	input [INST_WIDTH-1:0] RDATA,
 	input [1:0] RRESP
 );
-// wire req_handshaked, resp_handshaked;
-// assign req_handshaked = reqValid & reqReady;
-// assign resp_handshaked = respValid & respReady;
-// assign respReady = respValid;
 wire AR_handshaked, R_handshaked;
 assign AR_handshaked = ARVALID & ARREADY;
 assign R_handshaked = RVALID & RREADY;
@@ -81,8 +71,7 @@ always @(posedge clk) begin
 		R_handshaked_r <= 0;
 	end
 end
-// assign reqValid = ~rst & state==IDLE;
-// assign mem_addr = pc;
+
 assign ARVALID = ~rst & state==IDLE;
 assign ARADDR = pc;
 assign inst_fetch = R_handshaked ? RDATA : 0;

@@ -1,4 +1,4 @@
-//`define MEM_MUTI_CYCLE
+`define MEM_MUTI_CYCLE
 
 module MEM #(DATA_WIDTH = 32, ADDR_WIDTH=32, SHIFT_LEN=4) (
 	input clk,
@@ -38,33 +38,6 @@ assign W_handshaked = WVALID & WREADY;
 assign AR_handshaked = ARVALID & ARREADY;
 assign R_handshaked = RVALID & RREADY;
 assign B_handshaked = BVALID & BREADY;
-// `ifndef MEM_MUTI_CYCLE
-// /*--------sigle cycle----------*/
-// always @(*) begin
-//     reqReady = reqValid;
-// end
-// always @(posedge clk) begin
-//     if (rst) begin
-//         rdata <= 0;
-//         respValid <= 0;
-//     end
-//     else if (req_handshaked) begin
-//         if (wen) begin
-//             pmem_write(addr, wdata, {4'b0,wmask});
-//         end
-//         else begin
-//             rdata <= pmem_read(addr);
-//         end
-//         respValid <= 1;
-//     end
-//     else if (resp_handshaked) begin
-//         rdata <= 0;
-//         respValid <= 0;
-//     end
-// end
-
-// `else
-/*----------multi cycle---------*/
 
 /*--------Write state machine---------*/
 localparam WIDLE = 2'b0, ASHAK=2'b01, DSHAK=2'b10, WWAIT = 2'b11;
