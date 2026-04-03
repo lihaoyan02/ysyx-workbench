@@ -183,7 +183,7 @@ always @(posedge clk) begin
         pmem_write(saved_waddr, WDATA, {4'b0,WSTRB});    
         BVALID <= 1;
     end
-    else if (wstate==WWAIT & w_cnt == 0) begin //cnt == 0
+    else if (wstate==WWAIT & w_cnt == 0 & ~BVALID) begin //cnt == 0
         pmem_write(saved_waddr, saved_wdata, {4'b0,saved_wmask});
         BVALID <= 1;
     end
