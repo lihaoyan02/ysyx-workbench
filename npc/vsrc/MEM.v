@@ -111,6 +111,7 @@ end
 
 /*----------------------------Write contrl---------------------------*/
 /*-------------------------------------------------------------------*/
+wire [2:0] w_rand_val;
 `ifndef MEM_MUTI_CYCLE
 /*--------sigle cycle----------*/
 always @(*) begin
@@ -125,7 +126,6 @@ always @(*) begin
     else
         WREADY = 0;
 end
-wire [2:0] w_rand_val;
 assign w_rand_val = 0;
 
 `else
@@ -162,7 +162,6 @@ end
 
 /*------------rand val generation------------*/
 reg [3:0] w_lfsr;
-wire [2:0] w_rand_val;
 assign w_rand_val = w_lfsr[2:0];
 
 always @(posedge clk) begin
@@ -231,6 +230,7 @@ end
 
 /*--------------------------Read contrl------------------------------*/
 /*-------------------------------------------------------------------*/
+wire [2:0] r_rand_val;
 `ifndef MEM_MUTI_CYCLE
 /*--------sigle cycle----------*/
 always @(*) begin
@@ -239,7 +239,6 @@ always @(*) begin
     else
         ARREADY = 0;
 end
-wire [2:0] r_rand_val;
 assign r_rand_val = 0;
 
 `else
@@ -261,7 +260,6 @@ end
 
 /*------------read rand val generation------------*/
 reg [3:0] r_lfsr;
-wire [2:0] r_rand_val;
 assign r_rand_val = r_lfsr[2:0];
 reg [2:0] r_cnt;
 always @(posedge clk) begin
