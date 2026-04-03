@@ -6,10 +6,10 @@ module top #(INST_WIDTH = 32, DATA_WIDTH = 32) (
 
 import "DPI-C" function void npctrap(int a0);
 
-wire j_pc, j_en, wb_en, ebreak_flag, inst_valid, lsu_en, lsu_wen, csr_wen, lsu_ready;
-wire irom_reqValid, irom_reqReady, irom_respValid, irom_respReady, wb_valid;
-wire [DATA_WIDTH-1:0] irom_addr;
-wire [DATA_WIDTH-1:0] irom_data;
+wire j_pc, j_en, wb_en, ebreak_flag, inst_valid, lsu_en, lsu_wen, csr_wen, lsu_ready, wb_valid;
+// wire irom_reqValid, irom_reqReady, irom_respValid, irom_respReady;
+// wire [DATA_WIDTH-1:0] irom_addr;
+// wire [DATA_WIDTH-1:0] irom_data;
 wire [DATA_WIDTH-1:0] alu_out;
 wire [INST_WIDTH-1:0] inst_fetch;
 wire [DATA_WIDTH-1:0] imm;
@@ -32,6 +32,15 @@ wire [DATA_WIDTH-1:0] csr_rdata;
 wire [11:0] csr_addr;
 wire csr_event;
 
+wire I_AWVALID, I_AWREADY, I_WVALID, I_WREADY, 
+I_BVALID, I_BREADY, I_ARVALID, I_ARREADY, I_RVALID,I_RREADY;
+wire [DATA_WIDTH-1:0] I_AWADDR;
+wire [DATA_WIDTH-1:0] I_WDATA;
+wire [DATA_WIDTH-1:0] I_ARADDR;
+wire [DATA_WIDTH-1:0] I_RDATA;
+wire [3:0] I_WSTRB;
+wire [1:0] I_BRESP;
+wire [1:0] I_RRESP;
 
 	IFU u_IFU (
 		.clk(clk),
@@ -44,23 +53,65 @@ wire csr_event;
 		.inst_fetch(inst_fetch),
 		.wb_valid(wb_valid),
 
-		.reqValid(irom_reqValid),
-		.reqReady(irom_reqReady),
-		.mem_addr(irom_addr),
-		.respValid(irom_respValid),
-		.respReady(irom_respReady),
-		.mem_rdata(irom_data)
+		// .reqValid(irom_reqValid),
+		// .reqReady(irom_reqReady),
+		// .mem_addr(irom_addr),
+		// .respValid(irom_respValid),
+		// .respReady(irom_respReady),
+		// .mem_rdata(irom_data)
+		.AWVALID(I_AWVALID),
+		.AWREADY(I_AWREADY),
+		.AWADDR(I_AWADDR),
+
+		.WVALID(I_WVALID),
+		.WREADY(I_WREADY),
+		.WDATA(I_WDATA),
+		.WSTRB(I_WSTRB),
+
+		.BVALID(I_BVALID),
+		.BREADY(I_BREADY),
+		.BRESP(I_BRESP),
+
+		.ARVALID(I_ARVALID),
+		.ARREADY(I_ARREADY),
+		.ARADDR(I_ARADDR),
+
+		.RVALID(I_RVALID),
+		.RREADY(I_RREADY),
+		.RDATA(I_RDATA),
+		.RRESP(I_RRESP)
 	);
 
 	IROM u_IROM(
 		.clk(clk),
 		.rst(rst),
-		.reqValid(irom_reqValid),
-		.reqReady(irom_reqReady),
-		.addr(irom_addr),
-		.rdata(irom_data),
-		.respValid(irom_respValid),
-		.respReady(irom_respReady)
+		// .reqValid(irom_reqValid),
+		// .reqReady(irom_reqReady),
+		// .addr(irom_addr),
+		// .rdata(irom_data),
+		// .respValid(irom_respValid),
+		// .respReady(irom_respReady)
+		.AWVALID(I_AWVALID),
+		.AWREADY(I_AWREADY),
+		.AWADDR(I_AWADDR),
+
+		.WVALID(I_WVALID),
+		.WREADY(I_WREADY),
+		.WDATA(I_WDATA),
+		.WSTRB(I_WSTRB),
+
+		.BVALID(I_BVALID),
+		.BREADY(I_BREADY),
+		.BRESP(I_BRESP),
+
+		.ARVALID(I_ARVALID),
+		.ARREADY(I_ARREADY),
+		.ARADDR(I_ARADDR),
+
+		.RVALID(I_RVALID),
+		.RREADY(I_RREADY),
+		.RDATA(I_RDATA),
+		.RRESP(I_RRESP)
 	);
 	IDU u_IDU (
 		.inst_fetch(inst_fetch),
