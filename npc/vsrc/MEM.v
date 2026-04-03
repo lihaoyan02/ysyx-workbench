@@ -134,7 +134,7 @@ always @(*) begin
 end
 always @(posedge clk) begin // random time for wready
     if (rst)
-        lfsr_wrdy <= 4'b1;
+        lfsr_wrdy <= 4'b10;
     else if ((wstate==WIDLE | wstate==ASHAK) & WVALID) begin //wait for w handshake
         lfsr_wrdy <= {lfsr_wrdy[0] ^ lfsr_wrdy[2],lfsr_wrdy[3:1]};
     end
