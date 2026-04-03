@@ -110,6 +110,7 @@ always @(*) begin
 end
 
 /*----------------------------Write contrl---------------------------*/
+/*-------------------------------------------------------------------*/
 reg [3:0] lfsr_awrdy;
 always @(*) begin
     if (AWVALID & lfsr_awrdy[0] & (wstate==WIDLE | wstate==DSHAK))
@@ -206,7 +207,8 @@ always @(posedge clk) begin
     end
 end
 
-/*--------------------------Read contrl--------------------------------*/
+/*--------------------------Read contrl------------------------------*/
+/*-------------------------------------------------------------------*/
 always @(*) begin
     if (ARVALID & lfsr_rdy[0] & rstate==IDLE)
         ARREADY = 1;
@@ -253,7 +255,7 @@ always @(posedge clk) begin
         RDATA <= pmem_read(ARADDR); 
         RVALID <= 1;
     end
-    else if (rstate==WAIT & r_cnt == 0 & ~RVALID) begin //cnt == 0
+    else if (rstate==WAIT & r_cnt == 0) begin //cnt == 0
         RDATA <= pmem_read(saved_raddr);
         RVALID <= 1;
     end
