@@ -3,15 +3,6 @@
 module MEM #(DATA_WIDTH = 32, ADDR_WIDTH=32, SHIFT_LEN=4) (
 	input clk,
     input rst,
-	// input wen,
-    // input reqValid,
-    // output reg reqReady,
-    // input [ADDR_WIDTH-1:0] addr,
-	// input [DATA_WIDTH-1:0] wdata,
-	// input [3:0] wmask,
-	// output reg [DATA_WIDTH-1:0] rdata,
-	// output respValid,
-    // input respReady
 
     input AWVALID,
 	output reg AWREADY,
@@ -38,62 +29,26 @@ module MEM #(DATA_WIDTH = 32, ADDR_WIDTH=32, SHIFT_LEN=4) (
 
 import "DPI-C" function int pmem_read(int raddr);
 import "DPI-C" function void pmem_write(int waddr, int wdata, byte wmask);
-// wire req_handshaked, resp_handshaked;
-// assign req_handshaked = reqValid & reqReady;
-// assign resp_handshaked = respValid & respReady;
+
 assign BRESP = 0;
-assign RRESP =0;
+assign RRESP = 0;
 wire AW_handshaked, W_handshaked, AR_handshaked, R_handshaked, B_handshaked;
 assign AW_handshaked = AWVALID & AWREADY;
 assign W_handshaked = WVALID & WREADY;
 assign AR_handshaked = ARVALID & ARREADY;
 assign R_handshaked = RVALID & RREADY;
 assign B_handshaked = BVALID & BREADY;
-`ifndef MEM_MUTI_CYCLE
-/*--------sigle cycle----------*/
-always @(*) begin
-    reqReady = reqValid;
-end
-always @(posedge clk) begin
-    if (rst) begin
-        rdata <= 0;
-        respValid <= 0;
-    end
-    else if (req_handshaked) begin
-        if (wen) begin
-            pmem_write(addr, wdata, {4'b0,wmask});
-        end
-        else begin
-            rdata <= pmem_read(addr);
-        end
-        respValid <= 1;
-    end
-    else if (resp_handshaked) begin
-        rdata <= 0;
-        respValid <= 0;
-    end
-end
-
-`else
-/*----------multi cycle---------*/
-localparam WIDLE = 2'b0, ASHAK=2'b01, DSHAK=2'b10, WWAIT = 2'b11;
-localparam IDLE = 1'b0, WAIT = 1'b1;
-reg [1:0] wstate;
-reg [1:0] next_wstate;
-reg rstate;
-reg next_rstate;
-always @(posedge clk) begin
-	if (rst) begin
-		wstate <= WIDLE;
-		rstate <= IDLE;
-	end
-	else begin
-		wstate <= next_wstate;
-		rstate <= next_rstate;
-	end
-end
 
 /*--------Write state machine---------*/
+localparam WIDLE = 2'b0, ASHAK=2'b01, DSHAK=2'b10, WWAIT = 2'b11;
+reg [1:0] wstate;
+reg [1:0] next_wstate;
+always @(posedge clk) begin
+	if (rst)
+		wstate <= WIDLE;
+	else
+		wstate <= next_wstate;
+end
 always @(*) begin
 	case (wstate)
 		WIDLE: begin
@@ -107,6 +62,15 @@ always @(*) begin
 	endcase
 end
 /*--------Read state machine---------*/
+localparam IDLE = 1'b0, WAIT = 1'b1;
+reg rstate;
+reg next_rstate;
+always @(posedge clk) begin
+	if (rst)
+		rstate <= IDLE;
+	else
+		rstate <= next_rstate;
+end
 always @(*) begin
 	case (rstate)
 		IDLE: begin
@@ -118,190 +82,201 @@ always @(*) begin
 	endcase
 end
 
-// reg state, next_state;
-// localparam IDLE=1'b0, WAIT=1'b1;
-
-// always @(posedge clk) begin
-//     if (rst)
-//         state <= IDLE;
-//     else
-//         state <= next_state;
-// end
-
-// always @(*) begin
-//     case (state)
-//         IDLE: next_state = req_handshaked ? WAIT : IDLE;
-//         WAIT: next_state = resp_handshaked ? IDLE : WAIT;
-//     endcase
-// end
-// save mem access info
-
-reg [2:0] cnt;
-
-wire [2:0] rand_val;
-assign rand_val = lfsr[2:0];
-// reg saved_wen;
-reg [ADDR_WIDTH-1:0] saved_addr;
-reg [DATA_WIDTH-1:0] saved_wdata;
-reg [3:0] saved_wmask;
-/*--------Write state machine---------*/
+/*----------------------------Write contrl---------------------------*/
+/*-------------------------------------------------------------------*/
+wire [2:0] w_rand_val;
+`ifndef MEM_MUTI_CYCLE
+/*--------sigle cycle----------*/
 always @(*) begin
-    if (AWVALID & lfsr_rdy[0] & (wstate==WIDLE | wstate==DSHAK))
+    if (AWVALID & (wstate==WIDLE | wstate==DSHAK))
         AWREADY = 1;
     else
         AWREADY = 0;
 end
-
 always @(*) begin
-    if (WVALID & lfsr_rdy[0] & (wstate==WIDLE | wstate==ASHAK))
+    if (WVALID & (wstate==WIDLE | wstate==ASHAK))
         WREADY = 1;
     else
         WREADY = 0;
 end
-/*--------Read state machine---------*/
+assign w_rand_val = 0;
+
+`else
+/*----------multi cycle---------*/
+reg [3:0] lfsr_awrdy;
 always @(*) begin
-    if (ARVALID & lfsr_rdy[0] & rstate==IDLE)
-        ARREADY = 1;
+    if (AWVALID & lfsr_awrdy[0] & (wstate==WIDLE | wstate==DSHAK))
+        AWREADY = 1;
     else
-        ARREADY = 0;
+        AWREADY = 0;
 end
-// ready randval
-reg [3:0] lfsr_rdy;
-always @(posedge clk) begin
+always @(posedge clk) begin // random time for awready
     if (rst)
-        lfsr_rdy <= 4'b1;
-    else if ((wstate==WIDLE | wstate==DSHAK | wstate==ASHAK) & AWVALID |
-    (rstate==IDLE & ARVALID)) begin
-        lfsr_rdy <= {lfsr_rdy[0] ^ lfsr_rdy[2],lfsr_rdy[3:1]};
-    end
-end
-// req randval
-reg [3:0] lfsr;
-always @(posedge clk) begin
-    if (rst)
-        lfsr <= 4'b1;
-    else if (((wstate==WIDLE | wstate==DSHAK) & AW_handshaked) | (rstate==IDLE & AR_handshaked)) begin
-        lfsr <= {lfsr[0] ^ lfsr[2],lfsr[3:1]};
+        lfsr_awrdy <= 4'b1;
+    else if ((wstate==WIDLE | wstate==DSHAK) & AWVALID) begin //wait for aw handshake
+        lfsr_awrdy <= {lfsr_awrdy[0] ^ lfsr_awrdy[2],lfsr_awrdy[3:1]};
     end
 end
 
-always @(posedge clk) begin
-    if (((wstate==WIDLE | wstate==DSHAK) & AW_handshaked) | (rstate==IDLE & AR_handshaked)) begin
-        cnt <= rand_val==0 ? 0 : rand_val - 1;
-    end
-    else if(cnt != 0 & wstate==WWAIT)
-        cnt <= cnt - 1;
+reg [3:0] lfsr_wrdy;
+always @(*) begin
+    if (WVALID & lfsr_wrdy[0] & (wstate==WIDLE | wstate==ASHAK))
+        WREADY = 1;
+    else
+        WREADY = 0;
 end
+always @(posedge clk) begin // random time for wready
+    if (rst)
+        lfsr_wrdy <= 4'b10;
+    else if ((wstate==WIDLE | wstate==ASHAK) & WVALID) begin //wait for w handshake
+        lfsr_wrdy <= {lfsr_wrdy[0] ^ lfsr_wrdy[2],lfsr_wrdy[3:1]};
+    end
+end
+
+/*------------rand val generation------------*/
+reg [3:0] w_lfsr;
+assign w_rand_val = w_lfsr[2:0];
+
+always @(posedge clk) begin
+    if (rst)
+        w_lfsr <= 4'b1;
+    else if (B_handshaked) begin
+        w_lfsr <= {w_lfsr[0] ^ w_lfsr[2],w_lfsr[3:1]};
+    end
+end
+
+`endif
+
+reg [2:0] w_cnt;
+always @(posedge clk) begin
+    if ((wstate==WIDLE | wstate==DSHAK) & AW_handshaked) begin
+        w_cnt <= w_rand_val==0 ? 0 : w_rand_val - 1;
+    end
+    else if(w_cnt != 0 & wstate==WWAIT)
+        w_cnt <= w_cnt - 1;
+end
+// write control
+reg [ADDR_WIDTH-1:0] saved_waddr;
+reg [DATA_WIDTH-1:0] saved_wdata;
+reg [3:0] saved_wmask;
 
 always @(posedge clk) begin
     if (rst) begin
         BVALID <= 0; 
         BVALID <= 0;
     end
-    else if (wstate==WIDLE & AW_handshaked & W_handshaked & rand_val==0) begin // cnt==0 direct out
+    else if (wstate==WIDLE & AW_handshaked & W_handshaked & w_rand_val==0) begin // cnt==0 direct out
         pmem_write(AWADDR, WDATA, {4'b0,WSTRB});    
         BVALID <= 1;
     end
-    else if (wstate==DSHAK & AW_handshaked & rand_val==0) begin // cnt==0 direct out
+    else if (wstate==DSHAK & AW_handshaked & w_rand_val==0) begin // cnt==0 direct out
         pmem_write(AWADDR, saved_wdata, {4'b0,saved_wmask});    
         BVALID <= 1;
     end
-    else if (wstate==ASHAK & W_handshaked & cnt==0) begin // cnt==0 direct out
-        pmem_write(saved_addr, WDATA, {4'b0,WSTRB});    
+    else if (wstate==ASHAK & W_handshaked & w_rand_val==0) begin // cnt==0 direct out
+        pmem_write(saved_waddr, WDATA, {4'b0,WSTRB});    
         BVALID <= 1;
     end
-    else if (wstate==WWAIT & cnt == 0 & ~BVALID) begin //cnt == 0
-        pmem_write(saved_addr, saved_wdata, {4'b0,saved_wmask});
+    else if (wstate==WWAIT & w_cnt == 0 & ~B_handshaked) begin //cnt == 0
+        pmem_write(saved_waddr, saved_wdata, {4'b0,saved_wmask});
         BVALID <= 1;
     end
     else if (AW_handshaked & W_handshaked) begin // save mem access info and init cnt
-        cnt <= rand_val - 1;
-        saved_addr <= AWADDR;
+        saved_waddr <= AWADDR;
         saved_wdata <= WDATA;
         saved_wmask <= WSTRB;
         BVALID <= 0;      
     end
     else if (AW_handshaked) begin // save mem access info and init cnt
-        cnt <= rand_val - 1;
-        saved_addr <= AWADDR;
+        saved_waddr <= AWADDR;
         BVALID <= 0;      
     end
     else if (W_handshaked) begin // save mem access info and init cnt
-        cnt <= rand_val - 1;
         saved_wdata <= WDATA;
         saved_wmask <= WSTRB;
         BVALID <= 0;      
-    end
-    else if (wstate==WWAIT & cnt!=0) begin
-        cnt <= cnt -1;
     end
     else if (B_handshaked) begin
         BVALID <= 0;
     end
 end
 
+/*--------------------------Read contrl------------------------------*/
+/*-------------------------------------------------------------------*/
+wire [2:0] r_rand_val;
+`ifndef MEM_MUTI_CYCLE
+/*--------sigle cycle----------*/
+always @(*) begin
+    if (ARVALID & rstate==IDLE)
+        ARREADY = 1;
+    else
+        ARREADY = 0;
+end
+assign r_rand_val = 0;
+
+`else
+/*----------multi cycle---------*/
+always @(*) begin
+    if (ARVALID & lfsr_rdy[0] & rstate==IDLE)
+        ARREADY = 1;
+    else
+        ARREADY = 0;
+end
+reg [3:0] lfsr_rdy;
+always @(posedge clk) begin // random time for awready
+    if (rst)
+        lfsr_rdy <= 4'b1;
+    else if (rstate==IDLE & ARVALID) begin //wait for ar handshake
+        lfsr_rdy <= {lfsr_rdy[0] ^ lfsr_rdy[2],lfsr_rdy[3:1]};
+    end
+end
+
+/*------------read rand val generation------------*/
+reg [3:0] r_lfsr;
+assign r_rand_val = r_lfsr[2:0];
+always @(posedge clk) begin
+    if (rst)
+        r_lfsr <= 4'b1;
+    else if (R_handshaked) begin
+        r_lfsr <= {r_lfsr[0] ^ r_lfsr[2],r_lfsr[3:1]};
+    end
+end
+
+`endif
+
+reg [2:0] r_cnt;
+always @(posedge clk) begin
+    if (rstate==IDLE & AR_handshaked) begin
+        r_cnt <= r_rand_val==0 ? 0 : r_rand_val - 1;
+    end
+    else if(r_cnt != 0 & rstate==WAIT)
+        r_cnt <= r_cnt - 1;
+end
+
+reg [ADDR_WIDTH-1:0] saved_raddr;
+
 always @(posedge clk) begin
     if (rst) begin
         RDATA <= 32'b0;
         RVALID <= 0;
     end
-    else if (rstate==IDLE & AR_handshaked & rand_val==0) begin // cnt==0 direct out
+    else if (rstate==IDLE & AR_handshaked & r_rand_val==0) begin // cnt==0 direct out
         RDATA <= pmem_read(ARADDR); 
         RVALID <= 1;
     end
-    else if (rstate==WAIT & cnt == 0 & ~RVALID) begin //cnt == 0
-        RDATA <= pmem_read(saved_addr);
+    else if (rstate==WAIT & r_cnt == 0 & ~R_handshaked) begin //cnt == 0
+        RDATA <= pmem_read(saved_raddr);
         RVALID <= 1;
     end
     else if (AR_handshaked) begin // save mem access info and init cnt
-        cnt <= rand_val - 1;
-        saved_addr <= ARADDR;
+        saved_raddr <= ARADDR;
         RVALID <= 0;      
-    end
-    else if (rstate==WAIT & cnt!=0) begin
-        cnt <= cnt -1;
     end
     else if (R_handshaked) begin
         RVALID <= 0;
     end
 end
 
-// always @(posedge clk) begin
-//     if (rst) begin
-//         rdata <= 32'b0;
-//         respValid <= 0; 
-//     end
-//     else if (state==IDLE & req_handshaked & rand_val==0) begin // cnt==0 direct out
-//         if (wen)
-//             pmem_write(addr, wdata, {4'b0,wmask});    
-//         else
-//             rdata <= pmem_read(addr);
-//         respValid <= 1;
-//     end
-//     else if (state==IDLE & req_handshaked & rand_val !=0) begin // save mem access info and init cnt
-//         cnt <= rand_val - 1;
-//         saved_wen <= wen;
-//         saved_addr <= addr;
-//         saved_wdata <= wdata;
-//         saved_wmask <= wmask;  
-//         respValid <= 0;      
-//     end
-//     else if (state==WAIT & cnt == 0 & ~respValid) begin //cnt == 0
-//         if (saved_wen) begin
-//             pmem_write(saved_addr, saved_wdata, {4'b0,saved_wmask});
-//         end     
-//         else
-//             rdata <= pmem_read(saved_addr);
-//         respValid <= 1;
-//     end
-//     else if (state==WAIT & cnt!=0) begin
-//         cnt <= cnt -1;
-//     end
-//     else if (resp_handshaked) begin
-//         rdata <= 0;
-//         respValid <= 0;
-//     end
-// end
-`endif
+
 
 endmodule

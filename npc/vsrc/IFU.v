@@ -8,18 +8,41 @@ module IFU #(INST_WIDTH = 32, ADDR_WIDTH = 32)(
 	output reg [INST_WIDTH-1:0] inst_fetch,
 	output reg inst_valid,
 	output wb_valid,
+	
+	output AWVALID,
+	input AWREADY,
+	output [ADDR_WIDTH-1:0] AWADDR,
 
-	output reqValid,
-	input reqReady,
-	output [ADDR_WIDTH-1:0] mem_addr,
-	input respValid,
-	output respReady,
-	input [INST_WIDTH-1:0] mem_rdata
+	output WVALID,
+	input WREADY,
+	output [INST_WIDTH-1:0] WDATA,
+	output [3:0] WSTRB,
+
+	input BVALID,
+	output BREADY,
+	input [1:0] BRESP,
+
+	output ARVALID,
+	input ARREADY,
+	output [ADDR_WIDTH-1:0] ARADDR,
+
+	input RVALID,
+	output RREADY,
+	input [INST_WIDTH-1:0] RDATA,
+	input [1:0] RRESP
 );
-wire req_handshaked, resp_handshaked;
-assign req_handshaked = reqValid & reqReady;
-assign resp_handshaked = respValid & respReady;
-assign respReady = respValid;
+wire AR_handshaked, R_handshaked;
+assign AR_handshaked = ARVALID & ARREADY;
+assign R_handshaked = RVALID & RREADY;
+
+assign AWVALID=0;
+assign AWADDR=0;
+assign WVALID=0;
+assign WDATA=0;
+assign WSTRB=0;
+assign BREADY=0;
+assign RREADY = RVALID & state==WAIT;
+
 localparam IDLE = 1'b0, WAIT = 1'b1;
 reg state, next_state;
 always @(posedge clk) begin
@@ -29,39 +52,36 @@ always @(posedge clk) begin
 		state <= next_state;
 end
 
-assign wb_valid = state==WAIT & next_state==IDLE;
-reg inst_r;
+
+reg R_handshaked_r;
 always @(*) begin
 	case (state)
 		IDLE:
-			next_state = req_handshaked ? WAIT : IDLE;
+			next_state = AR_handshaked ? WAIT : IDLE;
 		WAIT:
-			next_state = (ready_in & resp_handshaked) | (ready_in & inst_r) ? IDLE : WAIT;
+			next_state = (ready_in & R_handshaked) | (ready_in & R_handshaked_r) ? IDLE : WAIT;
 	endcase
 end
 
 always @(posedge clk) begin
-	if (state==WAIT & resp_handshaked) begin
-		inst_r <= 1;
+	if (state==WAIT & R_handshaked) begin
+		R_handshaked_r <= 1;
 	end
 	else if (state==IDLE) begin
-		inst_r <= 0;
+		R_handshaked_r <= 0;
 	end
 end
-assign reqValid = ~rst & state==IDLE;
-assign mem_addr = pc;
-assign inst_fetch = resp_handshaked ? mem_rdata : 0;
-assign inst_valid = resp_handshaked;
-//import "DPI-C" function int pmem_read(int raddr);
-//reg rst_r;
+
+assign ARVALID = ~rst & state==IDLE;
+assign ARADDR = pc;
+assign inst_fetch = R_handshaked ? RDATA : 0;
+assign inst_valid = R_handshaked;
+
 wire [ADDR_WIDTH-1:0] next_pc;
-
 assign next_pc = j_pc ? j_pc_addr : pc + 4; 
-
+assign wb_valid = state==WAIT & next_state==IDLE;
 always @(posedge clk) begin
 	if (rst) pc <= 32'h80000000;//{ADDR_WIDTH{1'b0}}; 
-	//else if(rst_r)
-		//pc <= 32'h80000000;
 	else if(wb_valid)
 		pc <= next_pc;
 end
@@ -71,30 +91,13 @@ always @(posedge clk) begin
 	if (rst) begin
 		inst_fetch_r <= 0;
 	end
-	else if (resp_handshaked) begin
+	else if (R_handshaked) begin
 		inst_fetch_r <= inst_fetch;
 	end
 end
-// always @(posedge clk) begin
-// 	rst_r <= rst;
-// end
-
-// assign inst_valid = state==WAIT;
-// always @(posedge clk) begin
-// 	if (rst) begin
-// 		inst_fetch <= 32'b0;
-// 		//idu_en <= 0;
-// 	end
-// 	else if(state==IDLE) begin
-// 		inst_fetch <= pmem_read(pc);
-// 		//inst_valid <= 1;
-// 	end
-// 	// else
-// 	// 	inst_valid <= 0;
-// end
 
 function int read_inst();
-	return resp_handshaked ? inst_fetch : inst_fetch_r;
+	return R_handshaked ? inst_fetch : inst_fetch_r;
 endfunction
 
 export "DPI-C" function read_inst;
