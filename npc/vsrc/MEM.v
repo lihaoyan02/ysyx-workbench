@@ -3,15 +3,6 @@
 module MEM #(DATA_WIDTH = 32, ADDR_WIDTH=32, SHIFT_LEN=4) (
 	input clk,
     input rst,
-	// input wen,
-    // input reqValid,
-    // output reg reqReady,
-    // input [ADDR_WIDTH-1:0] addr,
-	// input [DATA_WIDTH-1:0] wdata,
-	// input [3:0] wmask,
-	// output reg [DATA_WIDTH-1:0] rdata,
-	// output respValid,
-    // input respReady
 
     input AWVALID,
 	output reg AWREADY,
@@ -38,9 +29,7 @@ module MEM #(DATA_WIDTH = 32, ADDR_WIDTH=32, SHIFT_LEN=4) (
 
 import "DPI-C" function int pmem_read(int raddr);
 import "DPI-C" function void pmem_write(int waddr, int wdata, byte wmask);
-// wire req_handshaked, resp_handshaked;
-// assign req_handshaked = reqValid & reqReady;
-// assign resp_handshaked = respValid & respReady;
+
 assign BRESP = 0;
 assign RRESP =0;
 wire AW_handshaked, W_handshaked, AR_handshaked, R_handshaked, B_handshaked;
