@@ -38,32 +38,32 @@ assign W_handshaked = WVALID & WREADY;
 assign AR_handshaked = ARVALID & ARREADY;
 assign R_handshaked = RVALID & RREADY;
 assign B_handshaked = BVALID & BREADY;
-`ifndef MEM_MUTI_CYCLE
-/*--------sigle cycle----------*/
-always @(*) begin
-    reqReady = reqValid;
-end
-always @(posedge clk) begin
-    if (rst) begin
-        rdata <= 0;
-        respValid <= 0;
-    end
-    else if (req_handshaked) begin
-        if (wen) begin
-            pmem_write(addr, wdata, {4'b0,wmask});
-        end
-        else begin
-            rdata <= pmem_read(addr);
-        end
-        respValid <= 1;
-    end
-    else if (resp_handshaked) begin
-        rdata <= 0;
-        respValid <= 0;
-    end
-end
+// `ifndef MEM_MUTI_CYCLE
+// /*--------sigle cycle----------*/
+// always @(*) begin
+//     reqReady = reqValid;
+// end
+// always @(posedge clk) begin
+//     if (rst) begin
+//         rdata <= 0;
+//         respValid <= 0;
+//     end
+//     else if (req_handshaked) begin
+//         if (wen) begin
+//             pmem_write(addr, wdata, {4'b0,wmask});
+//         end
+//         else begin
+//             rdata <= pmem_read(addr);
+//         end
+//         respValid <= 1;
+//     end
+//     else if (resp_handshaked) begin
+//         rdata <= 0;
+//         respValid <= 0;
+//     end
+// end
 
-`else
+// `else
 /*----------multi cycle---------*/
 
 /*--------Write state machine---------*/
@@ -111,6 +111,25 @@ end
 
 /*----------------------------Write contrl---------------------------*/
 /*-------------------------------------------------------------------*/
+`ifndef MEM_MUTI_CYCLE
+/*--------sigle cycle----------*/
+always @(*) begin
+    if (AWVALID & (wstate==WIDLE | wstate==DSHAK))
+        AWREADY = 1;
+    else
+        AWREADY = 0;
+end
+always @(*) begin
+    if (WVALID & (wstate==WIDLE | wstate==ASHAK))
+        WREADY = 1;
+    else
+        WREADY = 0;
+end
+wire [2:0] w_rand_val;
+assign w_rand_val = 0;
+
+`else
+/*----------multi cycle---------*/
 reg [3:0] lfsr_awrdy;
 always @(*) begin
     if (AWVALID & lfsr_awrdy[0] & (wstate==WIDLE | wstate==DSHAK))
@@ -145,7 +164,7 @@ end
 reg [3:0] w_lfsr;
 wire [2:0] w_rand_val;
 assign w_rand_val = w_lfsr[2:0];
-reg [2:0] w_cnt;
+
 always @(posedge clk) begin
     if (rst)
         w_lfsr <= 4'b1;
@@ -153,6 +172,10 @@ always @(posedge clk) begin
         w_lfsr <= {w_lfsr[0] ^ w_lfsr[2],w_lfsr[3:1]};
     end
 end
+
+`endif
+
+reg [2:0] w_cnt;
 always @(posedge clk) begin
     if ((wstate==WIDLE | wstate==DSHAK) & AW_handshaked) begin
         w_cnt <= w_rand_val==0 ? 0 : w_rand_val - 1;
@@ -160,7 +183,6 @@ always @(posedge clk) begin
     else if(w_cnt != 0 & wstate==WWAIT)
         w_cnt <= w_cnt - 1;
 end
-
 // write control
 reg [ADDR_WIDTH-1:0] saved_waddr;
 reg [DATA_WIDTH-1:0] saved_wdata;
@@ -209,6 +231,19 @@ end
 
 /*--------------------------Read contrl------------------------------*/
 /*-------------------------------------------------------------------*/
+`ifndef MEM_MUTI_CYCLE
+/*--------sigle cycle----------*/
+always @(*) begin
+    if (ARVALID & rstate==IDLE)
+        ARREADY = 1;
+    else
+        ARREADY = 0;
+end
+wire [2:0] r_rand_val;
+assign r_rand_val = 0;
+
+`else
+/*----------multi cycle---------*/
 always @(*) begin
     if (ARVALID & lfsr_rdy[0] & rstate==IDLE)
         ARREADY = 1;
@@ -236,6 +271,9 @@ always @(posedge clk) begin
         r_lfsr <= {r_lfsr[0] ^ r_lfsr[2],r_lfsr[3:1]};
     end
 end
+
+`endif
+
 always @(posedge clk) begin
     if (rstate==IDLE & AR_handshaked) begin
         r_cnt <= r_rand_val==0 ? 0 : r_rand_val - 1;
@@ -268,6 +306,6 @@ always @(posedge clk) begin
     end
 end
 
-`endif
+
 
 endmodule
