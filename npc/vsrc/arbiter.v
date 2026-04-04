@@ -76,7 +76,7 @@ wire ifu_req = ifu_AWVALID | ifu_WVALID | ifu_ARVALID;
 wire lsu_req = lsu_AWVALID | lsu_WVALID | lsu_ARVALID;
 
 // when IDLE default grant ifu(minimise latency)
-// wire grant_lsu = ((state==IDLE) & lsu_req) | state==GRANT_LSU;
+// wire grant_lsu = ((state==IDLE) & lsu_req) | state==GRANT_LSU; //combi loop
 wire grant_lsu = state==GRANT_LSU;
 
 always @(posedge clk) begin
