@@ -31,23 +31,15 @@ wire csr_event;
 
 wire ifu_AWVALID, ifu_AWREADY, ifu_WVALID, ifu_WREADY, 
 ifu_BVALID, ifu_BREADY, ifu_ARVALID, ifu_ARREADY, ifu_RVALID,ifu_RREADY;
-wire [DATA_WIDTH-1:0] ifu_AWADDR;
-wire [DATA_WIDTH-1:0] ifu_WDATA;
-wire [DATA_WIDTH-1:0] ifu_ARADDR;
-wire [DATA_WIDTH-1:0] ifu_RDATA;
+wire [DATA_WIDTH-1:0] ifu_AWADDR, ifu_WDATA, ifu_ARADDR, ifu_RDATA;
 wire [3:0] ifu_WSTRB;
-wire [1:0] ifu_BRESP;
-wire [1:0] ifu_RRESP;
+wire [1:0] ifu_BRESP, ifu_RRESP;
 
 wire lsu_AWVALID, lsu_AWREADY, lsu_WVALID, lsu_WREADY, 
 lsu_BVALID, lsu_BREADY, lsu_ARVALID, lsu_ARREADY, lsu_RVALID,lsu_RREADY;
-wire [DATA_WIDTH-1:0] lsu_AWADDR;
-wire [DATA_WIDTH-1:0] lsu_WDATA;
-wire [DATA_WIDTH-1:0] lsu_ARADDR;
-wire [DATA_WIDTH-1:0] lsu_RDATA;
+wire [DATA_WIDTH-1:0] lsu_AWADDR, lsu_WDATA, lsu_ARADDR, lsu_RDATA;
 wire [3:0] lsu_WSTRB;
-wire [1:0] lsu_BRESP;
-wire [1:0] lsu_RRESP;
+wire [1:0] lsu_BRESP, lsu_RRESP;
 
 wire mem_AWVALID, mem_AWREADY, mem_WVALID, mem_WREADY, 
 mem_BVALID, mem_BREADY, mem_ARVALID, mem_ARREADY, mem_RVALID,mem_RREADY;
@@ -154,14 +146,6 @@ wire [1:0] mem_RRESP;
 		.j_pc(j_pc)
 	);
 
-	// wire AWVALID, AWREADY, WVALID, WREADY, BVALID, BREADY, ARVALID, ARREADY,RVALID,RREADY;
-	// wire [DATA_WIDTH-1:0] AWADDR;
-	// wire [DATA_WIDTH-1:0] WDATA;
-	// wire [DATA_WIDTH-1:0] ARADDR;
-	// wire [DATA_WIDTH-1:0] RDATA;
-	// wire [3:0] WSTRB;
-	// wire [1:0] BRESP;
-	// wire [1:0] RRESP;
 	LSU u_LSU (
 		.lsu_en(lsu_en),
 		.clk(clk),
