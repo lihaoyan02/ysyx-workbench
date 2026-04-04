@@ -177,7 +177,7 @@ always @(posedge clk) begin
         pmem_write(saved_waddr, WDATA, {4'b0,WSTRB});    
         BVALID <= 1;
     end
-    else if (wstate==WWAIT & w_cnt == 0 & ~B_handshaked) begin //cnt == 0
+    else if (wstate==WWAIT & w_cnt == 0 & ~BVALID) begin //cnt == 0
         pmem_write(saved_waddr, saved_wdata, {4'b0,saved_wmask});
         BVALID <= 1;
     end
@@ -264,7 +264,7 @@ always @(posedge clk) begin
         RDATA <= pmem_read(ARADDR); 
         RVALID <= 1;
     end
-    else if (rstate==WAIT & r_cnt == 0 & ~R_handshaked) begin //cnt == 0
+    else if (rstate==WAIT & r_cnt == 0 & ~RVALID) begin //cnt == 0
         RDATA <= pmem_read(saved_raddr);
         RVALID <= 1;
     end

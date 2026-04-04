@@ -29,15 +29,23 @@ wire [DATA_WIDTH-1:0] csr_rdata;
 wire [11:0] csr_addr;
 wire csr_event;
 
-wire I_AWVALID, I_AWREADY, I_WVALID, I_WREADY, 
-I_BVALID, I_BREADY, I_ARVALID, I_ARREADY, I_RVALID,I_RREADY;
-wire [DATA_WIDTH-1:0] I_AWADDR;
-wire [DATA_WIDTH-1:0] I_WDATA;
-wire [DATA_WIDTH-1:0] I_ARADDR;
-wire [DATA_WIDTH-1:0] I_RDATA;
-wire [3:0] I_WSTRB;
-wire [1:0] I_BRESP;
-wire [1:0] I_RRESP;
+wire ifu_AWVALID, ifu_AWREADY, ifu_WVALID, ifu_WREADY, 
+ifu_BVALID, ifu_BREADY, ifu_ARVALID, ifu_ARREADY, ifu_RVALID,ifu_RREADY;
+wire [DATA_WIDTH-1:0] ifu_AWADDR, ifu_WDATA, ifu_ARADDR, ifu_RDATA;
+wire [3:0] ifu_WSTRB;
+wire [1:0] ifu_BRESP, ifu_RRESP;
+
+wire lsu_AWVALID, lsu_AWREADY, lsu_WVALID, lsu_WREADY, 
+lsu_BVALID, lsu_BREADY, lsu_ARVALID, lsu_ARREADY, lsu_RVALID,lsu_RREADY;
+wire [DATA_WIDTH-1:0] lsu_AWADDR, lsu_WDATA, lsu_ARADDR, lsu_RDATA;
+wire [3:0] lsu_WSTRB;
+wire [1:0] lsu_BRESP, lsu_RRESP;
+
+wire mem_AWVALID, mem_AWREADY, mem_WVALID, mem_WREADY, 
+mem_BVALID, mem_BREADY, mem_ARVALID, mem_ARREADY, mem_RVALID,mem_RREADY;
+wire [DATA_WIDTH-1:0] mem_AWADDR, mem_WDATA, mem_ARADDR, mem_RDATA;
+wire [3:0] mem_WSTRB;
+wire [1:0] mem_BRESP, mem_RRESP;
 
 	IFU u_IFU (
 		.clk(clk),
@@ -50,54 +58,30 @@ wire [1:0] I_RRESP;
 		.inst_fetch(inst_fetch),
 		.wb_valid(wb_valid),
 
-		.AWVALID(I_AWVALID),
-		.AWREADY(I_AWREADY),
-		.AWADDR(I_AWADDR),
+		.AWVALID(ifu_AWVALID),
+		.AWREADY(ifu_AWREADY),
+		.AWADDR(ifu_AWADDR),
 
-		.WVALID(I_WVALID),
-		.WREADY(I_WREADY),
-		.WDATA(I_WDATA),
-		.WSTRB(I_WSTRB),
+		.WVALID(ifu_WVALID),
+		.WREADY(ifu_WREADY),
+		.WDATA(ifu_WDATA),
+		.WSTRB(ifu_WSTRB),
 
-		.BVALID(I_BVALID),
-		.BREADY(I_BREADY),
-		.BRESP(I_BRESP),
+		.BVALID(ifu_BVALID),
+		.BREADY(ifu_BREADY),
+		.BRESP(ifu_BRESP),
 
-		.ARVALID(I_ARVALID),
-		.ARREADY(I_ARREADY),
-		.ARADDR(I_ARADDR),
+		.ARVALID(ifu_ARVALID),
+		.ARREADY(ifu_ARREADY),
+		.ARADDR(ifu_ARADDR),
 
-		.RVALID(I_RVALID),
-		.RREADY(I_RREADY),
-		.RDATA(I_RDATA),
-		.RRESP(I_RRESP)
+		.RVALID(ifu_RVALID),
+		.RREADY(ifu_RREADY),
+		.RDATA(ifu_RDATA),
+		.RRESP(ifu_RRESP)
 	);
 
-	IROM u_IROM(
-		.clk(clk),
-		.rst(rst),
-		.AWVALID(I_AWVALID),
-		.AWREADY(I_AWREADY),
-		.AWADDR(I_AWADDR),
 
-		.WVALID(I_WVALID),
-		.WREADY(I_WREADY),
-		.WDATA(I_WDATA),
-		.WSTRB(I_WSTRB),
-
-		.BVALID(I_BVALID),
-		.BREADY(I_BREADY),
-		.BRESP(I_BRESP),
-
-		.ARVALID(I_ARVALID),
-		.ARREADY(I_ARREADY),
-		.ARADDR(I_ARADDR),
-
-		.RVALID(I_RVALID),
-		.RREADY(I_RREADY),
-		.RDATA(I_RDATA),
-		.RRESP(I_RRESP)
-	);
 	IDU u_IDU (
 		.inst_fetch(inst_fetch),
 		.inst_valid(inst_valid),
@@ -158,14 +142,6 @@ wire [1:0] I_RRESP;
 		.j_pc(j_pc)
 	);
 
-	wire AWVALID, AWREADY, WVALID, WREADY, BVALID, BREADY, ARVALID, ARREADY,RVALID,RREADY;
-	wire [DATA_WIDTH-1:0] AWADDR;
-	wire [DATA_WIDTH-1:0] WDATA;
-	wire [DATA_WIDTH-1:0] ARADDR;
-	wire [DATA_WIDTH-1:0] RDATA;
-	wire [3:0] WSTRB;
-	wire [1:0] BRESP;
-	wire [1:0] RRESP;
 	LSU u_LSU (
 		.lsu_en(lsu_en),
 		.clk(clk),
@@ -177,55 +153,124 @@ wire [1:0] I_RRESP;
 		.rdata(lsu_rdata),
 		.ready_out(lsu_ready),
 
-		.AWVALID(AWVALID),
-		.AWREADY(AWREADY),
-		.AWADDR(AWADDR),
+		.AWVALID(lsu_AWVALID),
+		.AWREADY(lsu_AWREADY),
+		.AWADDR(lsu_AWADDR),
 
-		.WVALID(WVALID),
-		.WREADY(WREADY),
-		.WDATA(WDATA),
-		.WSTRB(WSTRB),
+		.WVALID(lsu_WVALID),
+		.WREADY(lsu_WREADY),
+		.WDATA(lsu_WDATA),
+		.WSTRB(lsu_WSTRB),
 
-		.BVALID(BVALID),
-		.BREADY(BREADY),
-		.BRESP(BRESP),
+		.BVALID(lsu_BVALID),
+		.BREADY(lsu_BREADY),
+		.BRESP(lsu_BRESP),
 
-		.ARVALID(ARVALID),
-		.ARREADY(ARREADY),
-		.ARADDR(ARADDR),
+		.ARVALID(lsu_ARVALID),
+		.ARREADY(lsu_ARREADY),
+		.ARADDR(lsu_ARADDR),
 
-		.RVALID(RVALID),
-		.RREADY(RREADY),
-		.RDATA(RDATA),
-		.RRESP(RRESP)
+		.RVALID(lsu_RVALID),
+		.RREADY(lsu_RREADY),
+		.RDATA(lsu_RDATA),
+		.RRESP(lsu_RRESP)
+	);
 
+	arbiter u_arbiter(
+		.clk(clk),
+		.rst(rst),
+		.ifu_AWVALID(ifu_AWVALID),
+		.ifu_AWREADY(ifu_AWREADY),
+		.ifu_AWADDR(ifu_AWADDR),
+
+		.ifu_WVALID(ifu_WVALID),
+		.ifu_WREADY(ifu_WREADY),
+		.ifu_WDATA(ifu_WDATA),
+		.ifu_WSTRB(ifu_WSTRB),
+
+		.ifu_BVALID(ifu_BVALID),
+		.ifu_BREADY(ifu_BREADY),
+		.ifu_BRESP(ifu_BRESP),
+
+		.ifu_ARVALID(ifu_ARVALID),
+		.ifu_ARREADY(ifu_ARREADY),
+		.ifu_ARADDR(ifu_ARADDR),
+
+		.ifu_RVALID(ifu_RVALID),
+		.ifu_RREADY(ifu_RREADY),
+		.ifu_RDATA(ifu_RDATA),
+		.ifu_RRESP(ifu_RRESP),
+		//lsu
+		.lsu_AWVALID(lsu_AWVALID),
+		.lsu_AWREADY(lsu_AWREADY),
+		.lsu_AWADDR(lsu_AWADDR),
+
+		.lsu_WVALID(lsu_WVALID),
+		.lsu_WREADY(lsu_WREADY),
+		.lsu_WDATA(lsu_WDATA),
+		.lsu_WSTRB(lsu_WSTRB),
+
+		.lsu_BVALID(lsu_BVALID),
+		.lsu_BREADY(lsu_BREADY),
+		.lsu_BRESP(lsu_BRESP),
+
+		.lsu_ARVALID(lsu_ARVALID),
+		.lsu_ARREADY(lsu_ARREADY),
+		.lsu_ARADDR(lsu_ARADDR),
+
+		.lsu_RVALID(lsu_RVALID),
+		.lsu_RREADY(lsu_RREADY),
+		.lsu_RDATA(lsu_RDATA),
+		.lsu_RRESP(lsu_RRESP),
+		// mem
+		.mem_AWVALID(mem_AWVALID),
+		.mem_AWREADY(mem_AWREADY),
+		.mem_AWADDR(mem_AWADDR),
+
+		.mem_WVALID(mem_WVALID),
+		.mem_WREADY(mem_WREADY),
+		.mem_WDATA(mem_WDATA),
+		.mem_WSTRB(mem_WSTRB),
+
+		.mem_BVALID(mem_BVALID),
+		.mem_BREADY(mem_BREADY),
+		.mem_BRESP(mem_BRESP),
+
+		.mem_ARVALID(mem_ARVALID),
+		.mem_ARREADY(mem_ARREADY),
+		.mem_ARADDR(mem_ARADDR),
+
+		.mem_RVALID(mem_RVALID),
+		.mem_RREADY(mem_RREADY),
+		.mem_RDATA(mem_RDATA),
+		.mem_RRESP(mem_RRESP)
 	);
 
 	MEM u_mem (
 		.clk(clk),
 		.rst(rst),
 
-		.AWVALID(AWVALID),
-		.AWREADY(AWREADY),
-		.AWADDR(AWADDR),
+		.AWVALID(mem_AWVALID),
+		.AWREADY(mem_AWREADY),
+		.AWADDR(mem_AWADDR),
 
-		.WVALID(WVALID),
-		.WREADY(WREADY),
-		.WDATA(WDATA),
-		.WSTRB(WSTRB),
+		.WVALID(mem_WVALID),
+		.WREADY(mem_WREADY),
+		.WDATA(mem_WDATA),
+		.WSTRB(mem_WSTRB),
 
-		.BVALID(BVALID),
-		.BREADY(BREADY),
-		.BRESP(BRESP),
+		.BVALID(mem_BVALID),
+		.BREADY(mem_BREADY),
+		.BRESP(mem_BRESP),
 
-		.ARVALID(ARVALID),
-		.ARREADY(ARREADY),
-		.ARADDR(ARADDR),
+		.ARVALID(mem_ARVALID),
+		.ARREADY(mem_ARREADY),
+		.ARADDR(mem_ARADDR),
 
-		.RVALID(RVALID),
-		.RREADY(RREADY),
-		.RDATA(RDATA),
-		.RRESP(RRESP)
+		.RVALID(mem_RVALID),
+		.RREADY(mem_RREADY),
+		.RDATA(mem_RDATA),
+		.RRESP(mem_RRESP)
 	);
 	
 	WBU u_WBU (
