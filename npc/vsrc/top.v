@@ -43,13 +43,9 @@ wire [1:0] lsu_BRESP, lsu_RRESP;
 
 wire mem_AWVALID, mem_AWREADY, mem_WVALID, mem_WREADY, 
 mem_BVALID, mem_BREADY, mem_ARVALID, mem_ARREADY, mem_RVALID,mem_RREADY;
-wire [DATA_WIDTH-1:0] mem_AWADDR;
-wire [DATA_WIDTH-1:0] mem_WDATA;
-wire [DATA_WIDTH-1:0] mem_ARADDR;
-wire [DATA_WIDTH-1:0] mem_RDATA;
+wire [DATA_WIDTH-1:0] mem_AWADDR, mem_WDATA, mem_ARADDR, mem_RDATA;
 wire [3:0] mem_WSTRB;
-wire [1:0] mem_BRESP;
-wire [1:0] mem_RRESP;
+wire [1:0] mem_BRESP, mem_RRESP;
 
 	IFU u_IFU (
 		.clk(clk),
