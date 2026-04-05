@@ -167,7 +167,21 @@ always @(*) begin
 			end
         end
         GRANT_LSU: begin
-            if(lsu_RVALID & lsu_RREADY) begin
+            if(lsu_RVALID & lsu_RREADY & ifu_req) begin
+                next_mstate = GRANT_IFU;
+				if (ifu_AWVALID)
+					next_sstate = ifu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+				else
+					next_sstate = ifu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+			end
+            else if (lsu_BVALID & lsu_BREADY & ifu_req) begin
+                next_mstate = GRANT_IFU;
+				if (ifu_AWVALID)
+					next_sstate = ifu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+				else
+					next_sstate = ifu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+			end
+            else if(lsu_RVALID & lsu_RREADY) begin
                 next_mstate = IDLE;
 				next_sstate = IDLE;
 			end
