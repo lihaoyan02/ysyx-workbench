@@ -1,4 +1,4 @@
-`define MEM_MUTI_CYCLE
+//`define MEM_MUTI_CYCLE
 
 module IROM #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
 	input clk,
