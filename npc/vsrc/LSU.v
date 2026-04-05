@@ -36,7 +36,7 @@ localparam WIDLE = 2'b0, ASHAK=2'b01, DSHAK=2'b10, WWAIT = 2'b11;
 localparam IDLE = 1'b0, WAIT = 1'b1;
 
 assign ready_out = (rstate==WAIT & R_handshaked & wstate==WIDLE) |  // read finished
-	(wstate==WWAIT & W_handshaked & rstate==IDLE) | // write finished
+	(wstate==WWAIT & B_handshaked & rstate==IDLE) | // write finished
 	((rstate==IDLE & ~ARVALID) & (wstate==WIDLE & ~AWVALID & ~WVALID));// no mem request
 
 wire AW_handshaked, W_handshaked, AR_handshaked, R_handshaked, B_handshaked;
