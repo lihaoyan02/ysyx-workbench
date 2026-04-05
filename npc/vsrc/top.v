@@ -47,6 +47,12 @@ wire [DATA_WIDTH-1:0] mem_AWADDR, mem_WDATA, mem_ARADDR, mem_RDATA;
 wire [3:0] mem_WSTRB;
 wire [1:0] mem_BRESP, mem_RRESP;
 
+wire uart_AWVALID, uart_AWREADY, uart_WVALID, uart_WREADY, 
+uart_BVALID, uart_BREADY, uart_ARVALID, uart_ARREADY, uart_RVALID,uart_RREADY;
+wire [DATA_WIDTH-1:0] uart_AWADDR, uart_WDATA, uart_ARADDR, uart_RDATA;
+wire [3:0] uart_WSTRB;
+wire [1:0] uart_BRESP, uart_RRESP;
+
 	IFU u_IFU (
 		.clk(clk),
 		.rst(rst),
@@ -243,7 +249,30 @@ wire [1:0] mem_BRESP, mem_RRESP;
 		.mem_RVALID(mem_RVALID),
 		.mem_RREADY(mem_RREADY),
 		.mem_RDATA(mem_RDATA),
-		.mem_RRESP(mem_RRESP)
+		.mem_RRESP(mem_RRESP),
+
+		// uart
+		.uart_AWVALID(uart_AWVALID),
+		.uart_AWREADY(uart_AWREADY),
+		.uart_AWADDR(uart_AWADDR),
+
+		.uart_WVALID(uart_WVALID),
+		.uart_WREADY(uart_WREADY),
+		.uart_WDATA(uart_WDATA),
+		.uart_WSTRB(uart_WSTRB),
+
+		.uart_BVALID(uart_BVALID),
+		.uart_BREADY(uart_BREADY),
+		.uart_BRESP(uart_BRESP),
+
+		.uart_ARVALID(uart_ARVALID),
+		.uart_ARREADY(uart_ARREADY),
+		.uart_ARADDR(uart_ARADDR),
+
+		.uart_RVALID(uart_RVALID),
+		.uart_RREADY(uart_RREADY),
+		.uart_RDATA(uart_RDATA),
+		.uart_RRESP(uart_RRESP)
 	);
 
 	MEM u_mem (
@@ -271,6 +300,33 @@ wire [1:0] mem_BRESP, mem_RRESP;
 		.RREADY(mem_RREADY),
 		.RDATA(mem_RDATA),
 		.RRESP(mem_RRESP)
+	);
+
+	UART u_uart (
+		.clk(clk),
+		.rst(rst),
+
+		.AWVALID(uart_AWVALID),
+		.AWREADY(uart_AWREADY),
+		.AWADDR(uart_AWADDR),
+
+		.WVALID(uart_WVALID),
+		.WREADY(uart_WREADY),
+		.WDATA(uart_WDATA),
+		.WSTRB(uart_WSTRB),
+
+		.BVALID(uart_BVALID),
+		.BREADY(uart_BREADY),
+		.BRESP(uart_BRESP),
+
+		.ARVALID(uart_ARVALID),
+		.ARREADY(uart_ARREADY),
+		.ARADDR(uart_ARADDR),
+
+		.RVALID(uart_RVALID),
+		.RREADY(uart_RREADY),
+		.RDATA(uart_RDATA),
+		.RRESP(uart_RRESP)
 	);
 	
 	WBU u_WBU (
