@@ -1,4 +1,4 @@
-`define MEM_MUTI_CYCLE
+//`define MEM_MUTI_CYCLE
 
 module MEM #(DATA_WIDTH = 32, ADDR_WIDTH=32, SHIFT_LEN=4) (
 	input clk,

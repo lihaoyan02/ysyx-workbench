@@ -99,7 +99,11 @@ always @(*) begin
                 next_state = IDLE;
         end 
         GRANT_IFU: begin
-            if(ifu_RVALID & ifu_RREADY)
+			if(ifu_RVALID & ifu_RREADY & lsu_req)
+                next_state = GRANT_LSU;
+            else if (ifu_BVALID & ifu_BREADY & lsu_req)
+                next_state = GRANT_LSU;
+            else if(ifu_RVALID & ifu_RREADY)
                 next_state = IDLE;
             else if (ifu_BVALID & ifu_BREADY)
                 next_state = IDLE;
