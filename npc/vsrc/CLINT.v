@@ -303,8 +303,8 @@ always @(posedge clk) begin
             RDATA <= mtime_tmp_read_reg[31:0];
         end 
         else if (AWADDR==mtime_ADDR+4) begin
-            RDATA <= mtime_tmp_reg[63:32];
-            mtime_tmp_read_reg <= mtime_tmp_reg;
+            RDATA <= mtime_reg[63:32];
+            mtime_tmp_read_reg <= mtime_reg;
         end
         RVALID <= 1;
     end
@@ -313,8 +313,8 @@ always @(posedge clk) begin
             RDATA <= mtime_tmp_read_reg[31:0];
         end 
         else if (saved_raddr==mtime_ADDR+4) begin
-            RDATA <= mtime_tmp_reg[63:32];
-            mtime_tmp_read_reg <= mtime_tmp_reg;
+            RDATA <= mtime_reg[63:32];
+            mtime_tmp_read_reg <= mtime_reg;
         end
         RVALID <= 1;
     end
