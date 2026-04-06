@@ -122,12 +122,6 @@ reg [1:0] sstate, next_sstate;
 wire ifu_req = ifu_AWVALID| ifu_ARVALID;
 wire lsu_req = lsu_AWVALID| lsu_ARVALID;
 
-// when IDLE default grant ifu(minimise latency)
-// wire grant_lsu = ((mstate==IDLE) & lsu_req) | mstate==GRANT_LSU; //combi loop
-// wire grant_lsu = mstate==GRANT_LSU;
-// wire grant_ifu = mstate==GRANT_IFU;
-// wire grant_uart = sstate==GRANT_UART;
-// wire grant_mem = sstate==GRANT_MEM;
 always @(posedge clk) begin
     if (rst) begin
         mstate <= IDLE;
@@ -192,126 +186,304 @@ always @(*) begin
     endcase
 end
 // single cycle (less time)
-// always @(*) begin
-// 	case (sstate)
-// 		IDLE: begin
-// 			if (next_mstate==GRANT_IFU) begin
-// 				if (ifu_AWVALID)
-// 					next_sstate = ifu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-// 				else
-// 					next_sstate = ifu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-// 			end
-// 			else if (next_mstate==GRANT_LSU) begin
-// 				if (lsu_AWVALID)
-// 					next_sstate = lsu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-// 				else
-// 					next_sstate = lsu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-// 			end		
-// 			else
-// 				next_sstate = IDLE;
-// 		end
-// 		GRANT_UART: begin
-// 			if (mstate==GRANT_IFU & next_mstate==GRANT_LSU) begin
-// 				if (lsu_AWVALID)
-// 					next_sstate = lsu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-// 				else
-// 					next_sstate = lsu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-// 			end
-// 			if (mstate==GRANT_LSU & next_mstate==GRANT_IFU) begin
-// 				if (ifu_AWVALID)
-// 					next_sstate = ifu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-// 				else
-// 					next_sstate = ifu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-// 			end
-// 			else if (next_mstate == IDLE) begin
-// 				next_sstate = IDLE;
-// 			end
-// 			else
-// 				next_sstate = GRANT_UART;
-// 		end
-// 		GRANT_MEM: begin
-// 			if (mstate==GRANT_IFU & next_mstate==GRANT_LSU) begin
-// 				if (lsu_AWVALID)		
-// 					next_sstate = lsu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-// 				else
-// 					next_sstate = lsu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-// 			end
-// 			else if (mstate==GRANT_LSU & next_mstate==GRANT_IFU) begin
-// 				if (ifu_AWVALID)
-// 					next_sstate = ifu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-// 				else
-// 					next_sstate = ifu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-// 			end
-// 			else if (next_mstate == IDLE)
-// 				next_sstate = IDLE;
-// 			else
-// 				next_sstate = GRANT_MEM;
-// 		end
-// 		default: next_sstate = IDLE;
-// 	endcase
-// end
-// two cycle (more time)
 always @(*) begin
 	case (sstate)
 		IDLE: begin
-			if (inter_AWVALID) begin
-				if (inter_AWADDR[31:12]==20'h1000_0) begin //uart
-					next_sstate = GRANT_UART;
-				end
-				else if ((inter_AWADDR & CLINT_MASK) == CLINT_ADDR) begin //clint
-					next_sstate = GRANT_CLINT;
-				end
-				else begin // mem
-					next_sstate = GRANT_MEM;
-				end
-			end
-			else if(inter_ARVALID) begin
-				if (inter_ARADDR[31:12]==20'h1000_0) begin
-					next_sstate = GRANT_UART;
-				end
-				else if ((inter_ARADDR & CLINT_MASK) == CLINT_ADDR) begin
-					next_sstate = GRANT_CLINT;
+			if (next_mstate==GRANT_IFU) begin
+				if (ifu_AWVALID) begin
+					if (ifu_AWADDR[31:12]==20'h1000_0) begin //uart
+						next_sstate = GRANT_UART;
+					end
+					else if ((ifu_AWADDR & CLINT_MASK) == CLINT_ADDR) begin //clint
+						next_sstate = GRANT_CLINT;
+					end
+					else begin // mem
+						next_sstate = GRANT_MEM;
+					end
 				end
 				else begin
-					next_sstate = GRANT_MEM;
+					if (ifu_ARADDR[31:12]==20'h1000_0) begin //uart
+						next_sstate = GRANT_UART;
+					end
+					else if ((ifu_ARADDR & CLINT_MASK) == CLINT_ADDR) begin //clint
+						next_sstate = GRANT_CLINT;
+					end
+					else begin // mem
+						next_sstate = GRANT_MEM;
+					end
+					//next_sstate = ifu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+				end				
+			end
+			else if (next_mstate==GRANT_LSU) begin
+				if (lsu_AWVALID) begin
+					if (lsu_AWADDR[31:12]==20'h1000_0) begin //uart
+						next_sstate = GRANT_UART;
+					end
+					else if ((lsu_AWADDR & CLINT_MASK) == CLINT_ADDR) begin //clint
+						next_sstate = GRANT_CLINT;
+					end
+					else begin // mem
+						next_sstate = GRANT_MEM;
+					end
+					// next_sstate = lsu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+				end 
+				else begin
+					if (lsu_ARADDR[31:12]==20'h1000_0) begin //uart
+						next_sstate = GRANT_UART;
+					end
+					else if ((lsu_ARADDR & CLINT_MASK) == CLINT_ADDR) begin //clint
+						next_sstate = GRANT_CLINT;
+					end
+					else begin // mem
+						next_sstate = GRANT_MEM;
+					end
+					// next_sstate = lsu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
 				end
 			end		
 			else
 				next_sstate = IDLE;
 		end
 		GRANT_UART: begin
-			if (uart_BVALID & uart_BREADY) begin
-				next_sstate = IDLE;
+			if (mstate==GRANT_IFU & next_mstate==GRANT_LSU) begin
+				if (lsu_AWVALID) begin
+					if (lsu_AWADDR[31:12]==20'h1000_0) begin //uart
+						next_sstate = GRANT_UART;
+					end
+					else if ((lsu_AWADDR & CLINT_MASK) == CLINT_ADDR) begin //clint
+						next_sstate = GRANT_CLINT;
+					end
+					else begin // mem
+						next_sstate = GRANT_MEM;
+					end
+					// next_sstate = lsu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+				end
+				else begin
+					if (lsu_ARADDR[31:12]==20'h1000_0) begin //uart
+						next_sstate = GRANT_UART;
+					end
+					else if ((lsu_ARADDR & CLINT_MASK) == CLINT_ADDR) begin //clint
+						next_sstate = GRANT_CLINT;
+					end
+					else begin // mem
+						next_sstate = GRANT_MEM;
+					end
+					// next_sstate = lsu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+				end
 			end
-			else if (uart_RVALID & uart_RREADY) begin
+			else if (mstate==GRANT_LSU & next_mstate==GRANT_IFU) begin
+				if (ifu_AWVALID) begin
+					if (ifu_AWADDR[31:12]==20'h1000_0) begin //uart
+						next_sstate = GRANT_UART;
+					end
+					else if ((ifu_AWADDR & CLINT_MASK) == CLINT_ADDR) begin //clint
+						next_sstate = GRANT_CLINT;
+					end
+					else begin // mem
+						next_sstate = GRANT_MEM;
+					end
+					// next_sstate = ifu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+				end
+				else begin
+					if (ifu_ARADDR[31:12]==20'h1000_0) begin //uart
+						next_sstate = GRANT_UART;
+					end
+					else if ((ifu_ARADDR & CLINT_MASK) == CLINT_ADDR) begin //clint
+						next_sstate = GRANT_CLINT;
+					end
+					else begin // mem
+						next_sstate = GRANT_MEM;
+					end
+					// next_sstate = ifu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+				end
+			end
+			else if (next_mstate == IDLE) begin
 				next_sstate = IDLE;
 			end
 			else
 				next_sstate = GRANT_UART;
 		end
 		GRANT_MEM: begin
-			if (mem_BVALID & mem_BREADY) begin
-				next_sstate = IDLE;
+			if (mstate==GRANT_IFU & next_mstate==GRANT_LSU) begin
+				if (lsu_AWVALID) begin	
+					if (lsu_AWADDR[31:12]==20'h1000_0) begin //uart
+						next_sstate = GRANT_UART;
+					end
+					else if ((lsu_AWADDR & CLINT_MASK) == CLINT_ADDR) begin //clint
+						next_sstate = GRANT_CLINT;
+					end
+					else begin // mem
+						next_sstate = GRANT_MEM;
+					end
+					// next_sstate = lsu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+				end
+				else begin
+					if (lsu_ARADDR[31:12]==20'h1000_0) begin //uart
+						next_sstate = GRANT_UART;
+					end
+					else if ((lsu_ARADDR & CLINT_MASK) == CLINT_ADDR) begin //clint
+						next_sstate = GRANT_CLINT;
+					end
+					else begin // mem
+						next_sstate = GRANT_MEM;
+					end
+					// next_sstate = lsu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+				end
 			end
-			else if (mem_RVALID & mem_RREADY) begin
-				next_sstate = IDLE;
+			else if (mstate==GRANT_LSU & next_mstate==GRANT_IFU) begin
+				if (ifu_AWVALID) begin
+					if (ifu_AWADDR[31:12]==20'h1000_0) begin //uart
+						next_sstate = GRANT_UART;
+					end
+					else if ((ifu_AWADDR & CLINT_MASK) == CLINT_ADDR) begin //clint
+						next_sstate = GRANT_CLINT;
+					end
+					else begin // mem
+						next_sstate = GRANT_MEM;
+					end
+					// next_sstate = ifu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+				end
+				else begin
+					if (ifu_ARADDR[31:12]==20'h1000_0) begin //uart
+						next_sstate = GRANT_UART;
+					end
+					else if ((ifu_ARADDR & CLINT_MASK) == CLINT_ADDR) begin //clint
+						next_sstate = GRANT_CLINT;
+					end
+					else begin // mem
+						next_sstate = GRANT_MEM;
+					end
+					// next_sstate = ifu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+				end
 			end
+			else if (next_mstate == IDLE)
+				next_sstate = IDLE;
 			else
 				next_sstate = GRANT_MEM;
 		end
 		GRANT_CLINT: begin
-			if (clint_BVALID & clint_BREADY) begin
-				next_sstate = IDLE;
+			if (mstate==GRANT_IFU & next_mstate==GRANT_LSU) begin
+				if (lsu_AWVALID) begin	
+					if (lsu_AWADDR[31:12]==20'h1000_0) begin //uart
+						next_sstate = GRANT_UART;
+					end
+					else if ((lsu_AWADDR & CLINT_MASK) == CLINT_ADDR) begin //clint
+						next_sstate = GRANT_CLINT;
+					end
+					else begin // mem
+						next_sstate = GRANT_MEM;
+					end
+					// next_sstate = lsu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+				end
+				else begin
+					if (lsu_ARADDR[31:12]==20'h1000_0) begin //uart
+						next_sstate = GRANT_UART;
+					end
+					else if ((lsu_ARADDR & CLINT_MASK) == CLINT_ADDR) begin //clint
+						next_sstate = GRANT_CLINT;
+					end
+					else begin // mem
+						next_sstate = GRANT_MEM;
+					end
+					// next_sstate = lsu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+				end
 			end
-			else if (clint_RVALID & clint_RREADY) begin
-				next_sstate = IDLE;
+			else if (mstate==GRANT_LSU & next_mstate==GRANT_IFU) begin
+				if (ifu_AWVALID) begin
+					if (ifu_AWADDR[31:12]==20'h1000_0) begin //uart
+						next_sstate = GRANT_UART;
+					end
+					else if ((ifu_AWADDR & CLINT_MASK) == CLINT_ADDR) begin //clint
+						next_sstate = GRANT_CLINT;
+					end
+					else begin // mem
+						next_sstate = GRANT_MEM;
+					end
+					// next_sstate = ifu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+				end
+				else begin
+					if (ifu_ARADDR[31:12]==20'h1000_0) begin //uart
+						next_sstate = GRANT_UART;
+					end
+					else if ((ifu_ARADDR & CLINT_MASK) == CLINT_ADDR) begin //clint
+						next_sstate = GRANT_CLINT;
+					end
+					else begin // mem
+						next_sstate = GRANT_MEM;
+					end
+					// next_sstate = ifu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+				end
 			end
+			else if (next_mstate == IDLE)
+				next_sstate = IDLE;
 			else
 				next_sstate = GRANT_CLINT;
 		end
 		default: next_sstate = IDLE;
 	endcase
 end
+
+// two cycle (more time)
+// always @(*) begin
+// 	case (sstate)
+// 		IDLE: begin
+// 			if (inter_AWVALID) begin
+// 				if (inter_AWADDR[31:12]==20'h1000_0) begin //uart
+// 					next_sstate = GRANT_UART;
+// 				end
+// 				else if ((inter_AWADDR & CLINT_MASK) == CLINT_ADDR) begin //clint
+// 					next_sstate = GRANT_CLINT;
+// 				end
+// 				else begin // mem
+// 					next_sstate = GRANT_MEM;
+// 				end
+// 			end
+// 			else if(inter_ARVALID) begin
+// 				if (inter_ARADDR[31:12]==20'h1000_0) begin
+// 					next_sstate = GRANT_UART;
+// 				end
+// 				else if ((inter_ARADDR & CLINT_MASK) == CLINT_ADDR) begin
+// 					next_sstate = GRANT_CLINT;
+// 				end
+// 				else begin
+// 					next_sstate = GRANT_MEM;
+// 				end
+// 			end		
+// 			else
+// 				next_sstate = IDLE;
+// 		end
+// 		GRANT_UART: begin
+// 			if (uart_BVALID & uart_BREADY) begin
+// 				next_sstate = IDLE;
+// 			end
+// 			else if (uart_RVALID & uart_RREADY) begin
+// 				next_sstate = IDLE;
+// 			end
+// 			else
+// 				next_sstate = GRANT_UART;
+// 		end
+// 		GRANT_MEM: begin
+// 			if (mem_BVALID & mem_BREADY) begin
+// 				next_sstate = IDLE;
+// 			end
+// 			else if (mem_RVALID & mem_RREADY) begin
+// 				next_sstate = IDLE;
+// 			end
+// 			else
+// 				next_sstate = GRANT_MEM;
+// 		end
+// 		GRANT_CLINT: begin
+// 			if (clint_BVALID & clint_BREADY) begin
+// 				next_sstate = IDLE;
+// 			end
+// 			else if (clint_RVALID & clint_RREADY) begin
+// 				next_sstate = IDLE;
+// 			end
+// 			else
+// 				next_sstate = GRANT_CLINT;
+// 		end
+// 		default: next_sstate = IDLE;
+// 	endcase
+// end
 
 reg inter_AWVALID, inter_AWREADY, inter_WVALID, inter_WREADY, 
 inter_BVALID, inter_BREADY, inter_ARVALID, inter_ARREADY, inter_RVALID,inter_RREADY;
@@ -392,33 +564,6 @@ always @(*) begin
 		end
 	endcase
 end
-// assign inter_AWVALID = grant_lsu ? lsu_AWVALID : grant_ifu ? ifu_AWVALID : 0;
-// assign inter_AWADDR = grant_lsu ? lsu_AWADDR : grant_ifu ? ifu_AWADDR : 0;
-// assign inter_WVALID = grant_lsu ? lsu_WVALID : grant_ifu ? ifu_WVALID : 0;
-// assign inter_WDATA = grant_lsu ? lsu_WDATA : grant_ifu ? ifu_WDATA : 0;
-// assign inter_WSTRB = grant_lsu ? lsu_WSTRB : grant_ifu ? ifu_WSTRB : 0;
-// assign inter_BREADY = grant_lsu ? lsu_BREADY : grant_ifu ? ifu_BREADY : 0;
-// assign inter_ARVALID = grant_lsu ? lsu_ARVALID : grant_ifu ? ifu_ARVALID : 0;
-// assign inter_ARADDR = grant_lsu ? lsu_ARADDR : grant_ifu ? ifu_ARADDR : 0;
-// assign inter_RREADY = grant_lsu ? lsu_RREADY : grant_ifu ? ifu_RREADY : 0;
-
-// assign ifu_AWREADY = grant_lsu ? 0 : inter_AWREADY;
-// assign ifu_WREADY = grant_lsu ? 0 : inter_WREADY;
-// assign ifu_BVALID = grant_lsu ? 0 : inter_BVALID;
-// assign ifu_BRESP = grant_lsu ? 0 : inter_BRESP;
-// assign ifu_ARREADY = grant_lsu ? 0 : inter_ARREADY;
-// assign ifu_RVALID = grant_lsu ? 0 : inter_RVALID;
-// assign ifu_RDATA = grant_lsu ? 0 : inter_RDATA;
-// assign ifu_RRESP = grant_lsu ? 0 : inter_RRESP;
-
-// assign lsu_AWREADY = grant_lsu ? inter_AWREADY : 0;
-// assign lsu_WREADY = grant_lsu ? inter_WREADY : 0;
-// assign lsu_BVALID = grant_lsu ? inter_BVALID : 0;
-// assign lsu_BRESP = grant_lsu ? inter_BRESP : 0;
-// assign lsu_ARREADY = grant_lsu ? inter_ARREADY : 0;
-// assign lsu_RVALID = grant_lsu ? inter_RVALID : 0;
-// assign lsu_RDATA = grant_lsu ? inter_RDATA : 0;
-// assign lsu_RRESP = grant_lsu ? inter_RRESP : 0;
 
 always @(*) begin
 	case (sstate)
@@ -524,32 +669,5 @@ always @(*) begin
 		end
 	endcase
 end
-// assign inter_AWREADY = grant_uart ? uart_AWREADY : grant_mem ? mem_AWREADY : 0;
-// assign inter_WREADY = grant_uart ? uart_WREADY : grant_mem ? mem_WREADY : 0;
-// assign inter_BVALID = grant_uart ? uart_BVALID : grant_mem ? mem_BVALID : 0;
-// assign inter_BRESP = grant_uart ? uart_BRESP : grant_mem ? mem_BRESP : 0;
-// assign inter_ARREADY = grant_uart ? uart_ARREADY : grant_mem ? mem_ARREADY : 0;
-// assign inter_RVALID = grant_uart ? uart_RVALID : grant_mem ? mem_RVALID : 0;
-// assign inter_RDATA = grant_uart ? uart_RDATA : grant_mem ? mem_RDATA : 0;
-// assign inter_RRESP = grant_uart ? uart_RRESP  : grant_mem ? mem_RRESP : 0;
 
-// assign uart_AWVALID = grant_uart ? inter_AWVALID : 0;
-// assign uart_AWADDR = grant_uart ? inter_AWADDR : 0;
-// assign uart_WVALID = grant_uart ? inter_WVALID : 0;
-// assign uart_WDATA = grant_uart ? inter_WDATA : 0;
-// assign uart_WSTRB = grant_uart ? inter_WSTRB : 0;
-// assign uart_BREADY = grant_uart ? inter_BREADY : 0;
-// assign uart_ARVALID = grant_uart ? inter_ARVALID : 0;
-// assign uart_ARADDR = grant_uart ? inter_ARADDR : 0;
-// assign uart_RREADY = grant_uart ? inter_RREADY : 0;
-
-// assign mem_AWVALID = grant_mem ? inter_AWVALID : 0;
-// assign mem_AWADDR = grant_mem ? inter_AWADDR : 0;
-// assign mem_WVALID = grant_mem ? inter_WVALID : 0;
-// assign mem_WDATA = grant_mem ? inter_WDATA : 0;
-// assign mem_WSTRB = grant_mem ? inter_WSTRB : 0;
-// assign mem_BREADY = grant_mem ? inter_BREADY : 0;
-// assign mem_ARVALID = grant_mem ? inter_ARVALID : 0;
-// assign mem_ARADDR = grant_mem ? inter_ARADDR : 0;
-// assign mem_RREADY = grant_mem ? inter_RREADY : 0;
 endmodule
