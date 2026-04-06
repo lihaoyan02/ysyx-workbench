@@ -239,23 +239,11 @@ always @(*) begin
 				next_sstate = GRANT_UART;
 		end
 		GRANT_MEM: begin
-			// if (mstate==GRANT_IFU & next_mstate==GRANT_LSU) begin
-			if(mstate==GRANT_IFU & ifu_RVALID & ifu_RREADY & lsu_req) begin
-				if (lsu_AWVALID) begin			
-					if (lsu_AWADDR[31:12]==20'h1000_0) begin
-						$write("lsuuart_avalid ");
-						next_sstate = GRANT_UART;
-					end
-					else begin
-						// $write("mem_avalid ");
-						next_sstate = GRANT_MEM;
-					end
-					// next_sstate = lsu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-				end
-				else begin
-					// $write("mem_avalid ");
+			if (mstate==GRANT_IFU & next_mstate==GRANT_LSU) begin
+				if (lsu_AWVALID)		
+					next_sstate = lsu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+				else
 					next_sstate = lsu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-				end
 			end
 			else if (mstate==GRANT_LSU & next_mstate==GRANT_IFU) begin
 				if (ifu_AWVALID)
@@ -263,13 +251,10 @@ always @(*) begin
 				else
 					next_sstate = ifu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
 			end
-			else if (next_mstate == IDLE) begin
+			else if (next_mstate == IDLE)
 				next_sstate = IDLE;
-			end
-			else begin
+			else
 				next_sstate = GRANT_MEM;
-				//$write("mem_avalid ");
-			end
 		end
 		default: next_sstate = IDLE;
 	endcase
