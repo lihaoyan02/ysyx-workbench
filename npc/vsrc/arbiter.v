@@ -1,3 +1,4 @@
+// `define SINGLE_CYCLE_ABT
 module arbiter #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
 	input clk,
     input rst,
@@ -185,7 +186,8 @@ always @(*) begin
 		end
     endcase
 end
-// single cycle (less time)
+/*----------single cycle (less time)--------------*/
+`ifdef SINGLE_CYCLE_ABT
 always @(*) begin
 	case (sstate)
 		IDLE: begin
@@ -422,68 +424,70 @@ always @(*) begin
 	endcase
 end
 
-// two cycle (more time)
-// always @(*) begin
-// 	case (sstate)
-// 		IDLE: begin
-// 			if (inter_AWVALID) begin
-// 				if (inter_AWADDR[31:12]==20'h1000_0) begin //uart
-// 					next_sstate = GRANT_UART;
-// 				end
-// 				else if ((inter_AWADDR & CLINT_MASK) == CLINT_ADDR) begin //clint
-// 					next_sstate = GRANT_CLINT;
-// 				end
-// 				else begin // mem
-// 					next_sstate = GRANT_MEM;
-// 				end
-// 			end
-// 			else if(inter_ARVALID) begin
-// 				if (inter_ARADDR[31:12]==20'h1000_0) begin
-// 					next_sstate = GRANT_UART;
-// 				end
-// 				else if ((inter_ARADDR & CLINT_MASK) == CLINT_ADDR) begin
-// 					next_sstate = GRANT_CLINT;
-// 				end
-// 				else begin
-// 					next_sstate = GRANT_MEM;
-// 				end
-// 			end		
-// 			else
-// 				next_sstate = IDLE;
-// 		end
-// 		GRANT_UART: begin
-// 			if (uart_BVALID & uart_BREADY) begin
-// 				next_sstate = IDLE;
-// 			end
-// 			else if (uart_RVALID & uart_RREADY) begin
-// 				next_sstate = IDLE;
-// 			end
-// 			else
-// 				next_sstate = GRANT_UART;
-// 		end
-// 		GRANT_MEM: begin
-// 			if (mem_BVALID & mem_BREADY) begin
-// 				next_sstate = IDLE;
-// 			end
-// 			else if (mem_RVALID & mem_RREADY) begin
-// 				next_sstate = IDLE;
-// 			end
-// 			else
-// 				next_sstate = GRANT_MEM;
-// 		end
-// 		GRANT_CLINT: begin
-// 			if (clint_BVALID & clint_BREADY) begin
-// 				next_sstate = IDLE;
-// 			end
-// 			else if (clint_RVALID & clint_RREADY) begin
-// 				next_sstate = IDLE;
-// 			end
-// 			else
-// 				next_sstate = GRANT_CLINT;
-// 		end
-// 		default: next_sstate = IDLE;
-// 	endcase
-// end
+`else
+/*----------muti cycle (sequential and more stable)--------------*/
+always @(*) begin
+	case (sstate)
+		IDLE: begin
+			if (inter_AWVALID) begin
+				if (inter_AWADDR[31:12]==20'h1000_0) begin //uart
+					next_sstate = GRANT_UART;
+				end
+				else if ((inter_AWADDR & CLINT_MASK) == CLINT_ADDR) begin //clint
+					next_sstate = GRANT_CLINT;
+				end
+				else begin // mem
+					next_sstate = GRANT_MEM;
+				end
+			end
+			else if(inter_ARVALID) begin
+				if (inter_ARADDR[31:12]==20'h1000_0) begin
+					next_sstate = GRANT_UART;
+				end
+				else if ((inter_ARADDR & CLINT_MASK) == CLINT_ADDR) begin
+					next_sstate = GRANT_CLINT;
+				end
+				else begin
+					next_sstate = GRANT_MEM;
+				end
+			end		
+			else
+				next_sstate = IDLE;
+		end
+		GRANT_UART: begin
+			if (uart_BVALID & uart_BREADY) begin
+				next_sstate = IDLE;
+			end
+			else if (uart_RVALID & uart_RREADY) begin
+				next_sstate = IDLE;
+			end
+			else
+				next_sstate = GRANT_UART;
+		end
+		GRANT_MEM: begin
+			if (mem_BVALID & mem_BREADY) begin
+				next_sstate = IDLE;
+			end
+			else if (mem_RVALID & mem_RREADY) begin
+				next_sstate = IDLE;
+			end
+			else
+				next_sstate = GRANT_MEM;
+		end
+		GRANT_CLINT: begin
+			if (clint_BVALID & clint_BREADY) begin
+				next_sstate = IDLE;
+			end
+			else if (clint_RVALID & clint_RREADY) begin
+				next_sstate = IDLE;
+			end
+			else
+				next_sstate = GRANT_CLINT;
+		end
+		default: next_sstate = IDLE;
+	endcase
+end
+`endif
 
 reg inter_AWVALID, inter_AWREADY, inter_WVALID, inter_WREADY, 
 inter_BVALID, inter_BREADY, inter_ARVALID, inter_ARREADY, inter_RVALID,inter_RREADY;
