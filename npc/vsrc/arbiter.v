@@ -90,9 +90,10 @@ module arbiter #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
 	input [ADDR_WIDTH-1:0] uart_RDATA,
 	input [1:0] uart_RRESP
 );
-localparam UART_REG_ADDR=32'h1000_0000;
+localparam UART_REG_ADDR=32'h1000_0000, UART_MUSK=~32'hfff;
+localparam CLINT_ADDR=32'h0200_0000, CLINT_MASK=~32'hbfff;
 localparam IDLE=2'b00, GRANT_IFU=2'b01, GRANT_LSU=2'b10;
-localparam GRANT_UART=2'b01, GRANT_MEM=2'b10;
+localparam GRANT_UART=2'b01, GRANT_MEM=2'b10, GRANT_CLINT=2'b11;
 reg [1:0] mstate, next_mstate;
 reg [1:0] sstate, next_sstate;
 
@@ -121,82 +122,50 @@ always @(*) begin
         IDLE: begin
             if (ifu_req) begin
                 next_mstate = GRANT_IFU;
-				// if (ifu_AWVALID)
-				// 	next_sstate = ifu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-				// else
-				// 	next_sstate = ifu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
             end
             else if (lsu_req) begin
                 next_mstate = GRANT_LSU;
-				// if (lsu_AWVALID)
-				// 	next_sstate = lsu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-				// else
-				// 	next_sstate = lsu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
             end
             else begin
                 next_mstate = IDLE;
-				// next_sstate = IDLE;
 			end
         end 
         GRANT_IFU: begin
 			if(ifu_RVALID & ifu_RREADY & lsu_req) begin
                 next_mstate = GRANT_LSU;
-				// if (lsu_AWVALID)
-				// 	next_sstate = lsu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-				// else
-				// 	next_sstate = lsu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
 			end
             else if (ifu_BVALID & ifu_BREADY & lsu_req) begin
                 next_mstate = GRANT_LSU;
-				// if (lsu_AWVALID)
-				// 	next_sstate = lsu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-				// else
-				// 	next_sstate = lsu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
 			end
             else if(ifu_RVALID & ifu_RREADY) begin
                 next_mstate = IDLE;
-				// next_sstate = IDLE;
 			end
             else if (ifu_BVALID & ifu_BREADY) begin
                 next_mstate = IDLE;
-				// next_sstate = IDLE;
 			end
             else begin
                 next_mstate = GRANT_IFU;
-				// next_sstate = sstate==GRANT_UART ? GRANT_UART : GRANT_MEM;
 			end
         end
         GRANT_LSU: begin
             if(lsu_RVALID & lsu_RREADY & ifu_req) begin
                 next_mstate = GRANT_IFU;
-				// if (ifu_AWVALID)
-				// 	next_sstate = ifu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-				// else
-				// 	next_sstate = ifu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
 			end
             else if (lsu_BVALID & lsu_BREADY & ifu_req) begin
                 next_mstate = GRANT_IFU;
-				// if (ifu_AWVALID)
-				// 	next_sstate = ifu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-				// else
-				// 	next_sstate = ifu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
 			end
             else if(lsu_RVALID & lsu_RREADY) begin
                 next_mstate = IDLE;
-				// next_sstate = IDLE;
 			end
             else if (lsu_BVALID & lsu_BREADY) begin
                 next_mstate = IDLE;
-				// next_sstate = IDLE;
 			end
             else begin
                 next_mstate = GRANT_LSU;
-				// next_sstate = sstate==GRANT_UART ? GRANT_UART : GRANT_MEM;
 			end
         end
         default: begin
 			next_mstate = IDLE;
-			// next_sstate = IDLE;
 		end
     endcase
 end
@@ -263,10 +232,28 @@ end
 always @(*) begin
 	case (sstate)
 		IDLE: begin
-			if (inter_AWVALID)
-				next_sstate = inter_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-			else if(inter_ARVALID)
-				next_sstate = inter_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;			
+			if (inter_AWVALID) begin
+				if (inter_AWADDR[31:12]==20'h1000_0) begin //uart
+					next_sstate = GRANT_UART;
+				end
+				else if ((inter_AWADDR & CLINT_MASK) == CLINT_ADDR) begin //clint
+					next_sstate = GRANT_CLINT;
+				end
+				else begin // mem
+					next_sstate = GRANT_MEM;
+				end
+			end
+			else if(inter_ARVALID) begin
+				if (inter_ARADDR[31:12]==20'h1000_0) begin
+					next_sstate = GRANT_UART;
+				end
+				else if ((inter_ARADDR & CLINT_MASK) == CLINT_ADDR) begin
+					next_sstate = GRANT_CLINT;
+				end
+				else begin
+					next_sstate = GRANT_MEM;
+				end
+			end		
 			else
 				next_sstate = IDLE;
 		end
