@@ -1,6 +1,6 @@
 //`define MEM_MUTI_CYCLE
 
-module CLINT #(DATA_WIDTH = 32, ADDR_WIDTH=32, SHIFT_LEN=4, mtime_ADDR=32'h2000_bff8) (
+module CLINT #(DATA_WIDTH = 32, ADDR_WIDTH=32, SHIFT_LEN=4, mtime_ADDR=32'h200_bff8) (
 	input clk,
     input rst,
 
@@ -290,27 +290,31 @@ always @(posedge clk) begin
 end
 
 reg [ADDR_WIDTH-1:0] saved_raddr;
+reg [63:0] mtime_tmp_read_reg;
 always @(posedge clk) begin
     if (rst) begin
         RDATA <= 32'b0;
         RVALID <= 0;
         saved_raddr <= 0;
+        mtime_tmp_read_reg <=0;
     end
     else if (rstate==IDLE & AR_handshaked & r_rand_val==0) begin // cnt==0 direct out
         if (ARADDR==mtime_ADDR) begin
-            RDATA <= mtime_tmp_reg[31:0];
+            RDATA <= mtime_tmp_read_reg[31:0];
         end 
         else if (AWADDR==mtime_ADDR+4) begin
             RDATA <= mtime_tmp_reg[63:32];
+            mtime_tmp_read_reg <= mtime_tmp_reg;
         end
         RVALID <= 1;
     end
     else if (rstate==WAIT & r_cnt == 0 & ~RVALID) begin //cnt == 0
         if (saved_raddr==mtime_ADDR) begin
-            RDATA <= mtime_tmp_reg[31:0];
+            RDATA <= mtime_tmp_read_reg[31:0];
         end 
         else if (saved_raddr==mtime_ADDR+4) begin
             RDATA <= mtime_tmp_reg[63:32];
+            mtime_tmp_read_reg <= mtime_tmp_reg;
         end
         RVALID <= 1;
     end
