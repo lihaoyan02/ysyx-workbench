@@ -239,7 +239,8 @@ always @(*) begin
 				next_sstate = GRANT_UART;
 		end
 		GRANT_MEM: begin
-			if (mstate==GRANT_IFU & next_mstate==GRANT_LSU) begin
+			// if (mstate==GRANT_IFU & next_mstate==GRANT_LSU) begin
+			if(mstate==GRANT_IFU & ifu_RVALID & ifu_RREADY & lsu_req) begin
 				if (lsu_AWVALID) begin			
 					if (lsu_AWADDR[31:12]==20'h1000_0) begin
 						$write("enter lsu_avalid");
