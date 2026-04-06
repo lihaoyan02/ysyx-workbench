@@ -53,6 +53,12 @@ wire [DATA_WIDTH-1:0] uart_AWADDR, uart_WDATA, uart_ARADDR, uart_RDATA;
 wire [3:0] uart_WSTRB;
 wire [1:0] uart_BRESP, uart_RRESP;
 
+wire clint_AWVALID, clint_AWREADY, clint_WVALID, clint_WREADY, 
+clint_BVALID, clint_BREADY, clint_ARVALID, clint_ARREADY, clint_RVALID,clint_RREADY;
+wire [DATA_WIDTH-1:0] clint_AWADDR, clint_WDATA, clint_ARADDR, clint_RDATA;
+wire [3:0] clint_WSTRB;
+wire [1:0] clint_BRESP, clint_RRESP;
+
 	IFU u_IFU (
 		.clk(clk),
 		.rst(rst),
@@ -272,7 +278,30 @@ wire [1:0] uart_BRESP, uart_RRESP;
 		.uart_RVALID(uart_RVALID),
 		.uart_RREADY(uart_RREADY),
 		.uart_RDATA(uart_RDATA),
-		.uart_RRESP(uart_RRESP)
+		.uart_RRESP(uart_RRESP),
+
+		// clint
+		.clint_AWVALID(clint_AWVALID),
+		.clint_AWREADY(clint_AWREADY),
+		.clint_AWADDR(clint_AWADDR),
+
+		.clint_WVALID(clint_WVALID),
+		.clint_WREADY(clint_WREADY),
+		.clint_WDATA(clint_WDATA),
+		.clint_WSTRB(clint_WSTRB),
+
+		.clint_BVALID(clint_BVALID),
+		.clint_BREADY(clint_BREADY),
+		.clint_BRESP(clint_BRESP),
+
+		.clint_ARVALID(clint_ARVALID),
+		.clint_ARREADY(clint_ARREADY),
+		.clint_ARADDR(clint_ARADDR),
+
+		.clint_RVALID(clint_RVALID),
+		.clint_RREADY(clint_RREADY),
+		.clint_RDATA(clint_RDATA),
+		.clint_RRESP(clint_RRESP)
 	);
 
 	MEM u_mem (
@@ -327,6 +356,33 @@ wire [1:0] uart_BRESP, uart_RRESP;
 		.RREADY(uart_RREADY),
 		.RDATA(uart_RDATA),
 		.RRESP(uart_RRESP)
+	);
+
+	CLINT u_clint (
+		.clk(clk),
+		.rst(rst),
+
+		.AWVALID(clint_AWVALID),
+		.AWREADY(clint_AWREADY),
+		.AWADDR(clint_AWADDR),
+
+		.WVALID(clint_WVALID),
+		.WREADY(clint_WREADY),
+		.WDATA(clint_WDATA),
+		.WSTRB(clint_WSTRB),
+
+		.BVALID(clint_BVALID),
+		.BREADY(clint_BREADY),
+		.BRESP(clint_BRESP),
+
+		.ARVALID(clint_ARVALID),
+		.ARREADY(clint_ARREADY),
+		.ARADDR(clint_ARADDR),
+
+		.RVALID(clint_RVALID),
+		.RREADY(clint_RREADY),
+		.RDATA(clint_RDATA),
+		.RRESP(clint_RRESP)
 	);
 	
 	WBU u_WBU (

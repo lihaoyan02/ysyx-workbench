@@ -27,9 +27,6 @@ module UART #(DATA_WIDTH = 32, ADDR_WIDTH=32, SHIFT_LEN=4, UART_REG_ADDR=32'h100
 	output [1:0] RRESP
 );
 
-import "DPI-C" function int pmem_read(int raddr);
-import "DPI-C" function void pmem_write(int waddr, int wdata, byte wmask);
-
 assign BRESP = 0;
 assign RRESP = 0;
 wire AW_handshaked, W_handshaked, AR_handshaked, R_handshaked, B_handshaked;

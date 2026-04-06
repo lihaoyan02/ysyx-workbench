@@ -27,8 +27,6 @@ module CLINT #(DATA_WIDTH = 32, ADDR_WIDTH=32, SHIFT_LEN=4, mtime_ADDR=32'h2000_
 	output [1:0] RRESP
 );
 
-import "DPI-C" function int pmem_read(int raddr);
-import "DPI-C" function void pmem_write(int waddr, int wdata, byte wmask);
 
 assign BRESP = 0;
 assign RRESP = 0;
