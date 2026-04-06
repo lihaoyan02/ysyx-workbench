@@ -201,98 +201,98 @@ always @(*) begin
     endcase
 end
 // single cycle (less time)
-always @(*) begin
-	case (sstate)
-		IDLE: begin
-			if (next_mstate==GRANT_IFU) begin
-				if (ifu_AWVALID)
-					next_sstate = ifu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-				else
-					next_sstate = ifu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-			end
-			else if (next_mstate==GRANT_LSU) begin
-				if (lsu_AWVALID)
-					next_sstate = lsu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-				else
-					next_sstate = lsu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-			end		
-			else
-				next_sstate = IDLE;
-		end
-		GRANT_UART: begin
-			if (mstate==GRANT_IFU & next_mstate==GRANT_LSU) begin
-				if (lsu_AWVALID)
-					next_sstate = lsu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-				else
-					next_sstate = lsu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-			end
-			if (mstate==GRANT_LSU & next_mstate==GRANT_IFU) begin
-				if (ifu_AWVALID)
-					next_sstate = ifu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-				else
-					next_sstate = ifu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-			end
-			else if (next_mstate == IDLE) begin
-				next_sstate = IDLE;
-			end
-			else
-				next_sstate = GRANT_UART;
-		end
-		GRANT_MEM: begin
-			if (mstate==GRANT_IFU & next_mstate==GRANT_LSU) begin
-				if (lsu_AWVALID)		
-					next_sstate = lsu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-				else
-					next_sstate = lsu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-			end
-			else if (mstate==GRANT_LSU & next_mstate==GRANT_IFU) begin
-				if (ifu_AWVALID)
-					next_sstate = ifu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-				else
-					next_sstate = ifu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-			end
-			else if (next_mstate == IDLE)
-				next_sstate = IDLE;
-			else
-				next_sstate = GRANT_MEM;
-		end
-		default: next_sstate = IDLE;
-	endcase
-end
-// two cycle (more time)
 // always @(*) begin
 // 	case (sstate)
 // 		IDLE: begin
-// 			if (inter_AWVALID)
-// 				next_sstate = inter_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
-// 			else if(inter_ARVALID)
-// 				next_sstate = inter_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;			
+// 			if (next_mstate==GRANT_IFU) begin
+// 				if (ifu_AWVALID)
+// 					next_sstate = ifu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+// 				else
+// 					next_sstate = ifu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+// 			end
+// 			else if (next_mstate==GRANT_LSU) begin
+// 				if (lsu_AWVALID)
+// 					next_sstate = lsu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+// 				else
+// 					next_sstate = lsu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+// 			end		
 // 			else
 // 				next_sstate = IDLE;
 // 		end
 // 		GRANT_UART: begin
-// 			if (uart_BVALID & uart_BREADY) begin
-// 				next_sstate = IDLE;
+// 			if (mstate==GRANT_IFU & next_mstate==GRANT_LSU) begin
+// 				if (lsu_AWVALID)
+// 					next_sstate = lsu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+// 				else
+// 					next_sstate = lsu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
 // 			end
-// 			if (uart_RVALID & uart_RREADY) begin
+// 			if (mstate==GRANT_LSU & next_mstate==GRANT_IFU) begin
+// 				if (ifu_AWVALID)
+// 					next_sstate = ifu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+// 				else
+// 					next_sstate = ifu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+// 			end
+// 			else if (next_mstate == IDLE) begin
 // 				next_sstate = IDLE;
 // 			end
 // 			else
 // 				next_sstate = GRANT_UART;
 // 		end
 // 		GRANT_MEM: begin
-// 			if (mem_BVALID & mem_BREADY) begin
-// 				next_sstate = IDLE;
+// 			if (mstate==GRANT_IFU & next_mstate==GRANT_LSU) begin
+// 				if (lsu_AWVALID)		
+// 					next_sstate = lsu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+// 				else
+// 					next_sstate = lsu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
 // 			end
-// 			if (mem_RVALID & mem_RREADY) begin
-// 				next_sstate = IDLE;
+// 			else if (mstate==GRANT_LSU & next_mstate==GRANT_IFU) begin
+// 				if (ifu_AWVALID)
+// 					next_sstate = ifu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+// 				else
+// 					next_sstate = ifu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
 // 			end
+// 			else if (next_mstate == IDLE)
+// 				next_sstate = IDLE;
 // 			else
 // 				next_sstate = GRANT_MEM;
 // 		end
 // 		default: next_sstate = IDLE;
 // 	endcase
 // end
+// two cycle (more time)
+always @(*) begin
+	case (sstate)
+		IDLE: begin
+			if (inter_AWVALID)
+				next_sstate = inter_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+			else if(inter_ARVALID)
+				next_sstate = inter_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;			
+			else
+				next_sstate = IDLE;
+		end
+		GRANT_UART: begin
+			if (uart_BVALID & uart_BREADY) begin
+				next_sstate = IDLE;
+			end
+			else if (uart_RVALID & uart_RREADY) begin
+				next_sstate = IDLE;
+			end
+			else
+				next_sstate = GRANT_UART;
+		end
+		GRANT_MEM: begin
+			if (mem_BVALID & mem_BREADY) begin
+				next_sstate = IDLE;
+			end
+			else if (mem_RVALID & mem_RREADY) begin
+				next_sstate = IDLE;
+			end
+			else
+				next_sstate = GRANT_MEM;
+		end
+		default: next_sstate = IDLE;
+	endcase
+end
 
 wire inter_AWVALID, inter_AWREADY, inter_WVALID, inter_WREADY, 
 inter_BVALID, inter_BREADY, inter_ARVALID, inter_ARREADY, inter_RVALID,inter_RREADY;
