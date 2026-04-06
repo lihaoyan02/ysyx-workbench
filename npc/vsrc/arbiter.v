@@ -300,14 +300,14 @@ always @(*) begin
 				next_sstate = GRANT_MEM;
 		end
 		GRANT_CLINT: begin
-			if (mem_BVALID & mem_BREADY) begin
+			if (clint_BVALID & clint_BREADY) begin
 				next_sstate = IDLE;
 			end
-			else if (mem_RVALID & mem_RREADY) begin
+			else if (clint_RVALID & clint_RREADY) begin
 				next_sstate = IDLE;
 			end
 			else
-				next_sstate = GRANT_MEM;
+				next_sstate = GRANT_CLINT;
 		end
 		default: next_sstate = IDLE;
 	endcase
