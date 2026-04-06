@@ -169,7 +169,7 @@ static void statistic() {
 	Log("total guest instructions = %lu", g_nr_guest_inst);
 	Log("total guest cycles = %lu", nr_clk_tick);
 	Log("host time spent = %lu us", g_timer);
-	Log("estimated frequency = %lu kHz", nr_clk_tick/g_timer/1000);
+	Log("estimated frequency = %lu MHz", nr_clk_tick/g_timer);
 }
 
 void assert_fail_msg() {
