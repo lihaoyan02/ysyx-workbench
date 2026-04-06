@@ -135,7 +135,7 @@ always @(*) begin
             end
             else begin
                 next_mstate = IDLE;
-				next_sstate = IDLE;
+				// next_sstate = IDLE;
 			end
         end 
         GRANT_IFU: begin
