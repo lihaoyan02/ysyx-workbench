@@ -243,11 +243,13 @@ always @(*) begin
 			if(mstate==GRANT_IFU & ifu_RVALID & ifu_RREADY & lsu_req) begin
 				if (lsu_AWVALID) begin			
 					if (lsu_AWADDR[31:12]==20'h1000_0) begin
-						$write("enter lsu_avalid");
+						$write("lsu_avalid ");
 						next_sstate = GRANT_UART;
 					end
-					else
+					else begin
+						$write("mem_avalid ");
 						next_sstate = GRANT_MEM;
+					end
 					// next_sstate = lsu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
 				end
 				else
