@@ -268,7 +268,7 @@ always @(*) begin
 			end
 			else begin
 				next_sstate = GRANT_MEM;
-				$write("mem_avalid ");
+				//$write("mem_avalid ");
 			end
 		end
 		default: next_sstate = IDLE;
