@@ -372,6 +372,15 @@ always @(*) begin
 			inter_ARADDR = 0;
 			inter_RREADY = 0;
 
+			ifu_AWREADY = 0;
+			ifu_WREADY = 0;
+			ifu_BVALID = 0;
+			ifu_BRESP = 0;
+			ifu_ARREADY = 0;
+			ifu_RVALID = 0;
+			ifu_RDATA = 0;
+			ifu_RRESP = 0;
+
 			lsu_AWREADY = 0;
 			lsu_WREADY = 0;
 			lsu_BVALID = 0;
@@ -482,6 +491,26 @@ always @(*) begin
 			inter_RVALID = 0;
 			inter_RDATA = 0;
 			inter_RRESP = 0;
+
+			uart_AWVALID = 0;
+			uart_AWADDR = 0;
+			uart_WVALID = 0;
+			uart_WDATA = 0;
+			uart_WSTRB = 0;
+			uart_BREADY = 0;
+			uart_ARVALID = 0;
+			uart_ARADDR = 0;
+			uart_RREADY = 0;
+
+			mem_AWVALID = 0;
+			mem_AWADDR = 0;
+			mem_WVALID = 0;
+			mem_WDATA = 0;
+			mem_WSTRB = 0;
+			mem_BREADY = 0;
+			mem_ARVALID = 0;
+			mem_ARADDR = 0;
+			mem_RREADY = 0;
 
 			clint_AWVALID = 0;
 			clint_AWADDR = 0;
