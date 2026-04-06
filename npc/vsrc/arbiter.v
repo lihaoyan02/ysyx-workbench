@@ -243,7 +243,7 @@ always @(*) begin
 			if(mstate==GRANT_IFU & ifu_RVALID & ifu_RREADY & lsu_req) begin
 				if (lsu_AWVALID) begin			
 					if (lsu_AWADDR[31:12]==20'h1000_0) begin
-						$write("lsu_avalid ");
+						$write("lsuuart_avalid ");
 						next_sstate = GRANT_UART;
 					end
 					else begin
@@ -252,8 +252,10 @@ always @(*) begin
 					end
 					// next_sstate = lsu_AWADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
 				end
-				else
+				else begin
+					$write("mem_avalid ");
 					next_sstate = lsu_ARADDR[31:12]==20'h1000_0 ? GRANT_UART : GRANT_MEM;
+				end
 			end
 			if (mstate==GRANT_LSU & next_mstate==GRANT_IFU) begin
 				if (ifu_AWVALID)
@@ -264,8 +266,10 @@ always @(*) begin
 			else if (next_mstate == IDLE) begin
 				next_sstate = IDLE;
 			end
-			else
+			else begin
 				next_sstate = GRANT_MEM;
+				$write("mem_avalid ");
+			end
 		end
 		default: next_sstate = IDLE;
 	endcase
