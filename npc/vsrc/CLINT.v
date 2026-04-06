@@ -1,6 +1,6 @@
 //`define MEM_MUTI_CYCLE
 
-module UART #(DATA_WIDTH = 32, ADDR_WIDTH=32, SHIFT_LEN=4, UART_REG_ADDR=32'h1000_0000) (
+module CLINT #(DATA_WIDTH = 32, ADDR_WIDTH=32, SHIFT_LEN=4, mtime_ADDR=32'h200_bff8) (
 	input clk,
     input rst,
 
@@ -27,6 +27,7 @@ module UART #(DATA_WIDTH = 32, ADDR_WIDTH=32, SHIFT_LEN=4, UART_REG_ADDR=32'h100
 	output [1:0] RRESP
 );
 
+
 assign BRESP = 0;
 assign RRESP = 0;
 wire AW_handshaked, W_handshaked, AR_handshaked, R_handshaked, B_handshaked;
@@ -35,6 +36,8 @@ assign W_handshaked = WVALID & WREADY;
 assign AR_handshaked = ARVALID & ARREADY;
 assign R_handshaked = RVALID & RREADY;
 assign B_handshaked = BVALID & BREADY;
+
+reg [63:0] mtime_reg;
 
 /*--------Write state machine---------*/
 localparam WIDLE = 2'b0, ASHAK=2'b01, DSHAK=2'b10, WWAIT = 2'b11;
@@ -154,60 +157,84 @@ always @(posedge clk) begin
 end
 // write control
 reg [DATA_WIDTH-1:0] saved_wdata;
-reg [7:0] uart_data_reg;
-reg addr_match;
+reg [ADDR_WIDTH-1:0] saved_waddr;
+reg [63:0] mtime_tmp_reg;
+reg [1:0] mtime_bit_flag;
 always @(posedge clk) begin
     if (rst) begin
         BVALID <= 0; 
         BVALID <= 0;
-        uart_data_reg <= 0;
-        addr_match <= 0;
+        mtime_tmp_reg <= 0;
+        saved_waddr <= 0;
+        mtime_bit_flag <= 0;
     end
     else if (wstate==WIDLE & AW_handshaked & W_handshaked & w_rand_val==0) begin // cnt==0 direct out
-        if (AWADDR==UART_REG_ADDR) begin
-            uart_data_reg <= WDATA[7:0];
-            $write("%c",WDATA[7:0]);
+        if (AWADDR==mtime_ADDR) begin
+            mtime_tmp_reg[31:0] <= WDATA;
+            mtime_bit_flag <= 2'b01;
         end   
+        else if (AWADDR==mtime_ADDR+4) begin
+            mtime_tmp_reg[63:32] <= WDATA;
+            mtime_bit_flag <= 2'b10;
+        end
         BVALID <= 1;
     end
     else if (wstate==DSHAK & AW_handshaked & w_rand_val==0) begin // cnt==0 direct out
-        if (AWADDR==UART_REG_ADDR) begin
-            uart_data_reg <= saved_wdata[7:0];
-            $write("%c",saved_wdata[7:0]);
-        end   
+        if (AWADDR==mtime_ADDR) begin
+            mtime_tmp_reg[31:0] <= saved_wdata;
+            mtime_bit_flag <= 2'b01;
+        end
+        else if (AWADDR==mtime_ADDR+4) begin
+            mtime_tmp_reg[63:32] <= saved_wdata;
+            mtime_bit_flag <= 2'b10;
+        end
         BVALID <= 1;
     end
     else if (wstate==ASHAK & W_handshaked & w_rand_val==0) begin // cnt==0 direct out
-        if (addr_match) begin
-            uart_data_reg <= WDATA[7:0];
-            $write("%c",WDATA[7:0]);
+        if (saved_waddr==mtime_ADDR) begin
+            mtime_tmp_reg[31:0] <= WDATA;
+            mtime_bit_flag <= 2'b01;
+        end
+        else if (saved_waddr==mtime_ADDR+4) begin
+            mtime_tmp_reg[63:32] <= WDATA;
+            mtime_bit_flag <= 2'b10;
         end
         BVALID <= 1;
     end
     else if (wstate==WWAIT & w_cnt == 0 & ~BVALID) begin //cnt == 0
-        if (addr_match) begin
-            uart_data_reg <= saved_wdata[7:0];
-            $write("%c",saved_wdata[7:0]);
+        if (saved_waddr==mtime_ADDR) begin
+            mtime_tmp_reg[31:0] <= saved_wdata;
+            mtime_bit_flag <= 2'b01;
         end 
+        else if (saved_waddr==mtime_ADDR+4) begin
+            mtime_tmp_reg[63:32] <= saved_wdata;
+            mtime_bit_flag <= 2'b10;
+        end
         BVALID <= 1;
     end
     else if (AW_handshaked & W_handshaked) begin // save mem access info and init cnt
-        addr_match <= AWADDR==UART_REG_ADDR;
+        saved_waddr <= AWADDR;
         saved_wdata <= WDATA;
-        BVALID <= 0;      
+        BVALID <= 0;   
+        mtime_bit_flag <= 0;   
     end
     else if (AW_handshaked) begin // save mem access info and init cnt
-        addr_match <= AWADDR==UART_REG_ADDR;
+        saved_waddr <= AWADDR;
         BVALID <= 0;      
+        mtime_bit_flag <= 0;
     end
     else if (W_handshaked) begin // save mem access info and init cnt
         saved_wdata <= WDATA;
         BVALID <= 0;      
+        mtime_bit_flag <= 0;
     end
     else if (B_handshaked) begin
         BVALID <= 0;
-        addr_match <= 0;
+        saved_waddr <= 0;
+        mtime_bit_flag <= 0;
     end
+    else
+        mtime_bit_flag <= 0;
 end
 
 /*--------------------------Read contrl------------------------------*/
@@ -262,35 +289,58 @@ always @(posedge clk) begin
         r_cnt <= r_cnt - 1;
 end
 
-reg addr_rmatch;
+reg [ADDR_WIDTH-1:0] saved_raddr;
+reg [63:0] mtime_tmp_read_reg;
 always @(posedge clk) begin
     if (rst) begin
         RDATA <= 32'b0;
         RVALID <= 0;
-        addr_rmatch <= 0;
+        saved_raddr <= 0;
+        mtime_tmp_read_reg <=0;
     end
     else if (rstate==IDLE & AR_handshaked & r_rand_val==0) begin // cnt==0 direct out
-        if (ARADDR==UART_REG_ADDR) begin
-            RDATA <= {24'b0,uart_data_reg};
+        if (ARADDR==mtime_ADDR) begin
+            RDATA <= mtime_tmp_read_reg[31:0];
+        end 
+        else if (ARADDR==mtime_ADDR+4) begin
+            RDATA <= mtime_reg[63:32];
+            mtime_tmp_read_reg <= mtime_reg;
         end
         RVALID <= 1;
     end
     else if (rstate==WAIT & r_cnt == 0 & ~RVALID) begin //cnt == 0
-        if (addr_rmatch) begin
-            RDATA <= {24'b0,uart_data_reg};
+        if (saved_raddr==mtime_ADDR) begin
+            RDATA <= mtime_tmp_read_reg[31:0];
+        end 
+        else if (saved_raddr==mtime_ADDR+4) begin
+            RDATA <= mtime_reg[63:32];
+            mtime_tmp_read_reg <= mtime_reg;
         end
         RVALID <= 1;
     end
     else if (AR_handshaked) begin // save mem access info and init cnt
-        addr_rmatch <= ARADDR==UART_REG_ADDR;
+        saved_raddr <= ARADDR;
         RVALID <= 0;      
     end
     else if (R_handshaked) begin
         RVALID <= 0;
-        addr_rmatch <= 0;
+        saved_raddr <= 0;
     end
 end
 
-
+//mtime counter
+always @(posedge clk) begin
+    if (rst) begin
+        mtime_reg <= 0;
+    end
+    else if (BVALID & mtime_bit_flag==2'b01) begin
+        mtime_reg[31:0] <= mtime_tmp_reg[31:0];
+    end
+    else if (BVALID & mtime_bit_flag==2'b10) begin
+        mtime_reg[63:32] <= mtime_tmp_reg[63:32];
+    end
+    else
+        mtime_reg <= mtime_reg+1;
+end
 
 endmodule

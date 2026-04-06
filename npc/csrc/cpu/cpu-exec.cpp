@@ -7,6 +7,8 @@
 #define MAX_INST_TO_PRINT 10
 
 uint64_t g_nr_guest_inst = 0;
+static uint64_t nr_clk_tick = 0;
+static uint64_t g_timer = 0;
 static bool g_print_step = false;
 
 bool scan_wp_diff();
@@ -81,6 +83,7 @@ static void eval_dump() {
 #endif
 
 static void single_cycle() {
+	nr_clk_tick++;
 #ifdef CONFIG_TRACE_WAVE
 	top->clk = 0; eval_dump();
 	top->clk = 1; eval_dump();
@@ -164,6 +167,9 @@ static void execute(uint64_t n) {
 
 static void statistic() {
 	Log("total guest instructions = %lu", g_nr_guest_inst);
+	Log("total guest cycles = %lu", nr_clk_tick);
+	Log("host time spent = %lu us", g_timer);
+	Log("estimated frequency = %lu MHz", nr_clk_tick/g_timer);
 }
 
 void assert_fail_msg() {
@@ -173,7 +179,7 @@ void assert_fail_msg() {
 	reg_display();
 	statistic();
 }
-
+uint64_t get_time();
 void cpu_exec(uint64_t n) {
 	g_print_step = (n < MAX_INST_TO_PRINT);
 	switch (npc_state.state) {
@@ -183,7 +189,12 @@ void cpu_exec(uint64_t n) {
 		default: npc_state.state = NPC_RUNNING;
 	}
 
+	uint64_t timer_start = get_time();
+
 	execute(n);
+
+	uint64_t timer_end = get_time();
+  	g_timer += timer_end - timer_start;
 
 	switch (npc_state.state) {
 		case NPC_RUNNING: npc_state.state = NPC_STOP; break;
