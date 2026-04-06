@@ -302,7 +302,7 @@ always @(posedge clk) begin
         if (ARADDR==mtime_ADDR) begin
             RDATA <= mtime_tmp_read_reg[31:0];
         end 
-        else if (AWADDR==mtime_ADDR+4) begin
+        else if (ARADDR==mtime_ADDR+4) begin
             RDATA <= mtime_reg[63:32];
             mtime_tmp_read_reg <= mtime_reg;
         end
