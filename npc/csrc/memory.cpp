@@ -9,7 +9,9 @@ void mmio_write(uint32_t addr, uint32_t data, char mask);
 void difftest_skip_ref();
 
 extern "C" void flash_read(int32_t addr, int32_t *data) { assert(0); }
-extern "C" void mrom_read(int32_t addr, int32_t *data) { assert(0); }
+extern "C" void mrom_read(int32_t addr, int32_t *data) { 
+	*data = 0x00100073;
+}
 
 extern "C" int pmem_read(int raddr) {
 	IFDEF(CONFIG_MTRACE,
