@@ -133,7 +133,7 @@ static void exec_one_inst() {
 static void exec_once(Decode *s) {
 	exec_one_inst();
 	s->inst = core_read_inst();
-	s->pc = core_read_pc();//top->pc;
+	s->pc = core_read_pc();
 	s->dnpc = core_read_dnpc(); 
 #ifdef CONFIG_ITRACE
 	char *p = s->logbuf;
