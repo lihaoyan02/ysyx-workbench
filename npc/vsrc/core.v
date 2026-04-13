@@ -1,7 +1,41 @@
-module top #(INST_WIDTH = 32, DATA_WIDTH = 32) (
+module core #(INST_WIDTH = 32, DATA_WIDTH = 32) (
 	input clk,
 	input rst,
-  output [INST_WIDTH-1:0] pc
+  	output [INST_WIDTH-1:0] pc,
+
+  	output mem_AWVALID,
+	input mem_AWREADY,
+	output [DATA_WIDTH-1:0] mem_AWADDR,
+	output [3:0] mem_AWID,
+	output [7:0] mem_AWLEN,
+	output [2:0] mem_AWSIZE,
+	output [1:0] mem_AWBURST,
+
+	output mem_WVALID,
+	input mem_WREADY,
+	output [DATA_WIDTH-1:0] mem_WDATA,
+	output [3:0] mem_WSTRB,
+	output mem_WLAST,
+
+	input mem_BVALID,
+	output mem_BREADY,
+	input [1:0] mem_BRESP,
+	input [3:0] mem_BID,
+
+	output mem_ARVALID,
+	input mem_ARREADY,
+	output [DATA_WIDTH-1:0] mem_ARADDR,
+	output [3:0] mem_ARID,
+	output [7:0] mem_ARLEN,
+	output [2:0] mem_ARSIZE,
+	output [1:0] mem_ARBURST,
+
+	input mem_RVALID,
+	output mem_RREADY,
+	input [DATA_WIDTH-1:0] mem_RDATA,
+	input [1:0] mem_RRESP,
+	input mem_RLAST,
+	input [3:0] mem_RID
 );
 
 import "DPI-C" function void npctrap(int a0);
@@ -41,11 +75,11 @@ wire [DATA_WIDTH-1:0] lsu_AWADDR, lsu_WDATA, lsu_ARADDR, lsu_RDATA;
 wire [3:0] lsu_WSTRB;
 wire [1:0] lsu_BRESP, lsu_RRESP;
 
-wire mem_AWVALID, mem_AWREADY, mem_WVALID, mem_WREADY, 
-mem_BVALID, mem_BREADY, mem_ARVALID, mem_ARREADY, mem_RVALID,mem_RREADY;
-wire [DATA_WIDTH-1:0] mem_AWADDR, mem_WDATA, mem_ARADDR, mem_RDATA;
-wire [3:0] mem_WSTRB;
-wire [1:0] mem_BRESP, mem_RRESP;
+// wire mem_AWVALID, mem_AWREADY, mem_WVALID, mem_WREADY, 
+// mem_BVALID, mem_BREADY, mem_ARVALID, mem_ARREADY, mem_RVALID,mem_RREADY;
+// wire [DATA_WIDTH-1:0] mem_AWADDR, mem_WDATA, mem_ARADDR, mem_RDATA;
+// wire [3:0] mem_WSTRB;
+// wire [1:0] mem_BRESP, mem_RRESP;
 
 wire uart_AWVALID, uart_AWREADY, uart_WVALID, uart_WREADY, 
 uart_BVALID, uart_BREADY, uart_ARVALID, uart_ARREADY, uart_RVALID,uart_RREADY;
@@ -238,24 +272,36 @@ wire [1:0] clint_BRESP, clint_RRESP;
 		.mem_AWVALID(mem_AWVALID),
 		.mem_AWREADY(mem_AWREADY),
 		.mem_AWADDR(mem_AWADDR),
+		.mem_AWID(mem_AWID),
+		.mem_AWLEN(mem_AWLEN),
+		.mem_AWSIZE(mem_AWSIZE),
+		.mem_AWBURST(mem_AWBURST),
 
 		.mem_WVALID(mem_WVALID),
 		.mem_WREADY(mem_WREADY),
 		.mem_WDATA(mem_WDATA),
 		.mem_WSTRB(mem_WSTRB),
+		.mem_WLAST(mem_WLAST),
 
 		.mem_BVALID(mem_BVALID),
 		.mem_BREADY(mem_BREADY),
 		.mem_BRESP(mem_BRESP),
+		.mem_BID(mem_BID),
 
 		.mem_ARVALID(mem_ARVALID),
 		.mem_ARREADY(mem_ARREADY),
 		.mem_ARADDR(mem_ARADDR),
+		.mem_ARID(mem_ARID),
+		.mem_ARLEN(mem_ARLEN),
+		.mem_ARSIZE(mem_ARSIZE),
+		.mem_ARBURST(mem_ARBURST),
 
 		.mem_RVALID(mem_RVALID),
 		.mem_RREADY(mem_RREADY),
 		.mem_RDATA(mem_RDATA),
 		.mem_RRESP(mem_RRESP),
+		.mem_RLAST(mem_RLAST),
+		.mem_RID(mem_RID),
 
 		// uart
 		.uart_AWVALID(uart_AWVALID),
@@ -304,32 +350,32 @@ wire [1:0] clint_BRESP, clint_RRESP;
 		.clint_RRESP(clint_RRESP)
 	);
 
-	MEM u_mem (
-		.clk(clk),
-		.rst(rst),
+	// MEM u_mem (
+	// 	.clk(clk),
+	// 	.rst(rst),
 
-		.AWVALID(mem_AWVALID),
-		.AWREADY(mem_AWREADY),
-		.AWADDR(mem_AWADDR),
+	// 	.AWVALID(mem_AWVALID),
+	// 	.AWREADY(mem_AWREADY),
+	// 	.AWADDR(mem_AWADDR),
 
-		.WVALID(mem_WVALID),
-		.WREADY(mem_WREADY),
-		.WDATA(mem_WDATA),
-		.WSTRB(mem_WSTRB),
+	// 	.WVALID(mem_WVALID),
+	// 	.WREADY(mem_WREADY),
+	// 	.WDATA(mem_WDATA),
+	// 	.WSTRB(mem_WSTRB),
 
-		.BVALID(mem_BVALID),
-		.BREADY(mem_BREADY),
-		.BRESP(mem_BRESP),
+	// 	.BVALID(mem_BVALID),
+	// 	.BREADY(mem_BREADY),
+	// 	.BRESP(mem_BRESP),
 
-		.ARVALID(mem_ARVALID),
-		.ARREADY(mem_ARREADY),
-		.ARADDR(mem_ARADDR),
+	// 	.ARVALID(mem_ARVALID),
+	// 	.ARREADY(mem_ARREADY),
+	// 	.ARADDR(mem_ARADDR),
 
-		.RVALID(mem_RVALID),
-		.RREADY(mem_RREADY),
-		.RDATA(mem_RDATA),
-		.RRESP(mem_RRESP)
-	);
+	// 	.RVALID(mem_RVALID),
+	// 	.RREADY(mem_RREADY),
+	// 	.RDATA(mem_RDATA),
+	// 	.RRESP(mem_RRESP)
+	// );
 
 	UART u_uart (
 		.clk(clk),

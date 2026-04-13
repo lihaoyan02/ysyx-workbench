@@ -46,28 +46,40 @@ module arbiter #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
 	input lsu_RREADY,
 	output reg [DATA_WIDTH-1:0] lsu_RDATA,
 	output reg [1:0] lsu_RRESP,
-//mem
+//mem AXI4
     output reg mem_AWVALID,
 	input mem_AWREADY,
 	output reg [ADDR_WIDTH-1:0] mem_AWADDR,
+	output reg [3:0] mem_AWID,
+	output reg [7:0] mem_AWLEN,
+	output reg [2:0] mem_AWSIZE,
+	output reg [1:0] mem_AWBURST,
 
 	output reg mem_WVALID,
 	input mem_WREADY,
 	output reg [ADDR_WIDTH-1:0] mem_WDATA,
 	output reg [3:0] mem_WSTRB,
+	output reg mem_WLAST,
 
 	input mem_BVALID,
 	output reg mem_BREADY,
 	input [1:0] mem_BRESP,
+	input [3:0] mem_BID,
 
 	output reg mem_ARVALID,
 	input mem_ARREADY,
 	output reg [ADDR_WIDTH-1:0] mem_ARADDR,
+	output reg [3:0] mem_ARID,
+	output reg [7:0] mem_ARLEN,
+	output reg [2:0] mem_ARSIZE,
+	output reg [1:0] mem_ARBURST,
 
 	input mem_RVALID,
 	output reg mem_RREADY,
 	input [ADDR_WIDTH-1:0] mem_RDATA,
 	input [1:0] mem_RRESP,
+	input mem_RLAST,
+	input [3:0] mem_RID,
 //uart
     output reg uart_AWVALID,
 	input uart_AWREADY,
@@ -590,6 +602,36 @@ always @(*) begin
 			uart_ARVALID = inter_ARVALID;
 			uart_ARADDR = inter_ARADDR;
 			uart_RREADY = inter_RREADY;
+
+			mem_AWVALID = 0;
+			mem_AWADDR = 0;
+			mem_WVALID = 0;
+			mem_WDATA = 0;
+			mem_WSTRB = 0;
+			mem_BREADY = 0;
+			mem_ARVALID = 0;
+			mem_ARADDR = 0;
+			mem_RREADY = 0;
+			//burst default
+			mem_AWID = 0;
+			mem_AWLEN = 0;
+			mem_AWSIZE = 0;
+			mem_AWBURST = 0;
+			mem_WLAST = 0;
+			mem_ARID = 0;
+			mem_ARLEN = 0;
+			mem_ARSIZE = 0;
+			mem_ARBURST = 0;
+
+			clint_AWVALID = 0;
+			clint_AWADDR = 0;
+			clint_WVALID = 0;
+			clint_WDATA = 0;
+			clint_WSTRB = 0;
+			clint_BREADY = 0;
+			clint_ARVALID = 0;
+			clint_ARADDR = 0;
+			clint_RREADY = 0;
 		end
 		GRANT_MEM: begin
 			inter_AWREADY = mem_AWREADY;
@@ -610,6 +652,37 @@ always @(*) begin
 			mem_ARVALID = inter_ARVALID;
 			mem_ARADDR = inter_ARADDR;
 			mem_RREADY = inter_RREADY;
+
+			//burst default
+			mem_AWID = 0;
+			mem_AWLEN = 0;
+			mem_AWSIZE = 3'b10;
+			mem_AWBURST = 0;
+			mem_WLAST = mem_WVALID;
+			mem_ARID = 0;
+			mem_ARLEN = 0;
+			mem_ARSIZE = 3'b10;
+			mem_ARBURST = 0;
+
+			uart_AWVALID = 0;
+			uart_AWADDR = 0;
+			uart_WVALID = 0;
+			uart_WDATA = 0;
+			uart_WSTRB = 0;
+			uart_BREADY = 0;
+			uart_ARVALID = 0;
+			uart_ARADDR = 0;
+			uart_RREADY = 0;
+
+			clint_AWVALID = 0;
+			clint_AWADDR = 0;
+			clint_WVALID = 0;
+			clint_WDATA = 0;
+			clint_WSTRB = 0;
+			clint_BREADY = 0;
+			clint_ARVALID = 0;
+			clint_ARADDR = 0;
+			clint_RREADY = 0;
 		end
 		GRANT_CLINT: begin
 			inter_AWREADY = clint_AWREADY;
@@ -630,6 +703,36 @@ always @(*) begin
 			clint_ARVALID = inter_ARVALID;
 			clint_ARADDR = inter_ARADDR;
 			clint_RREADY = inter_RREADY;
+
+			uart_AWVALID = 0;
+			uart_AWADDR = 0;
+			uart_WVALID = 0;
+			uart_WDATA = 0;
+			uart_WSTRB = 0;
+			uart_BREADY = 0;
+			uart_ARVALID = 0;
+			uart_ARADDR = 0;
+			uart_RREADY = 0;
+
+			mem_AWVALID = 0;
+			mem_AWADDR = 0;
+			mem_WVALID = 0;
+			mem_WDATA = 0;
+			mem_WSTRB = 0;
+			mem_BREADY = 0;
+			mem_ARVALID = 0;
+			mem_ARADDR = 0;
+			mem_RREADY = 0;
+			//burst default
+			mem_AWID = 0;
+			mem_AWLEN = 0;
+			mem_AWSIZE = 0;
+			mem_AWBURST = 0;
+			mem_WLAST = 0;
+			mem_ARID = 0;
+			mem_ARLEN = 0;
+			mem_ARSIZE = 0;
+			mem_ARBURST = 0;
 		end
 		default: begin
 			inter_AWREADY = 0;
@@ -660,6 +763,16 @@ always @(*) begin
 			mem_ARVALID = 0;
 			mem_ARADDR = 0;
 			mem_RREADY = 0;
+			//burst default
+			mem_AWID = 0;
+			mem_AWLEN = 0;
+			mem_AWSIZE = 0;
+			mem_AWBURST = 0;
+			mem_WLAST = 0;
+			mem_ARID = 0;
+			mem_ARLEN = 0;
+			mem_ARSIZE = 0;
+			mem_ARBURST = 0;
 
 			clint_AWVALID = 0;
 			clint_AWADDR = 0;
