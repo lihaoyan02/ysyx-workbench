@@ -14,8 +14,8 @@ VerilatedVcdC* tfp = NULL;
 char IFUscope[] = "TOP.top.u_core.u_IFU";
 char gprscope[] = "TOP.top.u_core.u_gpr";
 #else
-char IFUscope[] = "TOP.ysyxSoCFull.asic.cpu.cpu.u_core";
-char gprscope[] = "TOP.ysyxSoCFull.asic.cpu.cpu.u_gpr";
+char IFUscope[] = "TOP.ysyxSoCFull.asic.cpu.cpu.u_core.u_IFU";
+char gprscope[] = "TOP.ysyxSoCFull.asic.cpu.cpu.u_core.u_gpr";
 #endif
 
 uint32_t core_read_inst() {
