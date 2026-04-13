@@ -1,7 +1,12 @@
 
 -include $(NPC_HOME)/include/config/auto.conf
 -include $(NPC_HOME)/include/config/auto.conf.cmd
+ifndef CONFIG_TARGET_SOC
 TOPNAME = top
+else
+TOPNAME = ysyxSoCFull
+endif
+
 NXDC_FILES = constr/top.nxdc
 NPC_DIR := $(NPC_HOME)
 INC_PATH = $(NPC_DIR)/include
@@ -23,6 +28,15 @@ VSRCS = $(wildcard vsrc/*.v)
 CSRCS-y = $(shell find csrc -name "*.cpp" -type f)
 CSRCS-y += $(shell find csrc -name "*.c" -type f)
 CSRCS = $(filter-out $(SRCS-BLACKLIST-y),$(CSRCS-y))
+
+ifdef CONFIG_TARGET_SOC
+VSRCS += $(shell find ../ysyxSoC/perip -name "*.v" -type f)
+VSRCS += ../ysyxSoC/build/ysyxSoCFull.v
+VINC_PATH = ../ysyxSoC/perip/uart16550/rtl ../ysyxSoC/perip/spi/rtl
+VINCFLAGS = $(addprefix -I, $(VINC_PATH))
+VERILATOR_CFLAGS += $(VINCFLAGS)
+VERILATOR_CFLAGS += --timescale "1ns/1ns" --no-timing -DCONFIG_TARGET_SOC=y
+endif
 # CSRCS += $(SRC_AUTO_BIND)
 # $(NVBOARD_ARCHIVE)
 
@@ -73,6 +87,8 @@ gdb: run-env
 
 clean:
 	rm -rf $(BUILD_DIR)
+
+.PHONY: run gdb clean
 
 # Include rules for menuconfig
 include $(NPC_HOME)/scripts/config.mk

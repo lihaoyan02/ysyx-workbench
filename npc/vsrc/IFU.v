@@ -93,7 +93,11 @@ wire [ADDR_WIDTH-1:0] next_pc;
 assign next_pc = j_pc ? j_pc_addr : pc + 4; 
 assign wb_valid = state==WAIT & next_state==IDLE;
 always @(posedge clk) begin
-	if (rst) pc <= 32'h80000000;//{ADDR_WIDTH{1'b0}}; 
+	`ifndef CONFIG_TARGET_SOC
+	if (rst) pc <= 32'h8000_0000;//{ADDR_WIDTH{1'b0}}; 
+	`else
+	if (rst) pc <= 32'h2000_0000;
+	`endif
 	else if(wb_valid)
 		pc <= next_pc;
 end
