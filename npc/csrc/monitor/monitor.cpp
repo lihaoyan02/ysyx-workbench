@@ -3,7 +3,7 @@
 
 void init_log(const char *log_file); 
 void init_mem();
-void init_cpu();
+void init_cpu(int argc, char *argv[]);
 void init_difftest(char *ref_so_file, long img_size, int port); 
 void init_sdb();
 void init_device();
@@ -118,7 +118,7 @@ void init_monitor(int argc, char *argv[]) {
 	IFDEF(CONFIG_DEVICE, init_device());
 
 	/* Initialize verilator. */
-	init_cpu();
+	init_cpu(argc, argv);
 
 	/* Load the image to memory. This will overwrite the built-in image. */
 	long img_size = load_img();

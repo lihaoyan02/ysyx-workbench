@@ -93,7 +93,8 @@ static void single_cycle() {
 #endif
 }
 
-void init_cpu() {
+void init_cpu(int argc, char *argv[]) {
+	Verilated::commandArgs(argc, argv);
 	contextp = new VerilatedContext;
 	//contextp->commandArgs(argc, argv);
 	top= new Vtop{contextp};

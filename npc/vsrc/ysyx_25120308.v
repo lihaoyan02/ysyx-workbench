@@ -1,4 +1,4 @@
-module ysyx_25120308 #(INST_WIDTH = 32, DATA_WIDTH = 32) (
+module ysyx_25120308 (
     input                           clock                   ,
 	input                           reset                   ,
     input                           io_interrupt            ,
@@ -30,8 +30,85 @@ module ysyx_25120308 #(INST_WIDTH = 32, DATA_WIDTH = 32) (
     input 	    [1:0] 	            io_master_rresp         ,
     input 	    [31:0] 	            io_master_rdata         ,
     input 	    	                io_master_rlast 	    ,
-    input 	    [3:0] 	            io_master_rid 	        
+    input 	    [3:0] 	            io_master_rid 	        ,
+
+    output 	        	            io_slave_awready        ,
+    input 	        	            io_slave_awvalid        , 
+    input 	    [31:0] 	            io_slave_awaddr         ,
+    input 	    [3:0] 	            io_slave_awid           ,
+    input 	    [7:0] 	            io_slave_awlen          ,   
+    input 	    [2:0] 	            io_slave_awsize         , 
+    input 	    [1:0] 	            io_slave_awburst        , 
+    output 	    	                io_slave_wready 	    ,
+    input 	    	                io_slave_wvalid 	    ,
+    input 	    [31:0] 	            io_slave_wdata          ,
+    input 	    [3:0] 	            io_slave_wstrb          ,
+    input 	    	                io_slave_wlast 	        ,
+    input 	    	                io_slave_bready 	    ,
+    output 	    	                io_slave_bvalid 	    ,
+    output 	    [1:0] 	            io_slave_bresp          ,
+    output 	    [3:0] 	            io_slave_bid 	        ,
+    output 	    	                io_slave_arready 	    ,
+    input 	    	                io_slave_arvalid 	    ,
+    input 	    [31:0] 	            io_slave_araddr         ,
+    input 	    [3:0] 	            io_slave_arid 	        ,
+    input 	    [7:0] 	            io_slave_arlen          ,
+    input 	    [2:0] 	            io_slave_arsize         ,
+    input 	    [1:0] 	            io_slave_arburst        ,
+    input 	    	                io_slave_rready 	    ,
+    output 	    	                io_slave_rvalid 	    ,
+    output 	    [1:0] 	            io_slave_rresp          ,
+    output 	    [31:0] 	            io_slave_rdata          ,
+    output 	    	                io_slave_rlast 	        ,
+    output 	    [3:0] 	            io_slave_rid 	        
 );
+assign io_slave_awready = 0;
+assign io_slave_wready = 0;
+assign io_slave_bvalid = 0;
+assign io_slave_bresp = 0;
+assign io_slave_bid = 0;
+assign io_slave_arready = 0;
+assign io_slave_rvalid = 0;
+assign io_slave_rresp = 0;
+assign io_slave_rdata = 0;
+assign io_slave_rlast = 0;
+assign io_slave_rid = 0;
 
+    core u_core (
+        .clk(clock),
+		.rst(reset),
+        .mem_AWVALID(io_master_awvalid),
+        .mem_AWREADY(io_master_awready),
+        .mem_AWADDR(io_master_awaddr),
+        .mem_AWID(io_master_awid),
+        .mem_AWLEN(io_master_awlen),
+        .mem_AWSIZE(io_master_awsize),
+        .mem_AWBURST(io_master_awburst),
 
+        .mem_WVALID(io_master_wvalid),
+        .mem_WREADY(io_master_wready),
+        .mem_WDATA(io_master_wdata),
+        .mem_WSTRB(io_master_wstrb),
+        .mem_WLAST(io_master_wlast),
+
+        .mem_BVALID(io_master_bvalid),
+        .mem_BREADY(io_master_bready),
+        .mem_BRESP(io_master_bresp),
+        .mem_BID(io_master_bid),
+
+        .mem_ARVALID(io_master_arvalid),
+        .mem_ARREADY(io_master_arready),
+        .mem_ARADDR(io_master_araddr),
+        .mem_ARID(io_master_arid),
+        .mem_ARLEN(io_master_arlen),
+        .mem_ARSIZE(io_master_arsize),
+        .mem_ARBURST(io_master_arburst),
+
+        .mem_RVALID(io_master_rvalid),
+        .mem_RREADY(io_master_rready),
+        .mem_RDATA(io_master_rdata),
+        .mem_RRESP(mem_Rio_master_rrespRESP),
+        .mem_RLAST(io_master_rlast),
+        .mem_RID(io_master_rid)
+    );
 endmodule

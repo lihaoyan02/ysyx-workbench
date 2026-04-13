@@ -1,7 +1,6 @@
 module core #(INST_WIDTH = 32, DATA_WIDTH = 32) (
 	input clk,
 	input rst,
-  	// output [INST_WIDTH-1:0] pc,
 
   	output mem_AWVALID,
 	input mem_AWREADY,
@@ -75,12 +74,6 @@ lsu_BVALID, lsu_BREADY, lsu_ARVALID, lsu_ARREADY, lsu_RVALID,lsu_RREADY;
 wire [DATA_WIDTH-1:0] lsu_AWADDR, lsu_WDATA, lsu_ARADDR, lsu_RDATA;
 wire [3:0] lsu_WSTRB;
 wire [1:0] lsu_BRESP, lsu_RRESP;
-
-// wire mem_AWVALID, mem_AWREADY, mem_WVALID, mem_WREADY, 
-// mem_BVALID, mem_BREADY, mem_ARVALID, mem_ARREADY, mem_RVALID,mem_RREADY;
-// wire [DATA_WIDTH-1:0] mem_AWADDR, mem_WDATA, mem_ARADDR, mem_RDATA;
-// wire [3:0] mem_WSTRB;
-// wire [1:0] mem_BRESP, mem_RRESP;
 
 wire uart_AWVALID, uart_AWREADY, uart_WVALID, uart_WREADY, 
 uart_BVALID, uart_BREADY, uart_ARVALID, uart_ARREADY, uart_RVALID,uart_RREADY;
@@ -350,33 +343,6 @@ wire [1:0] clint_BRESP, clint_RRESP;
 		.clint_RDATA(clint_RDATA),
 		.clint_RRESP(clint_RRESP)
 	);
-
-	// MEM u_mem (
-	// 	.clk(clk),
-	// 	.rst(rst),
-
-	// 	.AWVALID(mem_AWVALID),
-	// 	.AWREADY(mem_AWREADY),
-	// 	.AWADDR(mem_AWADDR),
-
-	// 	.WVALID(mem_WVALID),
-	// 	.WREADY(mem_WREADY),
-	// 	.WDATA(mem_WDATA),
-	// 	.WSTRB(mem_WSTRB),
-
-	// 	.BVALID(mem_BVALID),
-	// 	.BREADY(mem_BREADY),
-	// 	.BRESP(mem_BRESP),
-
-	// 	.ARVALID(mem_ARVALID),
-	// 	.ARREADY(mem_ARREADY),
-	// 	.ARADDR(mem_ARADDR),
-
-	// 	.RVALID(mem_RVALID),
-	// 	.RREADY(mem_RREADY),
-	// 	.RDATA(mem_RDATA),
-	// 	.RRESP(mem_RRESP)
-	// );
 
 	UART u_uart (
 		.clk(clk),

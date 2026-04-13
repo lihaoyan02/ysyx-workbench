@@ -1,7 +1,6 @@
 module top #(INST_WIDTH = 32, DATA_WIDTH = 32) (
     input clk,
 	input rst
-  	// output [INST_WIDTH-1:0] pc
 );
 
 wire mem_AWVALID, mem_AWREADY, mem_WVALID, mem_WREADY, 
