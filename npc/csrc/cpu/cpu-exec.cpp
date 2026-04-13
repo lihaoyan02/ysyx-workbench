@@ -112,10 +112,10 @@ void init_cpu() {
 }
 
 
-extern "C" void npctrap(int a0) {
+extern "C" void npctrap(int a0, int pc) {
 	npc_state.state = NPC_END;
 	npc_state.halt_ret = a0;
-	npc_state.halt_pc = top->pc;
+	npc_state.halt_pc = pc;
 }
 
 static void exec_one_inst() {
@@ -133,7 +133,7 @@ static void exec_one_inst() {
 static void exec_once(Decode *s) {
 	exec_one_inst();
 	s->inst = core_read_inst();
-	s->pc = top->pc;
+	s->pc = core_read_pc();
 	s->dnpc = core_read_dnpc(); 
 #ifdef CONFIG_ITRACE
 	char *p = s->logbuf;
@@ -213,5 +213,6 @@ void cpu_exec(uint64_t n) {
 }
 
 extern "C" void unknow_inst() {
-	Assert(npc_state.state != NPC_RUNNING,"Unknown instruction at pc=0x%08x",top->pc);
+	int pc = core_read_pc();
+	Assert(npc_state.state != NPC_RUNNING,"Unknown instruction at pc=0x%08x", pc);
 }

@@ -12,24 +12,36 @@ module IFU #(INST_WIDTH = 32, ADDR_WIDTH = 32)(
 	output AWVALID,
 	input AWREADY,
 	output [ADDR_WIDTH-1:0] AWADDR,
+	// output [3:0] AWID,
+	// output [7:0] AWLEN,
+	// output [2:0] AWSIZE,
+	// output [1:0] AWBURST,
 
 	output WVALID,
 	input WREADY,
 	output [INST_WIDTH-1:0] WDATA,
 	output [3:0] WSTRB,
+	// output WLAST,
 
 	input BVALID,
 	output BREADY,
 	input [1:0] BRESP,
+	// input [3:0] BID,
 
 	output ARVALID,
 	input ARREADY,
 	output [ADDR_WIDTH-1:0] ARADDR,
+	// output [3:0] ARID,
+	// output [7:0] ARLEN,
+	// output [2:0] ARSIZE,
+	// output [1:0] ARBURST,
 
 	input RVALID,
 	output RREADY,
 	input [INST_WIDTH-1:0] RDATA,
 	input [1:0] RRESP
+	// input RLAST,
+	// input [3:0] RID
 );
 wire AR_handshaked, R_handshaked;
 assign AR_handshaked = ARVALID & ARREADY;
@@ -101,6 +113,12 @@ function int read_inst();
 endfunction
 
 export "DPI-C" function read_inst;
+
+function int read_pc();
+	return pc;
+endfunction
+
+export "DPI-C" function read_pc;
 
 function int read_dnpc();
 	return next_pc;

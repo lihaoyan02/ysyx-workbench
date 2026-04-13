@@ -1,0 +1,37 @@
+module ysyx_25120308 #(INST_WIDTH = 32, DATA_WIDTH = 32) (
+    input                           clock                   ,
+	input                           reset                   ,
+    input                           io_interrupt            ,
+    input 	        	            io_master_awready       ,
+    output 	        	            io_master_awvalid       , 
+    output 	    [31:0] 	            io_master_awaddr        ,
+    output 	    [3:0] 	            io_master_awid          ,
+    output 	    [7:0] 	            io_master_awlen         ,   
+    output 	    [2:0] 	            io_master_awsize        , 
+    output 	    [1:0] 	            io_master_awburst       , 
+    input 	    	                io_master_wready 	    ,
+    output 	    	                io_master_wvalid 	    ,
+    output 	    [31:0] 	            io_master_wdata         ,
+    output 	    [3:0] 	            io_master_wstrb         ,
+    output 	    	                io_master_wlast 	    ,
+    output 	    	                io_master_bready 	    ,
+    input 	    	                io_master_bvalid 	    ,
+    input 	    [1:0] 	            io_master_bresp         ,
+    input 	    [3:0] 	            io_master_bid 	        ,
+    input 	    	                io_master_arready 	    ,
+    output 	    	                io_master_arvalid 	    ,
+    output 	    [31:0] 	            io_master_araddr        ,
+    output 	    [3:0] 	            io_master_arid 	        ,
+    output 	    [7:0] 	            io_master_arlen         ,
+    output 	    [2:0] 	            io_master_arsize        ,
+    output 	    [1:0] 	            io_master_arburst       ,
+    output 	    	                io_master_rready 	    ,
+    input 	    	                io_master_rvalid 	    ,
+    input 	    [1:0] 	            io_master_rresp         ,
+    input 	    [31:0] 	            io_master_rdata         ,
+    input 	    	                io_master_rlast 	    ,
+    input 	    [3:0] 	            io_master_rid 	        
+);
+
+
+endmodule
