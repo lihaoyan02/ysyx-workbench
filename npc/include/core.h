@@ -7,14 +7,12 @@
 #ifndef CONFIG_TARGET_SOC
 #include <Vtop.h>
 #include <Vtop__Dpi.h> 
-#include "svdpi.h"
 extern VerilatedContext* contextp;
 extern Vtop* top;
 
 #else
 #include <VysyxSoCFull.h>
 #include <VysyxSoCFull__Dpi.h> 
-#include "svdpi.h"
 extern VerilatedContext* contextp;
 extern VysyxSoCFull* top;
 
