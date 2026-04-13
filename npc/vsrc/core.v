@@ -1,7 +1,7 @@
 module core #(INST_WIDTH = 32, DATA_WIDTH = 32) (
 	input clk,
 	input rst,
-  	output [INST_WIDTH-1:0] pc,
+  	// output [INST_WIDTH-1:0] pc,
 
   	output mem_AWVALID,
 	input mem_AWREADY,
@@ -38,9 +38,10 @@ module core #(INST_WIDTH = 32, DATA_WIDTH = 32) (
 	input [3:0] mem_RID
 );
 
-import "DPI-C" function void npctrap(int a0);
+import "DPI-C" function void npctrap(int a0, int c_pc);
 
 wire j_pc, j_en, wb_en, ebreak_flag, inst_valid, lsu_en, lsu_wen, csr_wen, lsu_ready, wb_valid;
+wire [INST_WIDTH-1:0] pc;
 wire [DATA_WIDTH-1:0] alu_out;
 wire [INST_WIDTH-1:0] inst_fetch;
 wire [DATA_WIDTH-1:0] imm;
@@ -442,7 +443,7 @@ wire [1:0] clint_BRESP, clint_RRESP;
 	
 always @(*) begin
 	if(ebreak_flag)
-		npctrap(u_gpr.rf[10]);
+		npctrap(u_gpr.rf[10], pc);
 end
 
 endmodule

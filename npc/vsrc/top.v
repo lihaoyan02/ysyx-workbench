@@ -1,7 +1,7 @@
 module top #(INST_WIDTH = 32, DATA_WIDTH = 32) (
     input clk,
-	input rst,
-  	output [INST_WIDTH-1:0] pc
+	input rst
+  	// output [INST_WIDTH-1:0] pc
 );
 
 wire mem_AWVALID, mem_AWREADY, mem_WVALID, mem_WREADY, 
@@ -17,7 +17,6 @@ wire mem_WLAST, mem_RLAST;
     core u_core (
         .clk(clk),
 		.rst(rst),
-        .pc(pc),
         .mem_AWVALID(mem_AWVALID),
         .mem_AWREADY(mem_AWREADY),
         .mem_AWADDR(mem_AWADDR),

@@ -23,7 +23,7 @@ void reg_display() {
 uint32_t reg_str2val(const char *s, bool *success) {
 	if(strcmp("pc", s)==0) {
 		*success = true;
-		return top->pc;
+		return core_read_pc();//top->pc;
 	}
 	for(int i=0; i<16; i++) {
 		if (strcmp(reg_name(i), s) == 0) {
@@ -39,5 +39,5 @@ void update_reg_state() {
 	for(int i=0; i<16; i++) {
 		cpu.gpr[i] = core_read_reg(i);
 	}
-	cpu.pc = top->pc;
+	cpu.pc = core_read_pc();//top->pc;
 }

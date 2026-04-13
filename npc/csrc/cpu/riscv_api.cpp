@@ -13,6 +13,13 @@ uint32_t core_read_inst() {
 	return read_inst(); 
 }
 
+uint32_t core_read_pc() {
+	const svScope scope = svGetScopeFromName("TOP.top.u_core.u_IFU");
+	assert(scope); 
+	svSetScope(scope);
+	return read_pc(); 
+}
+
 uint32_t core_read_dnpc() {
 	const svScope scope = svGetScopeFromName("TOP.top.u_core.u_IFU");
 	assert(scope); 
