@@ -75,12 +75,6 @@ wire [DATA_WIDTH-1:0] lsu_AWADDR, lsu_WDATA, lsu_ARADDR, lsu_RDATA;
 wire [3:0] lsu_WSTRB;
 wire [1:0] lsu_BRESP, lsu_RRESP;
 
-wire uart_AWVALID, uart_AWREADY, uart_WVALID, uart_WREADY, 
-uart_BVALID, uart_BREADY, uart_ARVALID, uart_ARREADY, uart_RVALID,uart_RREADY;
-wire [DATA_WIDTH-1:0] uart_AWADDR, uart_WDATA, uart_ARADDR, uart_RDATA;
-wire [3:0] uart_WSTRB;
-wire [1:0] uart_BRESP, uart_RRESP;
-
 wire clint_AWVALID, clint_AWREADY, clint_WVALID, clint_WREADY, 
 clint_BVALID, clint_BREADY, clint_ARVALID, clint_ARREADY, clint_RVALID,clint_RREADY;
 wire [DATA_WIDTH-1:0] clint_AWADDR, clint_WDATA, clint_ARADDR, clint_RDATA;
@@ -215,6 +209,13 @@ wire [1:0] clint_BRESP, clint_RRESP;
 		.RDATA(lsu_RDATA),
 		.RRESP(lsu_RRESP)
 	);
+`ifndef CONFIG_TARGET_SOC
+
+wire uart_AWVALID, uart_AWREADY, uart_WVALID, uart_WREADY, 
+uart_BVALID, uart_BREADY, uart_ARVALID, uart_ARREADY, uart_RVALID,uart_RREADY;
+wire [DATA_WIDTH-1:0] uart_AWADDR, uart_WDATA, uart_ARADDR, uart_RDATA;
+wire [3:0] uart_WSTRB;
+wire [1:0] uart_BRESP, uart_RRESP;
 
 	arbiter u_arbiter(
 		.clk(clk),
@@ -370,6 +371,112 @@ wire [1:0] clint_BRESP, clint_RRESP;
 		.RDATA(uart_RDATA),
 		.RRESP(uart_RRESP)
 	);
+`else
+	Xbar_2x2 u_Xbar_2x2(
+		.clk(clk),
+		.rst(rst),
+		.m1_AWVALID(ifu_AWVALID),
+		.m1_AWREADY(ifu_AWREADY),
+		.m1_AWADDR(ifu_AWADDR),
+
+		.m1_WVALID(ifu_WVALID),
+		.m1_WREADY(ifu_WREADY),
+		.m1_WDATA(ifu_WDATA),
+		.m1_WSTRB(ifu_WSTRB),
+
+		.m1_BVALID(ifu_BVALID),
+		.m1_BREADY(ifu_BREADY),
+		.m1_BRESP(ifu_BRESP),
+
+		.m1_ARVALID(ifu_ARVALID),
+		.m1_ARREADY(ifu_ARREADY),
+		.m1_ARADDR(ifu_ARADDR),
+
+		.m1_RVALID(ifu_RVALID),
+		.m1_RREADY(ifu_RREADY),
+		.m1_RDATA(ifu_RDATA),
+		.m1_RRESP(ifu_RRESP),
+		//lsu
+		.m2_AWVALID(lsu_AWVALID),
+		.m2_AWREADY(lsu_AWREADY),
+		.m2_AWADDR(lsu_AWADDR),
+
+		.m2_WVALID(lsu_WVALID),
+		.m2_WREADY(lsu_WREADY),
+		.m2_WDATA(lsu_WDATA),
+		.m2_WSTRB(lsu_WSTRB),
+
+		.m2_BVALID(lsu_BVALID),
+		.m2_BREADY(lsu_BREADY),
+		.m2_BRESP(lsu_BRESP),
+
+		.m2_ARVALID(lsu_ARVALID),
+		.m2_ARREADY(lsu_ARREADY),
+		.m2_ARADDR(lsu_ARADDR),
+
+		.m2_RVALID(lsu_RVALID),
+		.m2_RREADY(lsu_RREADY),
+		.m2_RDATA(lsu_RDATA),
+		.m2_RRESP(lsu_RRESP),
+		// mem
+		.s1_AWVALID(mem_AWVALID),
+		.s1_AWREADY(mem_AWREADY),
+		.s1_AWADDR(mem_AWADDR),
+		.s1_AWID(mem_AWID),
+		.s1_AWLEN(mem_AWLEN),
+		.s1_AWSIZE(mem_AWSIZE),
+		.s1_AWBURST(mem_AWBURST),
+
+		.s1_WVALID(mem_WVALID),
+		.s1_WREADY(mem_WREADY),
+		.s1_WDATA(mem_WDATA),
+		.s1_WSTRB(mem_WSTRB),
+		.s1_WLAST(mem_WLAST),
+
+		.s1_BVALID(mem_BVALID),
+		.s1_BREADY(mem_BREADY),
+		.s1_BRESP(mem_BRESP),
+		.s1_BID(mem_BID),
+
+		.s1_ARVALID(mem_ARVALID),
+		.s1_ARREADY(mem_ARREADY),
+		.s1_ARADDR(mem_ARADDR),
+		.s1_ARID(mem_ARID),
+		.s1_ARLEN(mem_ARLEN),
+		.s1_ARSIZE(mem_ARSIZE),
+		.s1_ARBURST(mem_ARBURST),
+
+		.s1_RVALID(mem_RVALID),
+		.s1_RREADY(mem_RREADY),
+		.s1_RDATA(mem_RDATA),
+		.s1_RRESP(mem_RRESP),
+		.s1_RLAST(mem_RLAST),
+		.s1_RID(mem_RID),
+
+		// uart
+		.s2_AWVALID(uart_AWVALID),
+		.s2_AWREADY(uart_AWREADY),
+		.s2_AWADDR(uart_AWADDR),
+
+		.s2_WVALID(uart_WVALID),
+		.s2_WREADY(uart_WREADY),
+		.s2_WDATA(uart_WDATA),
+		.s2_WSTRB(uart_WSTRB),
+
+		.s2_BVALID(uart_BVALID),
+		.s2_BREADY(uart_BREADY),
+		.s2_BRESP(uart_BRESP),
+
+		.s2_ARVALID(uart_ARVALID),
+		.s2_ARREADY(uart_ARREADY),
+		.s2_ARADDR(uart_ARADDR),
+
+		.s2_RVALID(uart_RVALID),
+		.s2_RREADY(uart_RREADY),
+		.s2_RDATA(uart_RDATA),
+		.s2_RRESP(uart_RRESP)
+	);
+`endif
 
 	CLINT u_clint (
 		.clk(clk),

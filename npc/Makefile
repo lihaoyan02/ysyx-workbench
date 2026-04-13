@@ -34,7 +34,7 @@ VSRCS += $(shell find ../ysyxSoC/perip -name "*.v" -type f)
 VSRCS += ../ysyxSoC/build/ysyxSoCFull.v
 VINC_PATH = ../ysyxSoC/perip/uart16550/rtl ../ysyxSoC/perip/spi/rtl
 VINCFLAGS = $(addprefix -I, $(VINC_PATH))
-VERILATOR_CFLAGS += --timescale "1ns/1ns" --no-timing
+VERILATOR_CFLAGS += --timescale "1ns/1ns" --no-timing -DCONFIG_TARGET_SOC=y
 endif
 # CSRCS += $(SRC_AUTO_BIND)
 # $(NVBOARD_ARCHIVE)
