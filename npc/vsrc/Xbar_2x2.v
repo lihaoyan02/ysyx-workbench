@@ -103,7 +103,6 @@ module Xbar_2x2 #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
 	input [ADDR_WIDTH-1:0] s2_RDATA,
 	input [1:0] s2_RRESP
 );
-// localparam s2_REG_ADDR=32'h1000_0000, s2_MUSK=~32'hfff;
 localparam s2_REG_ADDR=32'h0200_0000, s2_MASK=~32'hbfff;
 localparam IDLE=2'b00, GRANT_m1=2'b01, GRANT_m2=2'b10;
 localparam GRANT_s2=2'b01, GRANT_s1=2'b10;

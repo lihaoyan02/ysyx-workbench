@@ -85,19 +85,22 @@ static void eval_dump() {
 static void single_cycle() {
 	nr_clk_tick++;
 #ifdef CONFIG_TRACE_WAVE
-	top->clk = 0; eval_dump();
-	top->clk = 1; eval_dump();
+	top->clock = 0; eval_dump();
+	top->clock = 1; eval_dump();
 #else
-	top->clk = 0; top->eval();
-	top->clk = 1; top->eval();
+	top->clock = 0; top->eval();
+	top->clock = 1; top->eval();
 #endif
 }
 
 void init_cpu(int argc, char *argv[]) {
 	Verilated::commandArgs(argc, argv);
 	contextp = new VerilatedContext;
-	//contextp->commandArgs(argc, argv);
-	top= new Vtop{contextp};
+	#ifndef CONFIG_TARGET_SOC
+	top = new Vtop{contextp};
+	#else
+	top = new VysyxSoCFull{contextp};
+	#endif
 
 #ifdef CONFIG_TRACE_WAVE
 	Verilated::traceEverOn(true);
@@ -106,9 +109,9 @@ void init_cpu(int argc, char *argv[]) {
 	tfp->open("build/wave.vcd");
 #endif
 
-	top->rst = 1;
+	top->reset = 1;
 	single_cycle();
-	top->rst = 0;
+	top->reset = 0;
 	top->eval();
 }
 

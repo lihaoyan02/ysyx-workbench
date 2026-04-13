@@ -1,7 +1,7 @@
 #ifndef __NPC_MEMORY_H__
 #define __NPC_MEMORY_H__
 
-#include<common.h>
+#include <common.h>
 
 #define MEM_MAX 0x8000000 
 #define MEM_BASE 0x80000000 

@@ -1,6 +1,6 @@
 module top #(INST_WIDTH = 32, DATA_WIDTH = 32) (
-    input clk,
-	input rst
+    input clock,
+	input reset
 );
 
 wire mem_AWVALID, mem_AWREADY, mem_WVALID, mem_WREADY, 
@@ -14,8 +14,8 @@ wire [2:0] mem_AWSIZE, mem_ARSIZE;
 wire [1:0] mem_AWBURST, mem_ARBURST;
 wire mem_WLAST, mem_RLAST;
     core u_core (
-        .clk(clk),
-		.rst(rst),
+        .clk(clock),
+		.rst(reset),
         .mem_AWVALID(mem_AWVALID),
         .mem_AWREADY(mem_AWREADY),
         .mem_AWADDR(mem_AWADDR),
@@ -52,8 +52,8 @@ wire mem_WLAST, mem_RLAST;
     );
 
     MEM u_mem (
-		.clk(clk),
-		.rst(rst),
+		.clk(clock),
+		.rst(reset),
 
 		.AWVALID(mem_AWVALID),
 		.AWREADY(mem_AWREADY),

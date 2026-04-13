@@ -454,27 +454,27 @@ wire [1:0] uart_BRESP, uart_RRESP;
 		.s1_RID(mem_RID),
 
 		// uart
-		.s2_AWVALID(uart_AWVALID),
-		.s2_AWREADY(uart_AWREADY),
-		.s2_AWADDR(uart_AWADDR),
+		.s2_AWVALID(clint_AWVALID),
+		.s2_AWREADY(clint_AWREADY),
+		.s2_AWADDR(clint_AWADDR),
 
-		.s2_WVALID(uart_WVALID),
-		.s2_WREADY(uart_WREADY),
-		.s2_WDATA(uart_WDATA),
-		.s2_WSTRB(uart_WSTRB),
+		.s2_WVALID(clint_WVALID),
+		.s2_WREADY(clint_WREADY),
+		.s2_WDATA(clint_WDATA),
+		.s2_WSTRB(clint_WSTRB),
 
-		.s2_BVALID(uart_BVALID),
-		.s2_BREADY(uart_BREADY),
-		.s2_BRESP(uart_BRESP),
+		.s2_BVALID(clint_BVALID),
+		.s2_BREADY(clint_BREADY),
+		.s2_BRESP(clint_BRESP),
 
-		.s2_ARVALID(uart_ARVALID),
-		.s2_ARREADY(uart_ARREADY),
-		.s2_ARADDR(uart_ARADDR),
+		.s2_ARVALID(clint_ARVALID),
+		.s2_ARREADY(clint_ARREADY),
+		.s2_ARADDR(clint_ARADDR),
 
-		.s2_RVALID(uart_RVALID),
-		.s2_RREADY(uart_RREADY),
-		.s2_RDATA(uart_RDATA),
-		.s2_RRESP(uart_RRESP)
+		.s2_RVALID(clint_RVALID),
+		.s2_RREADY(clint_RREADY),
+		.s2_RDATA(clint_RDATA),
+		.s2_RRESP(clint_RRESP)
 	);
 `endif
 

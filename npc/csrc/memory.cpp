@@ -1,5 +1,5 @@
 #include <memory.h>
-#include <Vtop__Dpi.h>
+#include <core.h>
 #include <common.h>
 #include <utils.h>
 
@@ -7,6 +7,9 @@ static uint8_t pmem[MEM_MAX];
 uint32_t mmio_read(int addr);
 void mmio_write(uint32_t addr, uint32_t data, char mask);
 void difftest_skip_ref();
+
+extern "C" void flash_read(int32_t addr, int32_t *data) { assert(0); }
+extern "C" void mrom_read(int32_t addr, int32_t *data) { assert(0); }
 
 extern "C" int pmem_read(int raddr) {
 	IFDEF(CONFIG_MTRACE,

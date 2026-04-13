@@ -107,7 +107,7 @@ assign io_slave_rid = 0;
         .mem_RVALID(io_master_rvalid),
         .mem_RREADY(io_master_rready),
         .mem_RDATA(io_master_rdata),
-        .mem_RRESP(mem_Rio_master_rrespRESP),
+        .mem_RRESP(io_master_rresp),
         .mem_RLAST(io_master_rlast),
         .mem_RID(io_master_rid)
     );

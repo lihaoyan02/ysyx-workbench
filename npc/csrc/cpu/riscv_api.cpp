@@ -1,7 +1,11 @@
 #include <core.h>
 
 VerilatedContext* contextp = NULL;
+#ifndef CONFIG_TARGET_SOC
 Vtop* top = NULL;
+#else
+VysyxSoCFull* top = NULL;
+#endif
 #ifdef CONFIG_TRACE_WAVE
 VerilatedVcdC* tfp = NULL;
 #endif 
