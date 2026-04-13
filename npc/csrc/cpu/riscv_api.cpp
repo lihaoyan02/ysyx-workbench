@@ -7,8 +7,8 @@ VerilatedVcdC* tfp = NULL;
 #endif 
 
 #ifndef CONFIG_TARGET_SOC
-char* IFUscope = "TOP.top.u_core.u_IFU";
-char* gprscope = "TOP.top.u_core.u_gpr";
+char IFUscope[] = "TOP.top.u_core.u_IFU";
+char gprscope[] = "TOP.top.u_core.u_gpr";
 #else
 char* IFUscope = "TOP.ysyxSoCFull.asic.cpu.cpu.u_core";
 char* gprscope = "TOP.ysyxSoCFull.asic.cpu.cpu.u_gpr";
