@@ -10,5 +10,6 @@
 !.gitignore
 !README.md
 build/
+test/build/
 include/config 
 include/generated
