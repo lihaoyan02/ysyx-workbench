@@ -110,11 +110,11 @@ void init_cpu(int argc, char *argv[]) {
 #endif
 
 	top->reset = 1;
-	single_cycle();
-	#ifndef CONFIG_TARGET_SOC
+	for(int i=0; i<12; i++) {
+		single_cycle();
+	}
 	top->reset = 0;
 	top->eval();
-	#endif
 }
 
 
