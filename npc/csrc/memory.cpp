@@ -10,6 +10,7 @@ void difftest_skip_ref();
 
 extern "C" void flash_read(int32_t addr, int32_t *data) { assert(0); }
 extern "C" void mrom_read(int32_t addr, int32_t *data) { 
+	printf("\n0x%x\n",addr);
 	*data = 0x00100073;
 }
 
