@@ -14,7 +14,7 @@ INC_PATH = $(NPC_DIR)/include
 VERILATOR = verilator
 VERILATOR_CFLAGS += -I./vsrc/includes
 VERILATOR_CFLAGS += -MMD -cc --build \
-				-O3 --x-assign fast --x-initial fast
+				-O3 --x-assign fast --x-initial fast --autoflush
 VERILATOR_CFLAGS += $(if $(CONFIG_TRACE_WAVE), --trace-vcd)
 BUILD_DIR = $(NPC_DIR)/build
 OBJ_DIR = $(BUILD_DIR)/obj_dir
