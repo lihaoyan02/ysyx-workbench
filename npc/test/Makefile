@@ -1,4 +1,4 @@
-CFLAGS=-march=rv32e -mabi=ilp32e -nostdlib
+CFLAGS=-march=rv32e -mabi=ilp32e -nostdlib -ffreestanding
 IMAGE=char-test
 # ffreestanding
 all:
