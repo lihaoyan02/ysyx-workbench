@@ -111,8 +111,10 @@ void init_cpu(int argc, char *argv[]) {
 
 	top->reset = 1;
 	single_cycle();
+	#ifndef CONFIG_TARGET_SOC
 	top->reset = 0;
 	top->eval();
+	#endif
 }
 
 
