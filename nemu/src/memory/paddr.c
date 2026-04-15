@@ -17,13 +17,12 @@
 #include <memory/paddr.h>
 #include <device/mmio.h>
 #include <isa.h>
-#include <common.h>
 
 #if   defined(CONFIG_PMEM_MALLOC)
 static uint8_t *pmem = NULL;
 #else // CONFIG_PMEM_GARRAY
 static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {};
-#ifdef CONIFG_TARGET_REF_YSYXSOC
+#ifdef CONFIG_TARGET_REF_YSYXSOC
 static uint8_t sram[CONFIG_SRAM_SIZE] PG_ALIGN = {};
 #endif
 #endif
@@ -40,7 +39,7 @@ static void pmem_write(paddr_t addr, int len, word_t data) {
   host_write(guest_to_host(addr), len, data);
 }
 
-#ifdef CONIFG_TARGET_REF_YSYXSOC
+#ifdef CONFIG_TARGET_REF_YSYXSOC
 static word_t sram_read(paddr_t addr, int len) {
   word_t ret = host_read(sram+addr-CONFIG_SRAM_BASE, len);
   return ret;
@@ -72,7 +71,9 @@ word_t paddr_read(paddr_t addr, int len) {
 			}
 	);
   if (likely(in_pmem(addr))) return pmem_read(addr, len);
-  IFDEF(CONIFG_TARGET_REF_YSYXSOC,if (likely(in_sram(addr))) return sram_read(addr, len))
+  #ifdef CONFIG_TARGET_REF_YSYXSOC
+  if (likely(in_sram(addr))) return sram_read(addr, len);
+  #endif
   IFDEF(CONFIG_DEVICE, return mmio_read(addr, len));
   out_of_bound(addr);
   return 0;
@@ -85,7 +86,7 @@ void paddr_write(paddr_t addr, int len, word_t data) {
 			}
 	);
   if (likely(in_pmem(addr))) { pmem_write(addr, len, data); return; }
-  #ifdef CONIFG_TARGET_REF_YSYXSOC
+  #ifdef CONFIG_TARGET_REF_YSYXSOC
   if (likely(in_sram(addr))) { sram_write(addr, len, data); return; }
   #endif
   IFDEF(CONFIG_DEVICE, mmio_write(addr, len, data); return);

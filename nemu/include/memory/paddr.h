@@ -30,7 +30,7 @@ paddr_t host_to_guest(uint8_t *haddr);
 static inline bool in_pmem(paddr_t addr) {
   return addr - CONFIG_MBASE < CONFIG_MSIZE;
 }
-#ifdef CONIFG_TARGET_REF_YSYXSOC
+#ifdef CONFIG_TARGET_REF_YSYXSOC
 static inline bool in_sram(paddr_t addr) {
   return addr - CONFIG_SRAM_BASE < CONFIG_SRAM_SIZE;
 }
