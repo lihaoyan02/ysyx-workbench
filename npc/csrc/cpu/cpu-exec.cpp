@@ -220,5 +220,6 @@ void cpu_exec(uint64_t n) {
 
 extern "C" void unknow_inst() {
 	int pc = core_read_pc();
-	Assert(npc_state.state != NPC_RUNNING,"Unknown instruction at pc=0x%08x", pc);
+	int inst = core_read_inst();
+	Assert(npc_state.state != NPC_RUNNING,"Unknown instruction at pc=0x%08x inst=0x%08x", pc,inst);
 }
