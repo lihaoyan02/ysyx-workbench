@@ -6,6 +6,10 @@
 #define MEM_MAX 0x8000000 
 #define MEM_BASE 0x80000000 
 
+#ifdef CONFIG_TARGET_SOC
+#define MROM_BASE 0x20000000
+#endif
+
 static bool in_mem(uint32_t addr) { 
 	return addr - MEM_BASE < MEM_MAX; 
 }
