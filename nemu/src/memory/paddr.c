@@ -22,6 +22,9 @@
 static uint8_t *pmem = NULL;
 #else // CONFIG_PMEM_GARRAY
 static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {};
+#ifdef CONFIG_TARGET_REF_YSYXSOC
+static uint8_t sram[CONFIG_SRAM_SIZE] PG_ALIGN = {};
+#endif
 #endif
 
 uint8_t* guest_to_host(paddr_t paddr) { return pmem + paddr - CONFIG_MBASE; }
@@ -35,6 +38,17 @@ static word_t pmem_read(paddr_t addr, int len) {
 static void pmem_write(paddr_t addr, int len, word_t data) {
   host_write(guest_to_host(addr), len, data);
 }
+
+#ifdef CONFIG_TARGET_REF_YSYXSOC
+static word_t sram_read(paddr_t addr, int len) {
+  word_t ret = host_read(sram+addr-CONFIG_SRAM_BASE, len);
+  return ret;
+}
+
+static void sram_write(paddr_t addr, int len, word_t data) {
+  host_write(sram+addr-CONFIG_SRAM_BASE, len, data);
+}
+#endif
 
 static void out_of_bound(paddr_t addr) {
   panic("address = " FMT_PADDR " is out of bound of pmem [" FMT_PADDR ", " FMT_PADDR "] at pc = " FMT_WORD,
@@ -57,6 +71,9 @@ word_t paddr_read(paddr_t addr, int len) {
 			}
 	);
   if (likely(in_pmem(addr))) return pmem_read(addr, len);
+  #ifdef CONFIG_TARGET_REF_YSYXSOC
+  if (likely(in_sram(addr))) return sram_read(addr, len);
+  #endif
   IFDEF(CONFIG_DEVICE, return mmio_read(addr, len));
   out_of_bound(addr);
   return 0;
@@ -69,6 +86,9 @@ void paddr_write(paddr_t addr, int len, word_t data) {
 			}
 	);
   if (likely(in_pmem(addr))) { pmem_write(addr, len, data); return; }
+  #ifdef CONFIG_TARGET_REF_YSYXSOC
+  if (likely(in_sram(addr))) { sram_write(addr, len, data); return; }
+  #endif
   IFDEF(CONFIG_DEVICE, mmio_write(addr, len, data); return);
   out_of_bound(addr);
 }

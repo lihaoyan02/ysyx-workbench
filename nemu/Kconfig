@@ -68,6 +68,16 @@ config TARGET_AM
   bool "Application on Abstract-Machine (DON'T CHOOSE)"
 endchoice
 
+choice
+  depends on TARGET_SHARE
+  prompt "REF target"
+  default TARGET_REF_YSYXSOC
+config TARGET_REF_NPC
+  bool "REF to NPC"
+config TARGET_REF_YSYXSOC
+  bool "REF to ysyxSoC"
+endchoice
+
 menu "Build Options"
 choice
   prompt "Compiler"

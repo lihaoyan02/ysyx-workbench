@@ -11,6 +11,5 @@ void _start() {
         ::"i"(STACK_TOP)
     );
     *(volatile char *)(UART_BASE + UART_TX) = 'A';
-    *(volatile char *)(UART_BASE + UART_TX) = '\n';
     while (1);    
 }

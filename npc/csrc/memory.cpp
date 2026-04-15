@@ -8,12 +8,13 @@ uint32_t mmio_read(int addr);
 void mmio_write(uint32_t addr, uint32_t data, char mask);
 void difftest_skip_ref();
 
-#define MROM_BASE 0x20000000
+#ifdef CONFIG_TARGET_SOC
 extern "C" void flash_read(int32_t addr, int32_t *data) { assert(0); }
 extern "C" void mrom_read(int32_t addr, int32_t *data) { 
 	uint8_t* paddr = pmem + ((unsigned)addr & ~0x3u) - MROM_BASE;
 	*data = *(int32_t *)paddr;
 }
+#endif
 
 extern "C" int pmem_read(int raddr) {
 	IFDEF(CONFIG_MTRACE,
@@ -71,8 +72,8 @@ extern "C" void pmem_write(int waddr, int wdata, char wmask) {
 
 static const uint32_t default_img[] = {
 	0x00000297,  // auipc t0,0
-	0x00028823,  // sb  zero,16(t0)
-	0x0102c503,  // lbu a0,16(t0)
+	// 0x00028823,  // sb  zero,16(t0)
+	// 0x0102c503,  // lbu a0,16(t0)
 	0x00100073, // ebreak 
 	0xdeadbeef, // some data
 	//0x01400513, 0x010000e7, 0x00c000e7, 0x00100073,

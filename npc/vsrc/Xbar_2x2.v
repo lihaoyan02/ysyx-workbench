@@ -384,6 +384,15 @@ always @(*) begin
 			m1_RVALID = inter_RVALID;
 			m1_RDATA = inter_RDATA;
 			m1_RRESP = inter_RRESP;
+
+			m2_AWREADY = 0;
+			m2_WREADY = 0;
+			m2_BVALID = 0;
+			m2_BRESP = 0;
+			m2_ARREADY = 0;
+			m2_RVALID = 0;
+			m2_RDATA = 0;
+			m2_RRESP = 0;
 		end
 		GRANT_m2: begin
 			inter_AWVALID = m2_AWVALID;
@@ -404,6 +413,15 @@ always @(*) begin
 			m2_RVALID = inter_RVALID;
 			m2_RDATA = inter_RDATA;
 			m2_RRESP = inter_RRESP;		
+
+			m1_AWREADY = 0;
+			m1_WREADY = 0;
+			m1_BVALID = 0;
+			m1_BRESP = 0;
+			m1_ARREADY = 0;
+			m1_RVALID = 0;
+			m1_RDATA = 0;
+			m1_RRESP = 0;
 		end
 		default: begin
 			inter_AWVALID = 0;
