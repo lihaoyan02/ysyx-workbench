@@ -1,3 +1,4 @@
+#include <common.h>
 #include <core.h>
 
 VerilatedContext* contextp = NULL;
@@ -52,4 +53,10 @@ uint32_t core_read_state() {
 	assert(scope); 
 	svSetScope(scope);
 	return read_state();
+}
+
+extern "C" void AXI_Access_Falt() {
+	int pc = core_read_pc();
+	int inst = core_read_inst();
+	Assert(npc_state.state != NPC_RUNNING,"axi access falt at pc=0x%08x inst=0x%08x", pc,inst);
 }

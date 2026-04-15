@@ -31,7 +31,7 @@ module LSU #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
 	input [DATA_WIDTH-1:0] RDATA,
 	input [1:0] RRESP
 );
-
+import "DPI-C" function void AXI_Access_Falt(); 
 localparam WIDLE = 2'b0, ASHAK=2'b01, DSHAK=2'b10, WWAIT = 2'b11;
 localparam IDLE = 1'b0, WAIT = 1'b1;
 
@@ -176,6 +176,8 @@ always @(posedge clk) begin
 	end
 	else if (B_handshaked) begin	
 		wreq <= 0;
+		if(BRESP != 0)
+			AXI_Access_Falt();
 	end
 end
 
@@ -202,6 +204,8 @@ always @(posedge clk) begin
 		rlsu_ctrl_r <= 0;
 		raddr_r <= 0;		
 		rreq <= 0;
+		if(RRESP != 0)
+			AXI_Access_Falt();
 	end
 end
 
