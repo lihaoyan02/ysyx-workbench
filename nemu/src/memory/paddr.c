@@ -85,7 +85,9 @@ void paddr_write(paddr_t addr, int len, word_t data) {
 			}
 	);
   if (likely(in_pmem(addr))) { pmem_write(addr, len, data); return; }
-  IFDEF(CONIFG_TARGET_REF_YSYXSOC,if (likely(in_sram(addr))) { sram_write(addr, len, data); return; })
+  #ifdef CONIFG_TARGET_REF_YSYXSOC
+  if (likely(in_sram(addr))) { sram_write(addr, len, data); return; }
+  #endif
   IFDEF(CONFIG_DEVICE, mmio_write(addr, len, data); return);
   out_of_bound(addr);
 }
