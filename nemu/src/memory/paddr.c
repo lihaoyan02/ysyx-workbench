@@ -23,7 +23,7 @@ static uint8_t *pmem = NULL;
 #else // CONFIG_PMEM_GARRAY
 static uint8_t pmem[CONFIG_MSIZE] PG_ALIGN = {};
 #ifdef CONIFG_TARGET_REF_YSYXSOC
-static uint8_t sram[CONFIG_MSIZE] PG_ALIGN = {};
+static uint8_t sram[CONFIG_SRAM_SIZE] PG_ALIGN = {};
 #endif
 #endif
 

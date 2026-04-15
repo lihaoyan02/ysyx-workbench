@@ -11,12 +11,12 @@ config MSIZE
   default 0x8000000
 
 config SRAM_BASE
-  hex "Memory base address"
+  hex "SRAM base address"
   depends on TARGET_REF_YSYXSOC
   default 0x0f000000
 
 config SRAM_SIZE
-  hex "Memory size"
+  hex "SRAM size"
   depends on TARGET_REF_YSYXSOC
   default 0x2000
 
