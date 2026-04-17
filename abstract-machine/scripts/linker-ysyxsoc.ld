@@ -15,21 +15,28 @@ SECTIONS {
   _etext = .;
   .rodata : {
     *(.rodata*)
+    *(.srodata*) /* for small read-only data */
   } > MROM
   .data : {
+    _data_start = .;
     *(.data*)
-  } > MROM : data
-  edata = .;
-  _data = .;
+    *(.sdata*) /* for small data */
+    _data_end = .;
+  } > SRAM AT> MROM : data
+  _data_load = LOADADDR(.data);
   .bss : {
 	_bss_start = .;
     *(.bss*)
     *(.sbss*)
     *(.scommon)
+  _bss_end = .;
   } >SRAM
   /* _stack_top = ALIGN(4); */
+  _heap_start = ALIGN(4);
+  . = ORIGIN(SRAM) + 0x1800;
+  _heap_end = .;
+  _stack_top = .;
   . = ORIGIN(SRAM) + LENGTH(SRAM);
   _stack_pointer = .;
-  _heap_start = .;
-  _heap_end = .;
+  
 }
