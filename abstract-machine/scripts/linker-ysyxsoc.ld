@@ -21,7 +21,7 @@ SECTIONS {
     *(.data*)
     . = ALIGN(4);
     _data_end = .;
-  } > SRAM AT > MROM : data
+  } > SRAM AT> MROM : data
   _data_load = LOADADDR(.data);
   .bss : {
 	_bss_start = .;
