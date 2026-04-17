@@ -15,10 +15,12 @@ SECTIONS {
   _etext = .;
   .rodata : {
     *(.rodata*)
+    *(.srodata*)
   } > MROM
   .data : {
     _data_start = .;
     *(.data*)
+    *(.sdata*)
     /* . = ALIGN(4); */
     _data_end = .;
   } > SRAM AT> MROM : data
