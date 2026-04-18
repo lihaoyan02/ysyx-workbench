@@ -214,8 +214,11 @@ end
 reg rreq;
 reg [2:0] rlsu_ctrl_r;
 reg [ADDR_WIDTH-1:0] raddr_r;
+wire [2:0] arsize = lsu_ctrl==3'b010 ? 3'b10 : (lsu_ctrl[0] ? 3'b1 : 3'b0);
+reg [2:0] arsize_r;
 assign ARVALID = (lsu_en & ~wen) | rreq & rstate==IDLE;
 assign ARADDR = (lsu_en & ~wen) ? addr : raddr_r;
+assign ARSIZE = (lsu_en & ~wen) ? arsize : arsize_r;
 assign RREADY = rstate==WAIT & RVALID;
 
 always @(posedge clk) begin
@@ -223,13 +226,16 @@ always @(posedge clk) begin
 		rlsu_ctrl_r <= 0;
 		raddr_r <= 0;
 		rreq <= 0;
+		arsize_r <= 3'b10;
 	end
 	else if (lsu_en & rstate==IDLE & ~wen) begin
 		rlsu_ctrl_r <= lsu_ctrl;
+		arsize_r <= arsize;
 		raddr_r <= addr;
 		rreq <= 1;
 	end
 	if (R_handshaked) begin
+		arsize_r <= 3'b10;
 		rlsu_ctrl_r <= 0;
 		raddr_r <= 0;		
 		rreq <= 0;

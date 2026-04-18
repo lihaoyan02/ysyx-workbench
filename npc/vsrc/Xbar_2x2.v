@@ -478,8 +478,8 @@ always @(*) begin
 			inter_ARID = 0;
 			inter_AWLEN = 0;
 			inter_ARLEN = 0;
-			inter_AWSIZE = 0;
-			inter_ARSIZE = 0;
+			inter_AWSIZE = 3'b10; // default 4 bytes
+			inter_ARSIZE = 3'b10; // default 4 bytes
 			inter_AWBURST = 0;
 			inter_ARBURST = 0;
 			inter_WLAST = 0;
