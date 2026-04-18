@@ -19,7 +19,7 @@ static void init_uart() {
 	outb(UART_IER, 0x00); // Disable all interrupts
 	// 115200 bps, 8N1
 	outb(UART_LCR, 0x83u); // Divisor Latch Access Bit (DLAB) set
-	outb(UART_BASE + 0x00, 0x02); // Set divisor to 1 (LSB) 115200 bps
+	outb(UART_BASE + 0x00, 0x00); // Set divisor to 1 (LSB) 115200 bps
 	outb(UART_BASE + 0x01, 0x00); //                  (MSB)
 
 	outb(UART_LCR, 0x03); // 8 bits, no parity, one stop bit
