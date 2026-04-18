@@ -27,7 +27,7 @@ static void init_uart() {
 }
 void putch(char ch) {
 	// wait for Transmitter Holding Register (THR) empty
-	while ((inb(UART_LSR) & 0x20)==0) 
+	// while ((inb(UART_LSR) & 0x20)==0) 
 		;
 	outb(UART_BASE, ch);
 }
