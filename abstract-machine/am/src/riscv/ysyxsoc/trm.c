@@ -26,6 +26,7 @@ static void init_uart() {
 	outb(UART_FCR, 0x07); // Enable FIFO, clear RX/TX FIFO
 }
 void putch(char ch) {
+	outb(UART_FCR, 0x07); // Enable FIFO, clear RX/TX FIFO
 	// wait for Transmitter Holding Register (THR) empty
 	while ((inb(UART_LSR) & 0x20)==0) 
 		;
