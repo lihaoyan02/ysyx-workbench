@@ -15,7 +15,7 @@ int main(const char *args);
 Area heap = RANGE(&_heap_start, &_heap_end);
 static const char mainargs[MAINARGS_MAX_LEN] = TOSTRING(MAINARGS_PLACEHOLDER); // defined in CFLAGS
 
-void init_uart() {
+static void init_uart() {
 	outb(UART_IER, 0x00); // Disable all interrupts
 	// 115200 bps, 8N1
 	outb(UART_LCR, 0x83); // Divisor Latch Access Bit (DLAB) set
