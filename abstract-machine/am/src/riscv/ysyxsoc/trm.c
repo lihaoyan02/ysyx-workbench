@@ -7,6 +7,7 @@ extern char _heap_end;
 int main(const char *args);
 
 #define UART_BASE 0x10000000
+#define UART_IER (UART_BASE + 0x01) // Interrupt Enable Register
 #define UART_FCR (UART_BASE + 0x02) // FIFO Control Register
 #define UART_LCR (UART_BASE + 0x03) // Line Control Register
 #define UART_LSR (UART_BASE + 0x05) // Line Status Register
@@ -15,6 +16,7 @@ Area heap = RANGE(&_heap_start, &_heap_end);
 static const char mainargs[MAINARGS_MAX_LEN] = TOSTRING(MAINARGS_PLACEHOLDER); // defined in CFLAGS
 
 void init_uart() {
+	outb(UART_IER, 0x00); // Disable all interrupts
 	// 115200 bps, 8N1
 	outb(UART_LCR, 0x83); // Divisor Latch Access Bit (DLAB) set
 	outb(UART_BASE + 0x00, 0x01); // Set divisor to 1 (LSB) 115200 bps
