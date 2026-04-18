@@ -12,28 +12,47 @@ module LSU #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
 	output AWVALID,
 	input AWREADY,
 	output [ADDR_WIDTH-1:0] AWADDR,
+	output [3:0] AWID,
+	output [7:0] AWLEN,
+	output [2:0] AWSIZE,
+	output [1:0] AWBURST,
 
 	output WVALID,
 	input WREADY,
 	output [DATA_WIDTH-1:0] WDATA,
 	output [3:0] WSTRB,
+	output WLAST,
 
 	input BVALID,
 	output BREADY,
 	input [1:0] BRESP,
+	input [3:0] BID,
 
 	output ARVALID,
 	input ARREADY,
 	output [ADDR_WIDTH-1:0] ARADDR,
+	output [3:0] ARID,
+	output [7:0] ARLEN,
+	output reg [2:0] ARSIZE,
+	output [1:0] ARBURST,
 
 	input RVALID,
 	output RREADY,
 	input [DATA_WIDTH-1:0] RDATA,
-	input [1:0] RRESP
+	input [1:0] RRESP,
+	input RLAST,
+	input [3:0] RID
 );
 import "DPI-C" function void AXI_Access_Falt(); 
 localparam WIDLE = 2'b0, ASHAK=2'b01, DSHAK=2'b10, WWAIT = 2'b11;
 localparam IDLE = 1'b0, WAIT = 1'b1;
+
+assign AWID = 0;
+assign AWLEN = 0;
+assign AWBURST = 0;
+assign ARID = 0;
+assign ARLEN = 0;
+assign ARBURST = 0;
 
 assign ready_out = (rstate==WAIT & R_handshaked & wstate==WIDLE) |  // read finished
 	(wstate==WWAIT & B_handshaked & rstate==IDLE) | // write finished
@@ -91,13 +110,17 @@ end
 reg wreq;
 reg [3:0] wstrb;
 reg [3:0] wstrb_r;
+reg [2:0] awsize;
+reg [2:0] awsize_r;
 reg [DATA_WIDTH-1:0] mem_wdata;
 reg [DATA_WIDTH-1:0] mem_wdata_r;
 reg [ADDR_WIDTH-1:0] waddr_r;
 assign AWVALID = ((lsu_en & wen) | wreq) & (wstate==WIDLE | wstate==DSHAK);
 assign WVALID = ((lsu_en & wen) | wreq) & (wstate==WIDLE | wstate==ASHAK);
+assign WLAST = WVALID;
 assign WDATA = (lsu_en & wen) ? mem_wdata : mem_wdata_r;
 assign WSTRB = (lsu_en & wen) ? wstrb : wstrb_r;
+assign AWSIZE = (lsu_en & wen) ? awsize : awsize_r;
 assign AWADDR = (lsu_en & wen) ? addr : waddr_r;
 assign BREADY = wstate==WWAIT & BVALID;
 
@@ -106,6 +129,7 @@ always @(*) begin //decode for wdata
 	if(lsu_en&wen) begin
 		case (lsu_ctrl)
 			3'b000: begin
+				awsize = 3'b0;
 				case (addr[1:0])
 				2'b00: begin
 					wstrb = 4'b1;
@@ -126,6 +150,7 @@ always @(*) begin //decode for wdata
 				endcase
 			end
 			3'b001: begin
+				awsize = 3'b1;
 				case (addr[1:0])
 				2'b00: begin
 					wstrb = 4'b11;
@@ -144,6 +169,7 @@ always @(*) begin //decode for wdata
 				endcase
 			end
 			3'b010: begin
+				awsize = 3'b10;
 				if(addr[1:0]!=2'b00)
 					$finish;
 				wstrb = 4'b1111;
@@ -157,18 +183,21 @@ end
 always @(posedge clk) begin
 	if (rst) begin
 		wstrb_r <= 0;
+		awsize_r <= 3'b10;
 		waddr_r <= 0;
 		mem_wdata_r <= 0;
 		wreq <= 0;
 	end
 	else if (lsu_en & wen) begin // save(latch) the message
 		wstrb_r <= wstrb;
+		awsize_r <= awsize;
 		waddr_r <= addr;
 		mem_wdata_r <= mem_wdata;
 		wreq <= 1;
 	end
 	if (AW_handshaked) begin
 		waddr_r <= 0;
+		awsize_r <= 3'b10;
 	end
 	if (W_handshaked) begin
 		wstrb_r <= 0;

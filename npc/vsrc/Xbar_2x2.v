@@ -24,28 +24,40 @@ module Xbar_2x2 #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
 	input m1_RREADY,
 	output reg [DATA_WIDTH-1:0] m1_RDATA,
 	output reg [1:0] m1_RRESP,
-// m2
+// m2 AXI4
     input m2_AWVALID,
 	output reg m2_AWREADY,
 	input [ADDR_WIDTH-1:0] m2_AWADDR,
+	input [3:0] m2_AWID,
+	input [7:0] m2_AWLEN,
+	input [2:0] m2_AWSIZE,
+	input [1:0] m2_AWBURST,
 
 	input m2_WVALID,
 	output reg m2_WREADY,
 	input [DATA_WIDTH-1:0] m2_WDATA,
 	input [3:0] m2_WSTRB,
+	input m2_WLAST,
 
 	output reg m2_BVALID,
 	input m2_BREADY,
 	output reg [1:0] m2_BRESP,
+	output reg [3:0] m2_BID,
 
 	input m2_ARVALID,
 	output reg m2_ARREADY,
 	input [ADDR_WIDTH-1:0] m2_ARADDR,
+	input [3:0] m2_ARID,
+	input [7:0] m2_ARLEN,
+	input [2:0] m2_ARSIZE,
+	input [1:0] m2_ARBURST,
 
 	output reg m2_RVALID,
 	input m2_RREADY,
 	output reg [DATA_WIDTH-1:0] m2_RDATA,
 	output reg [1:0] m2_RRESP,
+	output reg m2_RLAST,
+	output reg [3:0] m2_RID,
 //s1 AXI4
     output reg s1_AWVALID,
 	input s1_AWREADY,
@@ -362,6 +374,12 @@ inter_BVALID, inter_BREADY, inter_ARVALID, inter_ARREADY, inter_RVALID,inter_RRE
 reg [DATA_WIDTH-1:0] inter_AWADDR, inter_WDATA, inter_ARADDR, inter_RDATA;
 reg [3:0] inter_WSTRB;
 reg [1:0] inter_BRESP, inter_RRESP;
+// for AXI4
+reg [3:0] inter_AWID, inter_ARID, inter_BID, inter_RID;
+reg [7:0] inter_AWLEN, inter_ARLEN;
+reg [2:0] inter_AWSIZE, inter_ARSIZE;
+reg [1:0] inter_AWBURST, inter_ARBURST;
+reg inter_WLAST, inter_RLAST;
 
 always @(*) begin
 	case (mstate)
@@ -375,6 +393,15 @@ always @(*) begin
 			inter_ARVALID = m1_ARVALID;
 			inter_ARADDR = m1_ARADDR;
 			inter_RREADY = m1_RREADY;
+			inter_AWID = 0;
+			inter_ARID = 0;
+			inter_AWLEN = 0;
+			inter_ARLEN = 0;
+			inter_AWSIZE = 3'b10;
+			inter_ARSIZE = 3'b10;
+			inter_AWBURST = 0;
+			inter_ARBURST = 0;
+			inter_WLAST = m1_WVALID;
 
 			m1_AWREADY = inter_AWREADY;
 			m1_WREADY = inter_WREADY;
@@ -393,6 +420,8 @@ always @(*) begin
 			m2_RVALID = 0;
 			m2_RDATA = 0;
 			m2_RRESP = 0;
+			m2_BID = 0;
+			m2_RID = 0;
 		end
 		GRANT_m2: begin
 			inter_AWVALID = m2_AWVALID;
@@ -404,6 +433,15 @@ always @(*) begin
 			inter_ARVALID = m2_ARVALID;
 			inter_ARADDR = m2_ARADDR;
 			inter_RREADY = m2_RREADY;
+			inter_AWID = m2_AWID;
+			inter_ARID = m2_ARID;
+			inter_AWLEN = m2_AWLEN;
+			inter_ARLEN = m2_ARLEN;
+			inter_AWSIZE = m2_AWSIZE;
+			inter_ARSIZE = m2_ARSIZE;
+			inter_AWBURST = m2_AWBURST;
+			inter_ARBURST = m2_ARBURST;
+			inter_WLAST = m2_WLAST;
 
 			m2_AWREADY = inter_AWREADY;
 			m2_WREADY = inter_WREADY;
@@ -413,6 +451,9 @@ always @(*) begin
 			m2_RVALID = inter_RVALID;
 			m2_RDATA = inter_RDATA;
 			m2_RRESP = inter_RRESP;		
+			m2_BID = inter_BID;
+			m2_RID = inter_RID;
+			m2_RLAST = inter_RLAST;
 
 			m1_AWREADY = 0;
 			m1_WREADY = 0;
@@ -433,6 +474,15 @@ always @(*) begin
 			inter_ARVALID = 0;
 			inter_ARADDR = 0;
 			inter_RREADY = 0;
+			inter_AWID = 0;
+			inter_ARID = 0;
+			inter_AWLEN = 0;
+			inter_ARLEN = 0;
+			inter_AWSIZE = 0;
+			inter_ARSIZE = 0;
+			inter_AWBURST = 0;
+			inter_ARBURST = 0;
+			inter_WLAST = 0;
 
 			m1_AWREADY = 0;
 			m1_WREADY = 0;
@@ -451,6 +501,9 @@ always @(*) begin
 			m2_RVALID = 0;
 			m2_RDATA = 0;
 			m2_RRESP = 0;
+			m2_BID = 0;
+			m2_RID = 0;
+			m2_RLAST = 0;
 		end
 	endcase
 end
@@ -466,6 +519,9 @@ always @(*) begin
 			inter_RVALID = s1_RVALID;
 			inter_RDATA = s1_RDATA;
 			inter_RRESP = s1_RRESP;
+			inter_RLAST = s1_RLAST;
+			inter_BID = s1_BID;
+			inter_RID = s1_RID;
 
 			s1_AWVALID = inter_AWVALID;
 			s1_AWADDR = inter_AWADDR;
@@ -478,15 +534,15 @@ always @(*) begin
 			s1_RREADY = inter_RREADY;
 
 			//burst default
-			s1_AWID = 0;
-			s1_AWLEN = 0;
-			s1_AWSIZE = 3'b10;
-			s1_AWBURST = 0;
-			s1_WLAST = s1_WVALID;
-			s1_ARID = 0;
-			s1_ARLEN = 0;
-			s1_ARSIZE = 3'b10;
-			s1_ARBURST = 0;
+			s1_AWID = inter_AWID;
+			s1_AWLEN = inter_AWLEN;
+			s1_AWSIZE = inter_AWSIZE;
+			s1_AWBURST = inter_AWBURST;
+			s1_WLAST = inter_WLAST;
+			s1_ARID = inter_ARID;
+			s1_ARLEN = inter_ARLEN;
+			s1_ARSIZE = inter_ARSIZE;
+			s1_ARBURST = inter_ARBURST;
 
 			s2_AWVALID = 0;
 			s2_AWADDR = 0;
@@ -507,6 +563,9 @@ always @(*) begin
 			inter_RVALID = s2_RVALID;
 			inter_RDATA = s2_RDATA;
 			inter_RRESP = s2_RRESP;
+			inter_RLAST = inter_RVALID;
+			inter_BID = 0;
+			inter_RID = 0;
 
 			s2_AWVALID = inter_AWVALID;
 			s2_AWADDR = inter_AWADDR;
@@ -547,6 +606,9 @@ always @(*) begin
 			inter_RVALID = 0;
 			inter_RDATA = 0;
 			inter_RRESP = 0;
+			inter_RLAST = 0;
+			inter_BID = 0;
+			inter_RID = 0;
 
 			s2_AWVALID = 0;
 			s2_AWADDR = 0;
