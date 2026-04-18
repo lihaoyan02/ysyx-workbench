@@ -7,6 +7,7 @@ extern char _heap_end;
 int main(const char *args);
 
 #define UART_BASE 0x10000000
+#define UART_FCR (UART_BASE + 0x02) // FIFO Control Register
 #define UART_LCR (UART_BASE + 0x03) // Line Control Register
 #define UART_LSR (UART_BASE + 0x05) // Line Status Register
 
@@ -20,10 +21,11 @@ void init_uart() {
 	outb(UART_BASE + 0x01, 0x00); //                  (MSB)
 
 	outb(UART_LCR, 0x03); // 8 bits, no parity, one stop bit
+	outb(UART_FCR, 0x07); // Enable FIFO, clear RX/TX FIFO
 }
 void putch(char ch) {
 	// wait for Transmitter Holding Register (THR) empty
-	// while ((inb(UART_LSR) & 0x20)==0) ;
+	while ((inb(UART_LSR) & 0x20)==0) ;
 	outb(UART_BASE, ch);
 }
 
