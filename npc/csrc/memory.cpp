@@ -91,6 +91,8 @@ void init_mem() {
 	{
 		*(int32_t*)(flash_mem + i) = 0x100;
 	}
+	*(int32_t*)(flash_mem) = 0x100;
+	*(int32_t*)(flash_mem+4) = 0x100;
 	
 }
 
