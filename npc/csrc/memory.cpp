@@ -89,7 +89,7 @@ void init_mem() {
 	memcpy(pmem, default_img, sizeof(default_img));
 	for (int i = 0; i < 0x1000; i+=4)
 	{
-		*(int32_t*)(flash_mem + i) = i;
+		*(int32_t*)(flash_mem + i) = 0x100;
 	}
 	
 }
