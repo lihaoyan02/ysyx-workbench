@@ -9,7 +9,11 @@ void mmio_write(uint32_t addr, uint32_t data, char mask);
 void difftest_skip_ref();
 
 #ifdef CONFIG_TARGET_SOC
-extern "C" void flash_read(int32_t addr, int32_t *data) { assert(0); }
+extern "C" void flash_read(int32_t addr, int32_t *data) { 
+	uint8_t* paddr = pmem + ((unsigned)addr & ~0x3u) - MROM_BASE;
+	*data = *(int32_t *)paddr;
+}
+
 extern "C" void mrom_read(int32_t addr, int32_t *data) { 
 	uint8_t* paddr = pmem + ((unsigned)addr & ~0x3u) - MROM_BASE;
 	*data = *(int32_t *)paddr;
