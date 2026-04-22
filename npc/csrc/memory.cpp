@@ -12,12 +12,12 @@ void difftest_skip_ref();
 static uint8_t flash_mem[0x1000];
 extern "C" void flash_read(int32_t addr, int32_t *data) { 
 	uint8_t* paddr = flash_mem + ((unsigned)addr & ~0x3u);
-	*data = *(int32_t *)paddr;
+	*data = 0x338;//*(int32_t *)paddr;
 }
 
 extern "C" void mrom_read(int32_t addr, int32_t *data) { 
 	uint8_t* paddr = pmem + ((unsigned)addr & ~0x3u) - MROM_BASE;
-	*data = 0x338;//*(int32_t *)paddr;
+	*data = *(int32_t *)paddr;
 }
 #endif
 
