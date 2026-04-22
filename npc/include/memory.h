@@ -19,6 +19,7 @@ extern "C" int pmem_read(int raddr);
 extern "C" void pmem_write(int waddr, int wdata, char wmask);
 
 long load_mem(const char* img);
+void load_flash(const char *img);
 
 uint8_t *memory_export(uint32_t addr);
 
