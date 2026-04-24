@@ -35,7 +35,13 @@ static long load_img() {
 	}
 	long result =0;
 	result = load_mem(img_file);
-	load_flash(flash_img_file);
+	if (flash_img_file){
+		load_flash(flash_img_file);
+	} else{
+		load_flash(img_file);
+	}
+	
+	
 	return result;
 }
 
