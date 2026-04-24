@@ -19,6 +19,28 @@ extern "C" void mrom_read(int32_t addr, int32_t *data) {
 	uint8_t* paddr = pmem + ((unsigned)addr & ~0x3u) - MROM_BASE;
 	*data = *(int32_t *)paddr;
 }
+
+void load_flash(const char *img){
+	FILE *file;
+	file = fopen(img,"rb");
+	Assert(file, "Can not open '%s'", img);
+
+	//obtain the file size
+	fseek(file, 0, SEEK_END);
+	long file_size = ftell(file);
+
+	Log("The image is %s, size = %ld", img, file_size);
+
+	fseek(file, 0, SEEK_SET);
+	int count = file_size / sizeof(uint8_t);
+	//read to the memory
+	size_t n = fread(flash_mem, file_size, 1, file);
+	assert(n == 1);
+
+	fclose(file);
+}
+#else
+void load_flash(const char *img) {}
 #endif
 
 extern "C" int pmem_read(int raddr) {
