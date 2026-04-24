@@ -23,7 +23,7 @@ SECTIONS {
     *(.data*)
     *(.sdata*) /* for small data */
     _data_end = .;
-  } > SRAM AT> MROM : data
+  } > SRAM AT> flash : data
   _data_load = LOADADDR(.data);
   .bss : {
 	_bss_start = .;
