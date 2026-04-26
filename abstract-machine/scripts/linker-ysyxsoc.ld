@@ -21,7 +21,7 @@ SECTIONS {
   _ssbl_load = LOADADDR(.ssbl);
 
   .text : {
-    . = ALIGN(0x1000);
+    . = ALIGN(0x10000);
     _text_start = .;
     *(.text*)
     *(.rodata*)
