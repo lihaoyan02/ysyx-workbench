@@ -1,5 +1,5 @@
 ENTRY(_start)
-PHDRS { fsbl PT_LOAD; ssbl PT_LOAD; text PT_LOAD; data PT_LOAD; dataextra PT_LOAD;}
+PHDRS { fsbl PT_LOAD; ssbl PT_LOAD; text PT_LOAD; data PT_LOAD;}
 MEMORY {
   MROM : ORIGIN = 0x20000000, LENGTH = 0x1000
   flash : ORIGIN = 0x30000000, LENGTH = 0x10000000
@@ -31,17 +31,17 @@ SECTIONS {
   etext = .;
   _etext = .;
 
-  .data : {
+  .data.extra : {
     _data_start = .;
+    . = ALIGN(8);   /* 预留空间，确保 VMA 连续 */
+  } > PSRAM AT> flash : data
+  .data : {
+    /* _data_start = .; */
     *(.data)
     *(.data*)
     *(.sdata*) /* for small data */
-    
-  } > PSRAM AT> flash : data
-  .data.extra : {
-    *(.data.extra)
     _data_end = .;
-  } > PSRAM AT> flash : dataextra
+  } > PSRAM AT> flash : data
   _data_load = LOADADDR(.data);
 
   .bss : {
