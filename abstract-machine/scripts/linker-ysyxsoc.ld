@@ -31,6 +31,7 @@ SECTIONS {
   etext = .;
   _etext = .;
 
+  . = LOADADDR(.text) + LENGTH(.text);
   .data : {
     /* _data_start = .; */
     *(.data)
