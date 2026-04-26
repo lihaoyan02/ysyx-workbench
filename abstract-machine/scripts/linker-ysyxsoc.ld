@@ -33,8 +33,7 @@ SECTIONS {
 
   .data : {
     _data_start = .;
-    *(.data*)
-    *(.data.*)
+    *(.data .data.*)
     *(.sdata*) /* for small data */
     _data_end = .;
   } > PSRAM AT> flash : data
