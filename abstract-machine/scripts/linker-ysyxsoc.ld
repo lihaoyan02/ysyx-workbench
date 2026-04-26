@@ -1,5 +1,5 @@
 ENTRY(_start)
-PHDRS { text PT_LOAD; data PT_LOAD;}
+PHDRS { boot PT_LOAD; text PT_LOAD; data PT_LOAD;}
 MEMORY {
   MROM : ORIGIN = 0x20000000, LENGTH = 0x1000
   flash : ORIGIN = 0x30000000, LENGTH = 0x10000000
@@ -11,7 +11,7 @@ SECTIONS {
   . = _pmem_start + _entry_offset;
   .bootloader : {
     *(entry)
-  } > flash : text
+  } > flash : boot
 
   .text : {
     _text_start = .;
