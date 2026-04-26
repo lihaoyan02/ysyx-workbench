@@ -1,5 +1,5 @@
 ENTRY(_start)
-PHDRS { fsbl PT_LOAD; ssbl PT_LOAD; text PT_LOAD; data PT_LOAD;}
+PHDRS { fsbl PT_LOAD; ssbl PT_LOAD; text PT_LOAD; data PT_LOAD; dataextra PT_LOAD;}
 MEMORY {
   MROM : ORIGIN = 0x20000000, LENGTH = 0x1000
   flash : ORIGIN = 0x30000000, LENGTH = 0x10000000
@@ -41,7 +41,7 @@ SECTIONS {
   .data.extra : {
     *(.data.extra)
     _data_end = .;
-  } > PSRAM AT> flash : data
+  } > PSRAM AT> flash : dataextra
   _data_load = LOADADDR(.data);
 
   .bss : {
