@@ -16,10 +16,12 @@ SECTIONS {
   .text : {
     _text_start = .;
     *(.text*)
-    *(.rodata*)
-    *(.srodata*) /* for small read-only data */
     _text_end = .;
   } > SRAM AT> flash : text
+  .rodata : {
+    *(.rodata*)
+    *(.srodata*) /* for small read-only data */
+  } > flash
   _text_load = LOADADDR(.text);
   etext = .;
   _etext = .;
