@@ -32,8 +32,10 @@ SECTIONS {
   _etext = .;
 
   .data.extra : {
-    _data_start = .;
     . = ALIGN(8);   /* 预留空间，确保 VMA 连续 */
+    _data_start = .;
+    *(.data.extra)
+    
   } > PSRAM AT> flash : data
   .data : {
     /* _data_start = .; */
