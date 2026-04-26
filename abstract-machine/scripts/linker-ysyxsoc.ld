@@ -11,13 +11,13 @@ SECTIONS {
   . = _pmem_start + _entry_offset;
   .bootloader : {
     *(entry)
-  } > flash
+  } > flash : text
 
   .text : {
     _text_start = .;
     *(.text*)
     _text_end = .;
-  } > SRAM AT> flash
+  } > SRAM AT> flash : text
   _text_load = LOADADDR(.text);
   etext = .;
   _etext = .;
