@@ -32,11 +32,13 @@ SECTIONS {
   _etext = .;
 
   .data : {
-    . = ALIGN(0x1000);
     _data_start = .;
-    *(.data.*)
     *(.data)
     *(.sdata*) /* for small data */
+    
+  } > PSRAM AT> flash : data
+  .data.extra : {
+    *(.data.extra)
     _data_end = .;
   } > PSRAM AT> flash : data
   _data_load = LOADADDR(.data);
