@@ -4,6 +4,7 @@ MEMORY {
   MROM : ORIGIN = 0x20000000, LENGTH = 0x1000
   flash : ORIGIN = 0x30000000, LENGTH = 0x10000000
   SRAM : ORIGIN = 0x0f000000, LENGTH = 0x2000
+  PSRAM : ORIGIN = 0x80000000, LENGTH = 0x400000
 }
 SECTIONS {
   /* _pmem_start and _entry_offset are defined in LDFLAGS */
@@ -23,7 +24,7 @@ SECTIONS {
     *(.data*)
     *(.sdata*) /* for small data */
     _data_end = .;
-  } > SRAM AT> flash : data
+  } > PSRAM AT> flash : data
   _data_load = LOADADDR(.data);
   .bss : {
 	_bss_start = .;
@@ -31,13 +32,13 @@ SECTIONS {
     *(.sbss*)
     *(.scommon)
   _bss_end = .;
-  } >SRAM
+  } >PSRAM
   /* _stack_top = ALIGN(4); */
   _heap_start = ALIGN(4);
-  . = ORIGIN(SRAM) + 0x1800;
+  . = ORIGIN(PSRAM) + 0x100000;
   _heap_end = .;
   _stack_top = .;
-  . = ORIGIN(SRAM) + LENGTH(SRAM);
+  . = ORIGIN(PSRAM) + LENGTH(PSRAM);
   _stack_pointer = .;
   
 }
