@@ -1,4 +1,4 @@
-.section ssbtldr, "ax"
+.section ssbl, "ax"
 .globl _ssbl_entry
 .type _ssbl_entry, @function
 
