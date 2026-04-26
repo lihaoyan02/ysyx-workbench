@@ -17,7 +17,7 @@ SECTIONS {
     _text_start = .;
     *(.text*)
     _text_end = .;
-  } > flash : text
+  } > SRAM AT> flash : text
   .rodata : {
     *(.rodata*)
     *(.srodata*) /* for small read-only data */
