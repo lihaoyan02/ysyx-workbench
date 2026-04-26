@@ -1,5 +1,5 @@
 ENTRY(_start)
-PHDRS { boot PT_LOAD; text PT_LOAD; rodata PT_LOAD; data PT_LOAD;}
+PHDRS { boot PT_LOAD; text PT_LOAD; data PT_LOAD;}
 MEMORY {
   MROM : ORIGIN = 0x20000000, LENGTH = 0x1000
   flash : ORIGIN = 0x30000000, LENGTH = 0x10000000
@@ -16,17 +16,13 @@ SECTIONS {
   .text : {
     _text_start = .;
     *(.text*)
+    *(.rodata*)
+    *(.srodata*) /* for small read-only data */
     _text_end = .;
   } > SRAM AT> flash : text
   _text_load = LOADADDR(.text);
   etext = .;
   _etext = .;
-  .rodata : {
-    /* _text_start = .; */
-    *(.rodata*)
-    *(.srodata*) /* for small read-only data */
-    /* _text_end = .; */
-  } > flash : rodata
   .data : {
     _data_start = .;
     *(.data*)
