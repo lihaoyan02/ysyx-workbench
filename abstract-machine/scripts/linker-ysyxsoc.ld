@@ -93,7 +93,7 @@ SECTIONS {
   } >PSRAM
   /* _stack_top = ALIGN(4); */
   _heap_start = ALIGN(4);
-  . = ORIGIN(PSRAM) + 0x100000;
+  . = ORIGIN(PSRAM) + 0x380000;
   _heap_end = .;
   _stack_top = .;
   . = ORIGIN(PSRAM) + LENGTH(PSRAM);
