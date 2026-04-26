@@ -23,7 +23,7 @@ SECTIONS {
     *(.rodata*)
     *(.srodata*) /* for small read-only data */
     _text_end = .;
-  } > SRAM AT> flash
+  } > flash
   _text_load = LOADADDR(.rodata);
   etext = .;
   _etext = .;
