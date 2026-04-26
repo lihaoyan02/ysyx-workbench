@@ -14,19 +14,19 @@ SECTIONS {
   } > flash
 
   .text : {
-    /* _text_start = .; */
-    *(.text*)
-    /* _text_end = .; */
-  } > flash
-  .rodata : {
     _text_start = .;
-    *(.rodata*)
-    *(.srodata*) /* for small read-only data */
+    *(.text*)
     _text_end = .;
-  } > flash
-  _text_load = LOADADDR(.rodata);
+  } > SRAM AT> flash
+  _text_load = LOADADDR(.text);
   etext = .;
   _etext = .;
+  .rodata : {
+    /* _text_start = .; */
+    *(.rodata*)
+    *(.srodata*) /* for small read-only data */
+    /* _text_end = .; */
+  } > flash
   .data : {
     _data_start = .;
     *(.data*)
