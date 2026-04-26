@@ -1,5 +1,5 @@
 ENTRY(_start)
-PHDRS { boot PT_LOAD; text PT_LOAD; data PT_LOAD;}
+PHDRS { fsbl PT_LOAD; ssbl PT_LOAD; text PT_LOAD; data PT_LOAD;}
 MEMORY {
   MROM : ORIGIN = 0x20000000, LENGTH = 0x1000
   flash : ORIGIN = 0x30000000, LENGTH = 0x10000000
@@ -9,9 +9,16 @@ MEMORY {
 SECTIONS {
   /* _pmem_start and _entry_offset are defined in LDFLAGS */
   . = _pmem_start + _entry_offset;
-  .bootloader : {
+  .fsbootloader : {
     *(entry)
-  } > flash : boot
+  } > flash : fsbl
+
+  .ssbl : {
+    _ssbl_start = .;
+    *(ssbl)
+    _ssbl_end = .;
+  } > SRAM AT> flash : ssbl
+  _ssbl_load = LOADADDR(.ssbl);
 
   .text : {
     _text_start = .;
@@ -19,17 +26,19 @@ SECTIONS {
     *(.rodata*)
     *(.srodata*) /* for small read-only data */
     _text_end = .;
-  } > SRAM AT> flash : text
+  } > PSRAM AT> flash : text
   _text_load = LOADADDR(.text);
   etext = .;
   _etext = .;
+
   .data : {
     _data_start = .;
     *(.data*)
     *(.sdata*) /* for small data */
     _data_end = .;
-  } > SRAM AT> flash : data
+  } > PSRAM AT> flash : data
   _data_load = LOADADDR(.data);
+
   .bss : {
 	_bss_start = .;
     *(.bss*)
