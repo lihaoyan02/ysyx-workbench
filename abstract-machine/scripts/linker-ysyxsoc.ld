@@ -26,7 +26,7 @@ SECTIONS {
     *(.rodata*)
     *(.srodata*) /* for small read-only data */
     /* _text_end = .; */
-  } > flash
+  } > flash : data
   .data : {
     _data_start = .;
     *(.data*)
