@@ -31,20 +31,14 @@ SECTIONS {
   etext = .;
   _etext = .;
 
-  .data.extra : {
-    . = ALIGN(8);   /* 预留空间，确保 VMA 连续 */
-    _data_start = .;
-    *(.data.extra)
-    
-  } > PSRAM AT> flash : data
   .data : {
     /* _data_start = .; */
     *(.data)
     *(.data*)
     *(.sdata*) /* for small data */
-    _data_end = .;
-  } > PSRAM AT> flash : data
-  _data_load = LOADADDR(.data);
+    /* _data_end = .; */
+  } > flash : data
+  /* _data_load = LOADADDR(.data); */
 
   .bss : {
 	_bss_start = .;
