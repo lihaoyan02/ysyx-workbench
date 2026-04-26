@@ -17,7 +17,7 @@ SECTIONS {
     /* _text_start = .; */
     *(.text*)
     /* _text_end = .; */
-  } > flash : text
+  } > flash
   .rodata : {
     _text_start = .;
     *(.rodata*)
