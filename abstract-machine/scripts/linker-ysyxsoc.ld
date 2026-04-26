@@ -21,7 +21,6 @@ SECTIONS {
   _ssbl_load = LOADADDR(.ssbl);
 
   .text : {
-    . = ALIGN(0x10000);
     _text_start = .;
     *(.text*)
     *(.rodata*)
@@ -33,6 +32,7 @@ SECTIONS {
   _etext = .;
 
   .data : {
+    . = ALIGN(0x1000);
     _data_start = .;
     *(.data.*)
     *(.data)
