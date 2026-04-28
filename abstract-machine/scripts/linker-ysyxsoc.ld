@@ -5,6 +5,7 @@ MEMORY {
   flash : ORIGIN = 0x30000000, LENGTH = 0x10000000
   SRAM : ORIGIN = 0x0f000000, LENGTH = 0x2000
   PSRAM : ORIGIN = 0x80000000, LENGTH = 0x400000
+  SDRAM : ORIGIN = 0xa0000000, LENGTH = 0x2000000
 }
 SECTIONS {
   /* _pmem_start and _entry_offset are defined in LDFLAGS */
@@ -91,12 +92,13 @@ SECTIONS {
     *(.scommon)
   _bss_end = .;
   } >PSRAM
-  /* _stack_top = ALIGN(4); */
-  _heap_start = ALIGN(4);
-  . = ORIGIN(PSRAM) + 0x380000;
-  _heap_end = .;
-  _stack_top = .;
+  _stack_top = ALIGN(4);
   . = ORIGIN(PSRAM) + LENGTH(PSRAM);
   _stack_pointer = .;
+
+  . = ORIGIN(SDRAM);
+  _heap_start = .;
+  . = ORIGIN(SDRAM) + 0x1000;
+  _heap_end = .;
   
 }
