@@ -98,7 +98,7 @@ SECTIONS {
 
   . = ORIGIN(SDRAM);
   _heap_start = .;
-  . = ORIGIN(SDRAM) + 0x1000;
+  . = ORIGIN(SDRAM) + 0x1000000;
   _heap_end = .;
   
 }
