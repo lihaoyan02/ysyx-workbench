@@ -5,6 +5,7 @@ MEMORY {
   flash : ORIGIN = 0x30000000, LENGTH = 0x10000000
   SRAM : ORIGIN = 0x0f000000, LENGTH = 0x2000
   PSRAM : ORIGIN = 0x80000000, LENGTH = 0x400000
+  SDRAM : ORIGIN = 0xa0000000, LENGTH = 0x4000000
 }
 SECTIONS {
   /* _pmem_start and _entry_offset are defined in LDFLAGS */
@@ -26,7 +27,7 @@ SECTIONS {
     *(.rodata*)
     *(.srodata*) /* for small read-only data */
     _text_end = .;
-  } > PSRAM AT> flash : text
+  } > SDRAM AT> flash : text
   _text_load = LOADADDR(.text);
   etext = .;
   _etext = .;
@@ -62,7 +63,7 @@ SECTIONS {
     __am_apps_data_end = .;
     _data_ex_end = .;
     . = ALIGN(8);
-  } > PSRAM AT> flash : dataex
+  } > SDRAM AT> flash : dataex
   _data_ex_load = LOADADDR(.data.extra);
 
   .data : {
@@ -71,7 +72,7 @@ SECTIONS {
     *(.data*)
     *(.sdata*) /* for small data */
     _data_end = .;
-  } > PSRAM AT> flash : data
+  } > SDRAM AT> flash : data
   _data_load = LOADADDR(.data);
 
   .bss.extra : {
@@ -82,7 +83,7 @@ SECTIONS {
     *(__am_apps.scommon*)
     __am_apps_bss_end = .;
     . = ALIGN(8);
-  } > PSRAM
+  } > SDRAM
 
   .bss : {
 	_bss_start = .;
@@ -90,13 +91,13 @@ SECTIONS {
     *(.sbss*)
     *(.scommon)
   _bss_end = .;
-  } >PSRAM
-  /* _stack_top = ALIGN(4); */
-  _heap_start = ALIGN(4);
-  . = ORIGIN(PSRAM) + 0x380000;
+  } >SDRAM
+
+  _heap_start = .;
+  . = ORIGIN(SDRAM) + 0x2000000;
   _heap_end = .;
-  _stack_top = .;
-  . = ORIGIN(PSRAM) + LENGTH(PSRAM);
+  _stack_top = ALIGN(4);
+  . = ORIGIN(SDRAM) + LENGTH(SDRAM);
   _stack_pointer = .;
   
 }

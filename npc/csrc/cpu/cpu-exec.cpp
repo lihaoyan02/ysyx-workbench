@@ -77,7 +77,7 @@ static void trace_and_difftest(Decode *_this) {
 static void eval_dump() {
 	static int time_step = 0;
 	top->eval();
-	if(time_step<=CONFIG_MAX_WAVE)
+	if(time_step<=CONFIG_MAX_WAVE & g_nr_guest_inst>CONFIG_WAVE_BEGIN)
 		tfp->dump(time_step++);
 }
 #endif
