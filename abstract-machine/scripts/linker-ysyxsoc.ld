@@ -27,7 +27,7 @@ SECTIONS {
     *(.rodata*)
     *(.srodata*) /* for small read-only data */
     _text_end = .;
-  } > PSRAM AT> flash : text
+  } > SDRAM AT> flash : text
   _text_load = LOADADDR(.text);
   etext = .;
   _etext = .;
@@ -63,7 +63,7 @@ SECTIONS {
     __am_apps_data_end = .;
     _data_ex_end = .;
     . = ALIGN(8);
-  } > PSRAM AT> flash : dataex
+  } > SDRAM AT> flash : dataex
   _data_ex_load = LOADADDR(.data.extra);
 
   .data : {
@@ -72,7 +72,7 @@ SECTIONS {
     *(.data*)
     *(.sdata*) /* for small data */
     _data_end = .;
-  } > PSRAM AT> flash : data
+  } > SDRAM AT> flash : data
   _data_load = LOADADDR(.data);
 
   .bss.extra : {
@@ -83,7 +83,7 @@ SECTIONS {
     *(__am_apps.scommon*)
     __am_apps_bss_end = .;
     . = ALIGN(8);
-  } > PSRAM
+  } > SDRAM
 
   .bss : {
 	_bss_start = .;
@@ -91,16 +91,13 @@ SECTIONS {
     *(.sbss*)
     *(.scommon)
   _bss_end = .;
-  } >PSRAM
+  } >SDRAM
 
-  
-
-  _stack_top = ALIGN(4);
-  . = ORIGIN(PSRAM) + LENGTH(PSRAM);
-  _stack_pointer = .;
-
-  _heap_start = ORIGIN(SDRAM);
-  . = ORIGIN(SDRAM) + 0x1000000;
+  _heap_start = .;
+  . = ORIGIN(SDRAM) + 0x2000000;
   _heap_end = .;
+  _stack_top = ALIGN(4);
+  . = ORIGIN(SDRAM) + LENGTH(SDRAM);
+  _stack_pointer = .;
   
 }
