@@ -75,6 +75,12 @@ wire [DATA_WIDTH-1:0] lsu_AWADDR, lsu_WDATA, lsu_ARADDR, lsu_RDATA;
 wire [3:0] lsu_WSTRB;
 wire [1:0] lsu_BRESP, lsu_RRESP;
 
+wire lsu_WLAST, lsu_RLAST;
+wire [3:0] lsu_AWID, lsu_ARID, lsu_BID, lsu_RID;
+wire [7:0] lsu_AWLEN, lsu_ARLEN;
+wire [2:0] lsu_AWSIZE, lsu_ARSIZE;
+wire [1:0] lsu_AWBURST, lsu_ARBURST;
+
 wire clint_AWVALID, clint_AWREADY, clint_WVALID, clint_WREADY, 
 clint_BVALID, clint_BREADY, clint_ARVALID, clint_ARREADY, clint_RVALID,clint_RREADY;
 wire [DATA_WIDTH-1:0] clint_AWADDR, clint_WDATA, clint_ARADDR, clint_RDATA;
@@ -190,24 +196,36 @@ wire [1:0] clint_BRESP, clint_RRESP;
 		.AWVALID(lsu_AWVALID),
 		.AWREADY(lsu_AWREADY),
 		.AWADDR(lsu_AWADDR),
+		.AWID(lsu_AWID),
+		.AWLEN(lsu_AWLEN),
+		.AWSIZE(lsu_AWSIZE),
+		.AWBURST(lsu_AWBURST),
 
 		.WVALID(lsu_WVALID),
 		.WREADY(lsu_WREADY),
 		.WDATA(lsu_WDATA),
 		.WSTRB(lsu_WSTRB),
+		.WLAST(lsu_WLAST),
 
 		.BVALID(lsu_BVALID),
 		.BREADY(lsu_BREADY),
 		.BRESP(lsu_BRESP),
+		.BID(lsu_BID),
 
 		.ARVALID(lsu_ARVALID),
 		.ARREADY(lsu_ARREADY),
 		.ARADDR(lsu_ARADDR),
+		.ARID(lsu_ARID),
+		.ARLEN(lsu_ARLEN),
+		.ARSIZE(lsu_ARSIZE),
+		.ARBURST(lsu_ARBURST),
 
 		.RVALID(lsu_RVALID),
 		.RREADY(lsu_RREADY),
 		.RDATA(lsu_RDATA),
-		.RRESP(lsu_RRESP)
+		.RRESP(lsu_RRESP),
+		.RLAST(lsu_RLAST),
+		.RID(lsu_RID)
 	);
 `ifndef CONFIG_TARGET_SOC
 
@@ -400,24 +418,36 @@ wire [1:0] uart_BRESP, uart_RRESP;
 		.m2_AWVALID(lsu_AWVALID),
 		.m2_AWREADY(lsu_AWREADY),
 		.m2_AWADDR(lsu_AWADDR),
+		.m2_AWID(lsu_AWID),
+		.m2_AWLEN(lsu_AWLEN),
+		.m2_AWSIZE(lsu_AWSIZE),
+		.m2_AWBURST(lsu_AWBURST),
 
 		.m2_WVALID(lsu_WVALID),
 		.m2_WREADY(lsu_WREADY),
 		.m2_WDATA(lsu_WDATA),
 		.m2_WSTRB(lsu_WSTRB),
+		.m2_WLAST(lsu_WLAST),
 
 		.m2_BVALID(lsu_BVALID),
 		.m2_BREADY(lsu_BREADY),
 		.m2_BRESP(lsu_BRESP),
+		.m2_BID(lsu_BID),
 
 		.m2_ARVALID(lsu_ARVALID),
 		.m2_ARREADY(lsu_ARREADY),
 		.m2_ARADDR(lsu_ARADDR),
+		.m2_ARID(lsu_ARID),
+		.m2_ARLEN(lsu_ARLEN),
+		.m2_ARSIZE(lsu_ARSIZE),
+		.m2_ARBURST(lsu_ARBURST),
 
 		.m2_RVALID(lsu_RVALID),
 		.m2_RREADY(lsu_RREADY),
 		.m2_RDATA(lsu_RDATA),
 		.m2_RRESP(lsu_RRESP),
+		.m2_RLAST(lsu_RLAST),
+		.m2_RID(lsu_RID),
 		// mem
 		.s1_AWVALID(mem_AWVALID),
 		.s1_AWREADY(mem_AWREADY),

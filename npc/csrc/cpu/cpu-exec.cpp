@@ -77,7 +77,7 @@ static void trace_and_difftest(Decode *_this) {
 static void eval_dump() {
 	static int time_step = 0;
 	top->eval();
-	if(time_step<=CONFIG_MAX_WAVE)
+	if(time_step<=CONFIG_MAX_WAVE & g_nr_guest_inst>CONFIG_WAVE_BEGIN)
 		tfp->dump(time_step++);
 }
 #endif
@@ -125,14 +125,14 @@ extern "C" void npctrap(int a0, int pc) {
 }
 
 static void exec_one_inst() {
-	for(int i =0; i<20; i++) {
+	for(int i =0; i<600; i++) {
 		single_cycle();
 		uint32_t current_state = core_read_state();
 		if(current_state==1) {
 			return;
 		}
 	}
-	panic("CPU don't finish inst in 20 cycle");
+	panic("CPU don't finish inst in 600 cycle");
 	
 }
 
@@ -220,5 +220,6 @@ void cpu_exec(uint64_t n) {
 
 extern "C" void unknow_inst() {
 	int pc = core_read_pc();
-	Assert(npc_state.state != NPC_RUNNING,"Unknown instruction at pc=0x%08x", pc);
+	int inst = core_read_inst();
+	Assert(npc_state.state != NPC_RUNNING,"Unknown instruction at pc=0x%08x inst=0x%08x", pc,inst);
 }

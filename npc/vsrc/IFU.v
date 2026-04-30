@@ -96,7 +96,8 @@ always @(posedge clk) begin
 	`ifndef CONFIG_TARGET_SOC
 	if (rst) pc <= 32'h8000_0000;//{ADDR_WIDTH{1'b0}}; 
 	`else
-	if (rst) pc <= 32'h2000_0000;
+	// if (rst) pc <= 32'h2000_0000; // MROM
+	if (rst) pc <= 32'h3000_0000; // flash
 	`endif
 	else if(wb_valid)
 		pc <= next_pc;
