@@ -3,6 +3,10 @@
 #include <decode.h>
 #include <core.h>
 #include <reg.h>
+#ifdef CONFIG_NVBOARD
+#include <nvboard.h>
+void nvboard_bind_all_pins(VysyxSoCFull *top);
+#endif
 
 #define MAX_INST_TO_PRINT 10
 
@@ -115,6 +119,11 @@ void init_cpu(int argc, char *argv[]) {
 	}
 	top->reset = 0;
 	top->eval();
+#ifdef CONFIG_NVBOARD
+	nvboard_bind_all_pins(top);
+	nvboard_init();
+	nvboard_update();
+#endif
 }
 
 
@@ -168,6 +177,9 @@ static void execute(uint64_t n) {
 		trace_and_difftest(&s);
 		if (npc_state.state != NPC_RUNNING) break;
 		IFDEF(CONFIG_DEVICE, device_update());
+#ifdef CONFIG_NVBOARD
+		nvboard_update();
+#endif
 	}
 }
 
@@ -182,6 +194,7 @@ void assert_fail_msg() {
 	IFDEF(CONFIG_TRACE_WAVE,tfp->close());
 	IFDEF(CONFIG_FTRACE, ftrace_print(); free_fp());
 	IFDEF(CONFIG_IRINGTRACE, iringbuf_print()); 
+	IFDEF(CONFIG_NVBOARD, nvboard_quit());
 	reg_display();
 	statistic();
 }
@@ -215,6 +228,7 @@ void cpu_exec(uint64_t n) {
 		case NPC_QUIT: 
 		statistic();
 	IFDEF(CONFIG_FTRACE, free_fp());
+	IFDEF(CONFIG_NVBOARD, nvboard_quit());
 	}
 }
 

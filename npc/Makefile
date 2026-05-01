@@ -7,7 +7,6 @@ else
 TOPNAME = ysyxSoCFull
 endif
 
-NXDC_FILES = constr/top.nxdc
 NPC_DIR := $(NPC_HOME)
 INC_PATH = $(NPC_DIR)/include
 
@@ -19,6 +18,9 @@ VERILATOR_CFLAGS += $(if $(CONFIG_TRACE_WAVE), --trace-vcd)
 BUILD_DIR = $(NPC_DIR)/build
 OBJ_DIR = $(BUILD_DIR)/obj_dir
 BIN = $(BUILD_DIR)/$(TOPNAME)
+
+LDFLAGS = -lreadline -lhistory
+LDFLAGS += $(if $(CONFIG_HAS_VGA), -lSDL2,)
 
 $(shell mkdir -p $(BUILD_DIR))
 
@@ -37,11 +39,14 @@ VINCFLAGS = $(addprefix -I, $(VINC_PATH))
 VERILATOR_CFLAGS += $(VINCFLAGS)
 VERILATOR_CFLAGS += --timescale "1ns/1ns" --no-timing -DCONFIG_TARGET_SOC=y
 endif
-# CSRCS += $(SRC_AUTO_BIND)
+
 # $(NVBOARD_ARCHIVE)
 
 # rules for NVBoard
-# include $(NVBOARD_HOME)/scripts/nvboard.mk
+NXDC_FILES = constr/top.nxdc
+include $(NVBOARD_HOME)/scripts/nvboard.mk
+SRC_AUTO_BIND = $(abspath $(BUILD_DIR)/auto_bind.cpp)
+CSRCS += $(SRC_AUTO_BIND)
 
 # rules for verilator
 INCFLAGS = $(addprefix -I, $(INC_PATH))
@@ -59,13 +64,10 @@ override ARGS += $(ARGS_DIFF)
 IMG ?=
 NPC_EXEC := $(BIN) $(ARGS) $(IMG)
 
-LDFLAGS = -lreadline -lhistory
-LDFLAGS += $(if $(CONFIG_HAS_VGA), -lSDL2,)
-
 all: run-env
 	@echo "Building NPC"
 
-$(BIN): $(VSRCS) $(CSRCS) 
+$(BIN): $(VSRCS) $(CSRCS) $(NVBOARD_ARCHIVE)
 	@rm -rf $(OBJ_DIR)
 	@$(VERILATOR) $(VERILATOR_CFLAGS) \
 		--top-module $(TOPNAME) $^ \
@@ -75,6 +77,8 @@ $(BIN): $(VSRCS) $(CSRCS)
 
 run-env: $(BIN)
 
+$(SRC_AUTO_BIND): $(NXDC_FILES)
+	python3 $(NVBOARD_HOME)/scripts/auto_pin_bind.py $^ $@
 
 # image file
 run: run-env
