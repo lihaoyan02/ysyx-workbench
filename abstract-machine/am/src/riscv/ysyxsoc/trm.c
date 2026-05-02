@@ -32,6 +32,13 @@ void putch(char ch) {
 	outb(UART_BASE, ch);
 }
 
+void __am_uart_rx(AM_UART_RX_T *data) {
+	if ((inb(UART_LSR) & 0x01)==1) 
+		data->data = inb(UART_BASE);
+	else
+  		data->data = 0xff;
+}
+
 void halt(int code) {
 	asm volatile("mv a0, %0; ebreak" : :"r"(code));
 	while(1);
