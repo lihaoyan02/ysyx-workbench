@@ -95,6 +95,9 @@ static void single_cycle() {
 	top->clock = 0; top->eval();
 	top->clock = 1; top->eval();
 #endif
+#ifdef CONFIG_NVBOARD
+		nvboard_update();
+#endif
 }
 
 void init_cpu(int argc, char *argv[]) {
@@ -112,18 +115,16 @@ void init_cpu(int argc, char *argv[]) {
 	top->trace(tfp, 99);
 	tfp->open("build/wave.vcd");
 #endif
-
+#ifdef CONFIG_NVBOARD
+	nvboard_bind_all_pins(top);
+	nvboard_init();
+#endif
 	top->reset = 1;
 	for(int i=0; i<12; i++) {
 		single_cycle();
 	}
 	top->reset = 0;
 	top->eval();
-#ifdef CONFIG_NVBOARD
-	nvboard_bind_all_pins(top);
-	nvboard_init();
-	nvboard_update();
-#endif
 }
 
 
@@ -177,9 +178,6 @@ static void execute(uint64_t n) {
 		trace_and_difftest(&s);
 		if (npc_state.state != NPC_RUNNING) break;
 		IFDEF(CONFIG_DEVICE, device_update());
-#ifdef CONFIG_NVBOARD
-		nvboard_update();
-#endif
 	}
 }
 
