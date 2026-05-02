@@ -19,8 +19,8 @@ static void init_uart() {
 	outb(UART_IER, 0x00); // Disable all interrupts
 	// 115200 bps, 8N1
 	outb(UART_LCR, 0x83u); // Divisor Latch Access Bit (DLAB) set
-	outb(UART_BASE + 0x00, 0x01); // Set divisor to 1 (LSB) 115200 bps
-	outb(UART_BASE + 0x01, 0x00); //                  (MSB)
+	outb((UART_BASE + 0x00), 0x01); // Set divisor to 1 (LSB) 115200 bps
+	outb((UART_BASE + 0x01), 0x00); //                  (MSB)
 
 	outb(UART_LCR, 0x03); // 8 bits, no parity, one stop bit
 	outb(UART_FCR, 0x07); // Enable FIFO, clear RX/TX FIFO
@@ -30,6 +30,13 @@ void putch(char ch) {
 	while ((inb(UART_LSR) & 0x20)==0) 
 		;
 	outb(UART_BASE, ch);
+}
+
+void __am_uart_rx(AM_UART_RX_T *data) {
+	if ((inb(UART_LSR) & 0x01)==1) 
+		data->data = inb(UART_BASE);
+	else
+  		data->data = 0xff;
 }
 
 void halt(int code) {
