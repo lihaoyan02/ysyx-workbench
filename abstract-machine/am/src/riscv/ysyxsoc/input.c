@@ -2,6 +2,7 @@
 
 #define KBD_BASE 0x10011000
 #define BREAK_CODE 0xf0
+#define EXTRA_CODE 0xe0
 
 static int code2amcode (int code) {
   switch (code)
@@ -75,25 +76,23 @@ static int code2amcode (int code) {
   case 0x14: return AM_KEY_LCTRL; break;
   case 0x11: return AM_KEY_LALT; break;
   case 0x29: return AM_KEY_SPACE; break;
-  case 0xe0: 
-    uint32_t volatile tempcode = *(uint32_t *)(KBD_BASE);
-    while (tempcode == 0xe0)
-        tempcode = *(uint32_t *)(KBD_BASE);
-    if (tempcode==0x11)
-    {
-      return AM_KEY_RALT;
-    } else if (tempcode==0x14)
-    {
-      return AM_KEY_RCTRL;
-    } else {
-      return AM_KEY_NONE;
-    }
-    break;
   default: return AM_KEY_NONE;
     break;
   }
 }
-
+static int excode2amcode (int code) {
+  switch (code)
+    {
+    case 0x11: return AM_KEY_RALT; break;
+    case 0x14: return AM_KEY_RCTRL; break;
+    case 0x75: return AM_KEY_UP; break;
+    case 0x72: return AM_KEY_DOWN; break;
+    case 0x6b: return AM_KEY_LEFT; break;
+    case 0x74: return AM_KEY_RIGHT; break;
+    default: return AM_KEY_NONE;
+      break;
+    }
+}
 void __am_input_keybrd(AM_INPUT_KEYBRD_T *kbd) {
   kbd->keydown = 0;
   kbd->keycode = AM_KEY_NONE;
@@ -104,6 +103,20 @@ void __am_input_keybrd(AM_INPUT_KEYBRD_T *kbd) {
     while (scancode == BREAK_CODE)
       scancode = *(uint32_t *)(KBD_BASE);
     kbd->keycode = code2amcode(scancode);
+  } else if (scancode==EXTRA_CODE)
+  {
+    while (scancode == EXTRA_CODE)
+      scancode = *(uint32_t *)(KBD_BASE);
+    if (scancode == BREAK_CODE)
+    {
+      while (scancode == BREAK_CODE)
+        scancode = *(uint32_t *)(KBD_BASE);
+      kbd->keydown = 0;
+      kbd->keycode = excode2amcode(scancode);
+    } else {
+      kbd->keydown = 1;
+      kbd->keycode = excode2amcode(scancode);
+    }
   } else if (scancode==0)
   {
     kbd->keydown = 0;
