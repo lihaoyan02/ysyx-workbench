@@ -83,11 +83,12 @@ static int code2amcode (int code) {
 void __am_input_keybrd(AM_INPUT_KEYBRD_T *kbd) {
   kbd->keydown = 0;
   kbd->keycode = AM_KEY_NONE;
-  uint32_t scancode = *(uint32_t *)(KBD_BASE);
+  uint32_t volatile scancode = *(uint32_t *)(KBD_BASE);
   if (scancode==BREAK_CODE)
   {
     kbd->keydown = 0;
-    kbd->keycode = code2amcode(*(uint32_t *)(KBD_BASE));
+    scancode = *(uint32_t *)(KBD_BASE);
+    kbd->keycode = code2amcode(scancode);
   } else if (scancode==0)
   {
     kbd->keydown = 0;
