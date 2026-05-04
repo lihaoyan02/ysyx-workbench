@@ -87,7 +87,8 @@ void __am_input_keybrd(AM_INPUT_KEYBRD_T *kbd) {
   if (scancode==BREAK_CODE)
   {
     kbd->keydown = 0;
-    scancode = *(uint32_t *)(KBD_BASE);
+    while (scancode == BREAK_CODE)
+      scancode = *(uint32_t *)(KBD_BASE);
     kbd->keycode = code2amcode(scancode);
   } else if (scancode==0)
   {
