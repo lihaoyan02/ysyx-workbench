@@ -17,7 +17,7 @@ static int code2amcode (int code) {
   case 0x0a: return AM_KEY_F8; break;
   case 0x01: return AM_KEY_F9; break;
   case 0x09: return AM_KEY_F10; break;
-  case 0x70: return AM_KEY_F11; break;
+  case 0x78: return AM_KEY_F11; break;
   case 0x07: return AM_KEY_F12; break;
   case 0x0e: return AM_KEY_GRAVE; break;
   case 0x16: return AM_KEY_1; break;
