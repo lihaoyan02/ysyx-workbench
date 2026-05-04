@@ -75,7 +75,7 @@ static int code2amcode (int code) {
   case 0x14: return AM_KEY_LCTRL; break;
   case 0x11: return AM_KEY_LALT; break;
   case 0x29: return AM_KEY_SPACE; break;
-  default: return AM_KEY_NONE;
+  default: return AM_KEY_SPACE;
     break;
   }
 }
