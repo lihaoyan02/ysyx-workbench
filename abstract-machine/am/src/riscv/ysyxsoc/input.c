@@ -75,7 +75,21 @@ static int code2amcode (int code) {
   case 0x14: return AM_KEY_LCTRL; break;
   case 0x11: return AM_KEY_LALT; break;
   case 0x29: return AM_KEY_SPACE; break;
-  default: return AM_KEY_SPACE;
+  case 0xe0: 
+    uint32_t volatile tempcode = *(uint32_t *)(KBD_BASE);
+    while (tempcode == 0xe0)
+        tempcode = *(uint32_t *)(KBD_BASE);
+    if (tempcode==0x11)
+    {
+      return AM_KEY_RALT;
+    } else if (tempcode==0x14)
+    {
+      return AM_KEY_RCTRL;
+    } else {
+      return AM_KEY_NONE;
+    }
+    break;
+  default: return AM_KEY_NONE;
     break;
   }
 }
