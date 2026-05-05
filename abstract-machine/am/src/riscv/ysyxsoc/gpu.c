@@ -2,8 +2,6 @@
 #include <riscv/riscv.h>
 
 #define VGA_ADDR 0x21000000
-#define SYNC_ADDR (VGACTL_ADDR + 4)
-#define FB_ADDR 0xa1000000 
 
 void __am_gpu_init() {
 /*	
