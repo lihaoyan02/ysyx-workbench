@@ -2,6 +2,7 @@ AM_SRCS := riscv/ysyxsoc/start.S \
            riscv/ysyxsoc/ssbl.S \
            riscv/ysyxsoc/trm.c \
            riscv/ysyxsoc/ioe.c \
+           riscv/ysyxsoc/gpu.c \
            riscv/ysyxsoc/timer.c \
            riscv/ysyxsoc/input.c \
            riscv/ysyxsoc/cte.c \
