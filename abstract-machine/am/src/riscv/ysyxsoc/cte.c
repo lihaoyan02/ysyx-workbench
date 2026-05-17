@@ -35,6 +35,7 @@ bool cte_init(Context*(*handler)(Event, Context*)) {
 Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
 	Context *cp = kstack.end-sizeof(Context);
 	cp->mepc = (uintptr_t)entry;
+  printf("[EV_YIELD] from mepc=%x\n", cp->mepc);
 	cp->gpr[10] = (uintptr_t)arg;
 	cp->mstatus = 0x1800;
   return cp;
