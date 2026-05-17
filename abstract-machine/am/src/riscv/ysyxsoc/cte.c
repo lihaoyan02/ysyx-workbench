@@ -36,6 +36,7 @@ Context *kcontext(Area kstack, void (*entry)(void *), void *arg) {
 	cp->mepc = (uintptr_t)entry;
 	cp->gpr[10] = (uintptr_t)arg;
 	cp->mstatus = 0x1800;
+  cp->mcause = 0x1800;
   return cp;
 }
 
