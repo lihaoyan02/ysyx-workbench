@@ -46,7 +46,6 @@ always @(posedge clk) begin
 		end
 		if(csr_event) begin
 			csr[2] <= pc;
-			$display("csr_event, pc=%h", pc);
 			csr[3] <= 32'hb;
 		end
 	end
