@@ -86,8 +86,23 @@ end
 
 assign ARVALID = ~rst & state==IDLE;
 assign ARADDR = pc;
-assign inst_fetch = R_handshaked ? RDATA : 0;
-assign inst_valid = R_handshaked;
+// assign inst_fetch = R_handshaked ? RDATA : 0;
+// assign inst_valid = R_handshaked;
+
+always @(posedge clk) begin
+	if (rst) begin
+		inst_fetch <= 0;
+		inst_valid <= 0;
+	end
+	else if (R_handshaked) begin
+		inst_fetch <= RDATA;
+		inst_valid <= 1;
+	end
+	else if (state==IDLE) begin
+		inst_fetch <= 0;
+		inst_valid <= 0;
+	end
+end
 
 wire [ADDR_WIDTH-1:0] next_pc;
 assign next_pc = j_pc ? j_pc_addr : pc + 4; 
