@@ -217,8 +217,10 @@ reg [ADDR_WIDTH-1:0] raddr_r;
 wire [2:0] arsize = lsu_ctrl==3'b010 ? 3'b10 : (lsu_ctrl[0] ? 3'b1 : 3'b0);
 reg [2:0] arsize_r;
 assign ARVALID = (lsu_en & ~wen) | rreq & rstate==IDLE;
-assign ARADDR = (lsu_en & ~wen) ? addr : raddr_r;
-assign ARSIZE = (lsu_en & ~wen) ? arsize : arsize_r;
+// assign ARADDR = (lsu_en & ~wen) ? addr : raddr_r;
+// assign ARSIZE = (lsu_en & ~wen) ? arsize : arsize_r;
+assign ARADDR = ARVALID ? addr : raddr_r;
+assign ARSIZE = ARVALID ? arsize : arsize_r;
 assign RREADY = rstate==WAIT & RVALID;
 
 always @(posedge clk) begin
