@@ -101,8 +101,7 @@ static void single_cycle() {
 }
 
 void init_cpu(int argc, char *argv[]) {
-	char *argv1[] = {"npc"};
-	Verilated::commandArgs(1, argv1);
+	
 	contextp = new VerilatedContext;
 	#ifndef CONFIG_TARGET_SOC
 	top = new Vtop{contextp};
@@ -119,6 +118,7 @@ void init_cpu(int argc, char *argv[]) {
 	nvboard_bind_all_pins(top);
 	nvboard_init();
 #endif
+	Verilated::commandArgs(argc, argv);
 	top->reset = 1;
 	for(int i=0; i<12; i++) {
 		single_cycle();
