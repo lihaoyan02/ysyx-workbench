@@ -101,14 +101,14 @@ static void single_cycle() {
 }
 
 void init_cpu(int argc, char *argv[]) {
-	Verilated::commandArgs(argc, argv);
+	char *argv1[] = {"npc"};
+	Verilated::commandArgs(1, argv1);
 	contextp = new VerilatedContext;
 	#ifndef CONFIG_TARGET_SOC
 	top = new Vtop{contextp};
 	#else
 	top = new VysyxSoCFull{contextp};
 	#endif
-
 #ifdef CONFIG_TRACE_WAVE
 	Verilated::traceEverOn(true);
 	tfp = new VerilatedVcdC;
