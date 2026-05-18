@@ -124,12 +124,12 @@ always @(posedge clk) begin
 		inst_fetch_r <= 0;
 	end
 	else if (R_handshaked) begin
-		inst_fetch_r <= inst_fetch;
+		inst_fetch_r <= RDATA;
 	end
 end
 
 function int read_inst();
-	return R_handshaked ? inst_fetch : inst_fetch_r;
+	return R_handshaked ? RDATA : inst_fetch_r;
 endfunction
 
 export "DPI-C" function read_inst;
