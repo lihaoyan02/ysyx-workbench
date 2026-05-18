@@ -94,7 +94,7 @@ SECTIONS {
   } >SDRAM
 
   _heap_start = .;
-  . = ORIGIN(SDRAM) + 0x2000000;
+  . = ORIGIN(SDRAM) + 0x3000000;
   _heap_end = .;
   _stack_top = ALIGN(4);
   . = ORIGIN(SDRAM) + LENGTH(SDRAM);
