@@ -101,7 +101,6 @@ static void single_cycle() {
 }
 
 void init_cpu(int argc, char *argv[]) {
-	
 	contextp = new VerilatedContext;
 	#ifndef CONFIG_TARGET_SOC
 	top = new Vtop{contextp};

@@ -46,7 +46,9 @@ endif
 NXDC_FILES = constr/top.nxdc
 include $(NVBOARD_HOME)/scripts/nvboard.mk
 SRC_AUTO_BIND = $(abspath $(BUILD_DIR)/auto_bind.cpp)
+ifdef CONFIG_TARGET_SOC
 CSRCS += $(SRC_AUTO_BIND)
+endif
 
 # rules for verilator
 INCFLAGS = $(addprefix -I, $(INC_PATH))
