@@ -92,7 +92,7 @@ wire [1:0] clint_BRESP, clint_RRESP;
 		.rst(rst),
 		.j_pc(j_pc),
 		.j_pc_addr(alu_out),
-		.ready_in(lsu_ready&(~idu_valid)),
+		.ready_in(lsu_ready),
 		.pc(pc),
 		.inst_valid(inst_valid),
 		.inst_fetch(inst_fetch),
