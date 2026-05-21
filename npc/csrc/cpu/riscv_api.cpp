@@ -60,3 +60,21 @@ extern "C" void AXI_Access_Falt() {
 	int inst = core_read_inst();
 	Assert(npc_state.state != NPC_RUNNING,"axi access falt at pc=0x%08x inst=0x%08x", pc,inst);
 }
+static uint64_t IFU_inst_num = 0;
+static uint64_t LSU_read_num = 0;
+extern "C" void performance_counter(int category) {
+	if (category==0)
+	{
+		IFU_inst_num++;
+	}
+	else if (category==1)
+	{
+		LSU_read_num++;
+	}
+	
+}
+
+void performance_statistic() {
+	Log("total IFU instructions = %lu", IFU_inst_num);
+	Log("total LSU reads = %lu", LSU_read_num);
+}

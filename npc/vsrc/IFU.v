@@ -43,6 +43,9 @@ module IFU #(INST_WIDTH = 32, ADDR_WIDTH = 32)(
 	// input RLAST,
 	// input [3:0] RID
 );
+
+import "DPI-C" function void performance_counter(int category); 
+
 wire AR_handshaked, R_handshaked;
 assign AR_handshaked = ARVALID & ARREADY;
 assign R_handshaked = RVALID & RREADY;
@@ -78,6 +81,7 @@ end
 always @(posedge clk) begin
 	if (state==WAIT & R_handshaked) begin
 		R_handshaked_r <= 1;
+		performance_counter(0);
 	end
 	else if (state==IDLE) begin
 		R_handshaked_r <= 0;

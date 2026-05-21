@@ -44,6 +44,7 @@ module LSU #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
 	input [3:0] RID
 );
 import "DPI-C" function void AXI_Access_Falt(); 
+import "DPI-C" function void performance_counter(int category);
 localparam WIDLE = 2'b0, ASHAK=2'b01, DSHAK=2'b10, WWAIT = 2'b11;
 localparam IDLE = 1'b0, WAIT = 1'b1;
 
@@ -235,6 +236,7 @@ always @(posedge clk) begin
 		rreq <= 1;
 	end
 	if (R_handshaked) begin
+		performance_counter(1);
 		arsize_r <= 3'b10;
 		rlsu_ctrl_r <= 0;
 		raddr_r <= 0;		
