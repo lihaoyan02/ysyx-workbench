@@ -108,18 +108,9 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 		end
 		else begin
 			idu_valid <= 0;
-			idu_imm <= 0;
-			idu_rd <= 0;
-			idu_rs1 <= 0;
-			idu_rs2 <= 0;
-			idu_alu_ctrl <= `ALU_IDLE;
-			idu_alu_op_ctrl <= `OP_RS1_RS2;
-			idu_wb_ctrl <= WB_IDLE;
-			idu_wb_en <= 0;
 			idu_lsu_en <= 0;
 			idu_lsu_wen <= 0;
 			idu_lsu_ctrl <= 0;
-			idu_ebreak_flag <= 0;
 			idu_j_en <= 0;
 			idu_j_cond <= `J_UNCOND;
 			idu_csr_event <= 0;
