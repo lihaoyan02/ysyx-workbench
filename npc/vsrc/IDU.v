@@ -4,7 +4,7 @@ module IDU #(INST_WIDTH = 32, REGADDR_WIDTH = 5, DATA_WIDTH = 32) (
 	input rst,
 	input [INST_WIDTH-1:0] inst_fetch,
 	input inst_valid,
-	// output reg idu_valid,
+	output reg idu_valid,
 	output reg [DATA_WIDTH-1:0] idu_imm,
 	output reg [REGADDR_WIDTH-1:0] idu_rd,
 	output reg [REGADDR_WIDTH-1:0] idu_rs1, 	
@@ -67,7 +67,8 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 
 	always @(posedge clk) begin
 		if (rst) begin
-			// idu_valid <= 0;
+			idu_valid <= 0;
+			idu_valid <= 0;
 			idu_imm <= 0;
 			idu_rd <= 0;
 			idu_rs1 <= 0;
@@ -87,7 +88,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 			idu_csr_addr <= 0;
 		end
 		else if (inst_valid) begin
-			// idu_valid <= 1;
+			idu_valid <= 1;
 			idu_imm <= imm;
 			idu_rd <= rd;
 			idu_rs1 <= rs1;
@@ -106,9 +107,9 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 			idu_csr_wen <= csr_wen;
 			idu_csr_addr <= csr_addr;
 		end
-		// else begin
-		// 	idu_valid <= 0;
-		// end
+		else begin
+			idu_valid <= 0;
+		end
 		
 	end
 

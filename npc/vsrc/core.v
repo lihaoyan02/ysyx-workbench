@@ -92,7 +92,7 @@ wire [1:0] clint_BRESP, clint_RRESP;
 		.rst(rst),
 		.j_pc(j_pc),
 		.j_pc_addr(alu_out),
-		.ready_in(lsu_ready),
+		.ready_in(lsu_ready&(~idu_valid)),
 		.pc(pc),
 		.inst_valid(inst_valid),
 		.inst_fetch(inst_fetch),
@@ -121,13 +121,13 @@ wire [1:0] clint_BRESP, clint_RRESP;
 		.RRESP(ifu_RRESP)
 	);
 
-
+	wire idu_valid;
 	IDU u_IDU (
 		.clk(clk),
 		.rst(rst),
 		.inst_fetch(inst_fetch),
 		.inst_valid(inst_valid),
-		// .idu_valid(idu_valid),
+		.idu_valid(idu_valid),
 		.idu_imm(imm),
 		.idu_rd(rd),
 		.idu_rs1(rs1),
