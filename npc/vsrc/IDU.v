@@ -277,8 +277,10 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 								wb_en = 1'b1;
 								wb_ctrl = WB_MEM;
 							end
-						default:
+						default: begin
+							$display("unknow opcode =7'b0000011");
 							unknow_inst(); 
+						end
 						endcase
 				end
 				7'b0100011: begin //sb sw sj
@@ -291,8 +293,10 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 							lsu_wen = 1'b1;
 							wb_en = 1'b0;
 						end
-					default:
+					default: begin
+						$display("unknow opcode =7'b0100011");
 						unknow_inst(); 
+					end
 					endcase
 				end
 				7'b1110011: begin //ebreak
@@ -331,11 +335,15 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 						wb_en = 1'b1;
 						wb_ctrl = WB_ALU;
 					end
-					else
+					else begin
+						$display("unknow opcode =7'b1110011");
 						unknow_inst(); 
+					end
 				end
-				default:
-						unknow_inst(); 
+				default: begin
+					$display("unknow opcode");
+					unknow_inst(); 
+				end				
 			endcase
 		end
 	end
