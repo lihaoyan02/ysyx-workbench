@@ -344,9 +344,9 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 					$display("unknow opcode");
 					unknow_inst(); 
 				end				
-			endcase
+				endcase
+			end
 		end
-	end
 
 
 endmodule
