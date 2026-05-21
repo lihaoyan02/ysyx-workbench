@@ -123,25 +123,28 @@ wire [1:0] clint_BRESP, clint_RRESP;
 
 
 	IDU u_IDU (
+		.clk(clk),
+		.rst(rst),
 		.inst_fetch(inst_fetch),
 		.inst_valid(inst_valid),
-		.imm(imm),
-		.rd(rd),
-		.rs1(rs1),
-		.rs2(rs2),
-		.alu_ctrl(alu_ctrl),
-		.alu_op_ctrl(alu_op_ctrl),
-		.wb_ctrl(wb_ctrl),
-		.wb_en(wb_en),
-		.lsu_en(lsu_en),
-		.lsu_wen(lsu_wen),
-		.lsu_ctrl(lsu_ctrl),
-		.ebreak_flag(ebreak_flag),
-		.j_en(j_en),
-		.j_cond(j_cond),
-		.csr_wen(csr_wen),
-		.csr_event(csr_event),
-		.csr_addr(csr_addr)
+		// .idu_valid(idu_valid),
+		.idu_imm(imm),
+		.idu_rd(rd),
+		.idu_rs1(rs1),
+		.idu_rs2(rs2),
+		.idu_alu_ctrl(alu_ctrl),
+		.idu_alu_op_ctrl(alu_op_ctrl),
+		.idu_wb_ctrl(wb_ctrl),
+		.idu_wb_en(wb_en),
+		.idu_lsu_en(lsu_en),
+		.idu_lsu_wen(lsu_wen),
+		.idu_lsu_ctrl(lsu_ctrl),
+		.idu_ebreak_flag(ebreak_flag),
+		.idu_j_en(j_en),
+		.idu_j_cond(j_cond),
+		.idu_csr_wen(csr_wen),
+		.idu_csr_event(csr_event),
+		.idu_csr_addr(csr_addr)
 	);
 
 	RegisterFile u_gpr (
