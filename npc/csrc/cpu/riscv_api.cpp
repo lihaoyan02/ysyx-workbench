@@ -68,3 +68,7 @@ extern "C" void performance_counter(int category) {
 	}
 	
 }
+
+void performance_statistic() {
+	Log("total IFU instructions = %lu", IFU_inst_num);
+}

@@ -35,4 +35,6 @@ uint32_t core_read_reg(uint32_t idx);
 
 uint32_t core_read_state();
 
+void performance_statistic();
+
 #endif

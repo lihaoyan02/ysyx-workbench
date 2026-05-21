@@ -186,6 +186,7 @@ static void statistic() {
 	Log("average instuction per cycle = %.2lf", (double)g_nr_guest_inst / nr_clk_tick);
 	Log("host time spent = %lu us", g_timer);
 	Log("estimated frequency = %lu MHz", nr_clk_tick/g_timer);
+	performance_statistic();
 }
 
 void assert_fail_msg() {
