@@ -71,7 +71,7 @@ always @(*) begin
 		IDLE:
 			next_state = AR_handshaked ? WAIT : IDLE;
 		WAIT:
-			next_state = (ready_in & R_handshaked) | (ready_in & R_handshaked_r) ? IDLE : WAIT;
+			next_state = (ready_in & R_handshaked_r) ? IDLE : WAIT; //(ready_in & R_handshaked) |
 	endcase
 end
 

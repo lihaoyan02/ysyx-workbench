@@ -1,25 +1,28 @@
 `include "alu_opcodes.v"
 module IDU #(INST_WIDTH = 32, REGADDR_WIDTH = 5, DATA_WIDTH = 32) (
+	input clk,
+	input rst,
 	input [INST_WIDTH-1:0] inst_fetch,
 	input inst_valid,
-	output reg [DATA_WIDTH-1:0] imm,
-	output reg [REGADDR_WIDTH-1:0] rd,
-	output reg [REGADDR_WIDTH-1:0] rs1, 	
-	output reg [REGADDR_WIDTH-1:0] rs2,
-	output reg [3:0] alu_ctrl,
-	output reg [1:0] alu_op_ctrl,  //choose imm in ALU
-	output reg [2:0] wb_ctrl,
-	output reg wb_en, //enable write back
-	output reg lsu_en, //enable lsu
-	output reg lsu_wen,
-	output [2:0] lsu_ctrl,
-	output reg ebreak_flag,
-	output reg j_en,
-	output [2:0] j_cond,
+	output reg idu_valid,
+	output reg [DATA_WIDTH-1:0] idu_imm,
+	output reg [REGADDR_WIDTH-1:0] idu_rd,
+	output reg [REGADDR_WIDTH-1:0] idu_rs1, 	
+	output reg [REGADDR_WIDTH-1:0] idu_rs2,
+	output reg [3:0] idu_alu_ctrl,
+	output reg [1:0] idu_alu_op_ctrl,  //choose imm in ALU
+	output reg [2:0] idu_wb_ctrl,
+	output reg idu_wb_en, //enable write back
+	output reg idu_lsu_en, //enable lsu
+	output reg idu_lsu_wen,
+	output [2:0] idu_lsu_ctrl,
+	output reg idu_ebreak_flag,
+	output reg idu_j_en,
+	output [2:0] idu_j_cond,
 
-	output csr_wen,
-	output csr_event,
-	output [11:0] csr_addr
+	output reg idu_csr_wen,
+	output reg idu_csr_event,
+	output reg [11:0] idu_csr_addr
 
 );
 localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010, 
@@ -44,32 +47,101 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 	assign imm_J = {{12{inst_fetch[31]}}, inst_fetch[19:12], inst_fetch[20], inst_fetch[30:21], 1'b0};
 	assign imm_B = {{20{inst_fetch[31]}}, inst_fetch[7], inst_fetch[30:25], inst_fetch[11:8], 1'b0};
 
-	assign lsu_ctrl = funct3;
+	reg [31:0] imm;
+	reg [4:0] rd, rs1, rs2;
+	reg [3:0] alu_ctrl;
+	reg [1:0] alu_op_ctrl;
+	reg [2:0] wb_ctrl;
+	reg wb_en;
+	reg lsu_en;
+	reg lsu_wen;
+	reg [2:0] lsu_ctrl;
+	reg ebreak_flag;
+	reg j_en;
+	reg [2:0] j_cond;
+	reg csr_event;
+	reg csr_wen;
+	reg [11:0] csr_addr;
 
 	import "DPI-C" function void unknow_inst(); 
 
-		always @(*) begin			
+	always @(posedge clk) begin
+		if (rst) begin
+			idu_valid <= 0;
+			idu_imm <= 0;
+			idu_rd <= 0;
+			idu_rs1 <= 0;
+			idu_rs2 <= 0;
+			idu_alu_ctrl <= `ALU_IDLE;
+			idu_alu_op_ctrl <= `OP_RS1_RS2;
+			idu_wb_ctrl <= WB_IDLE;
+			idu_wb_en <= 0;
+			idu_lsu_en <= 0;
+			idu_lsu_wen <= 0;
+			idu_lsu_ctrl <= 0;
+			idu_ebreak_flag <= 0;
+			idu_j_en <= 0;
+			idu_j_cond <= `J_UNCOND;
+			idu_csr_event <= 0;
+			idu_csr_wen <= 0;
+			idu_csr_addr <= 0;
+		end
+		else if (inst_valid) begin
+			idu_valid <= 1;
+			idu_imm <= imm;
+			idu_rd <= rd;
+			idu_rs1 <= rs1;
+			idu_rs2 <= rs2;
+			idu_alu_ctrl <= alu_ctrl;
+			idu_alu_op_ctrl <= alu_op_ctrl;
+			idu_wb_ctrl <= wb_ctrl;
+			idu_wb_en <= wb_en;
+			idu_lsu_en <= lsu_en;
+			idu_lsu_wen <= lsu_wen;
+			idu_lsu_ctrl <= lsu_ctrl;
+			idu_ebreak_flag <= ebreak_flag;
+			idu_j_en <= j_en;
+			idu_j_cond <= j_cond;
+			idu_csr_event <= csr_event;
+			idu_csr_wen <= csr_wen;
+			idu_csr_addr <= csr_addr;
+		end
+		else begin
+			idu_valid <= 0;
+			idu_lsu_en <= 0;
+			idu_lsu_wen <= 0;
+			idu_lsu_ctrl <= 0;
+			idu_j_en <= 0;
+			idu_j_cond <= `J_UNCOND;
+			idu_csr_event <= 0;
+			idu_csr_wen <= 0;
+			idu_csr_addr <= 0;
+		end
+		
+	end
+
+		always @(*) begin		
+			// default value
+			rd = inst_fetch[11:7];
+			rs1 = inst_fetch[19:15];
+			rs2 = inst_fetch[24:20];
+
+			
+			alu_ctrl = `ALU_IDLE;
+			alu_op_ctrl = `OP_RS1_RS2; // if choose imm
+			imm = 32'b0;
+			wb_en = 0; // if wb
+			wb_ctrl = WB_IDLE; //from where to wb
+			j_en = 1'b0; // if jump
+			j_cond = `J_UNCOND; // if conditional jump				
+			ebreak_flag = 1'b0;	
 			lsu_en = 1'b0;
 			lsu_wen = 1'b0;
+			lsu_ctrl = funct3;
 			csr_event = 1'b0;
 			csr_wen = 1'b0;
 			csr_addr = inst_fetch[31:20];
 			if (inst_valid) begin
-				// default value
-				rd = inst_fetch[11:7];
-				rs1 = inst_fetch[19:15];
-				rs2 = inst_fetch[24:20];
-
-				
-				alu_ctrl = `ALU_IDLE;
-				alu_op_ctrl = `OP_RS1_RS2; // if choose imm
-				imm = 32'b0;
-				wb_en = 0; // if wb
-				wb_ctrl = WB_IDLE; //from where to wb
-				j_en = 1'b0; // if jump
-				j_cond = `J_UNCOND; // if conditional jump				
-				ebreak_flag = 1'b0;
-				
 				case (opcode)
 					7'b0010111: begin //auipc
 						alu_ctrl = `ALU_ADD;
@@ -213,8 +285,10 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 								wb_en = 1'b1;
 								wb_ctrl = WB_MEM;
 							end
-						default:
+						default: begin
+							$display("unknow opcode =7'b0000011");
 							unknow_inst(); 
+						end
 						endcase
 				end
 				7'b0100011: begin //sb sw sj
@@ -227,8 +301,10 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 							lsu_wen = 1'b1;
 							wb_en = 1'b0;
 						end
-					default:
+					default: begin
+						$display("unknow opcode =7'b0100011");
 						unknow_inst(); 
+					end
 					endcase
 				end
 				7'b1110011: begin //ebreak
@@ -267,14 +343,18 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 						wb_en = 1'b1;
 						wb_ctrl = WB_ALU;
 					end
-					else
+					else begin
+						$display("unknow opcode =7'b1110011");
 						unknow_inst(); 
+					end
 				end
-				default:
-						unknow_inst(); 
-			endcase
+				default: begin
+					$display("unknow opcode");
+					unknow_inst(); 
+				end				
+				endcase
+			end
 		end
-	end
 
 
 endmodule

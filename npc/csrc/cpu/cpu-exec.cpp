@@ -81,7 +81,7 @@ static void trace_and_difftest(Decode *_this) {
 static void eval_dump() {
 	static int time_step = 0;
 	top->eval();
-	if(time_step<=CONFIG_MAX_WAVE & g_nr_guest_inst>CONFIG_WAVE_BEGIN)
+	if(time_step<=CONFIG_MAX_WAVE & g_nr_guest_inst>=CONFIG_WAVE_BEGIN)
 		tfp->dump(time_step++);
 }
 #endif
@@ -101,14 +101,12 @@ static void single_cycle() {
 }
 
 void init_cpu(int argc, char *argv[]) {
-	Verilated::commandArgs(argc, argv);
 	contextp = new VerilatedContext;
 	#ifndef CONFIG_TARGET_SOC
 	top = new Vtop{contextp};
 	#else
 	top = new VysyxSoCFull{contextp};
 	#endif
-
 #ifdef CONFIG_TRACE_WAVE
 	Verilated::traceEverOn(true);
 	tfp = new VerilatedVcdC;
@@ -119,6 +117,7 @@ void init_cpu(int argc, char *argv[]) {
 	nvboard_bind_all_pins(top);
 	nvboard_init();
 #endif
+	Verilated::commandArgs(argc, argv);
 	top->reset = 1;
 	for(int i=0; i<12; i++) {
 		single_cycle();
