@@ -134,14 +134,14 @@ extern "C" void npctrap(int a0, int pc) {
 }
 
 static void exec_one_inst() {
-	for(int i =0; i<600; i++) {
+	for(int i =0; i<4000; i++) {
 		single_cycle();
 		uint32_t current_state = core_read_state();
 		if(current_state==1) {
 			return;
 		}
 	}
-	panic("CPU don't finish inst in 600 cycle");
+	panic("CPU don't finish inst in 4000 cycle");
 	
 }
 
@@ -183,7 +183,8 @@ static void execute(uint64_t n) {
 static void statistic() {
 	Log("total guest instructions = %lu", g_nr_guest_inst);
 	Log("total guest cycles = %lu", nr_clk_tick);
-	Log("average instuction per cycle = %.2lf", (double)g_nr_guest_inst / nr_clk_tick);
+	Log("average instuction per cycle = %.4lf", (double)g_nr_guest_inst / nr_clk_tick);
+	Log("average cycle per instruction = %ld", nr_clk_tick / g_nr_guest_inst);
 	Log("host time spent = %lu us", g_timer);
 	Log("estimated frequency = %lu MHz", nr_clk_tick/g_timer);
 	performance_statistic();
