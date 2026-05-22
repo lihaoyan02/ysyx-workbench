@@ -25,6 +25,9 @@ module EXU #(DATA_WIDTH = 32) (
 	output reg [DATA_WIDTH-1:0] exu_out,
 	output reg exu_j_pc
 );
+
+import "DPI-C" function void performance_counter(int category);
+
 wire [DATA_WIDTH-1:0] op1;
 wire [DATA_WIDTH-1:0] op2;
 reg [DATA_WIDTH-1:0] alu_out;
@@ -83,6 +86,9 @@ always @(posedge clk) begin
 		exu_lsu_wdata <= {DATA_WIDTH{1'b0}};
 	end
 	else if (idu_valid) begin
+		if (idu_alu_ctrl!=`ALU_IDLE & idu_alu_ctrl!=`ALU_OP2) begin
+			performance_counter(1);
+		end
 		exu_valid <= 1;
 		exu_out <= alu_out; // jump addr & alu result & lsu addr
 		exu_j_pc <= j_pc;

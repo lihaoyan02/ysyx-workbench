@@ -64,6 +64,9 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 	reg [11:0] csr_addr;
 
 	import "DPI-C" function void unknow_inst(); 
+	import "DPI-C" function void performance_counter(int category); 
+	integer decode_cat;
+	localparam ALU_CAT = 3, LSU_CAT = 4, CSR_CAT = 5, JUMP_CAT = 6;
 
 	always @(posedge clk) begin
 		if (rst) begin
@@ -88,6 +91,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 		end
 		else if (inst_valid) begin
 			idu_valid <= 1;
+			performance_counter(decode_cat);
 			idu_rs1 <= rs1;
 			idu_rs2 <= rs2;
 			idu_alu_ctrl <= alu_ctrl;
@@ -147,6 +151,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 			if (inst_valid) begin
 				case (opcode)
 					7'b0010111: begin //auipc
+						decode_cat = ALU_CAT;
 						alu_ctrl = `ALU_ADD;
 						alu_op_ctrl = `OP_PC_IMM;
 						imm = imm_U;
@@ -159,6 +164,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 						wb_ctrl = WB_IMM;
 					end
 					7'b0010011: begin
+						decode_cat = ALU_CAT;
 						alu_op_ctrl = `OP_RS1_IMM;
 						imm = imm_I;
 						wb_en = 1'b1;
@@ -194,6 +200,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 							unknow_inst(); 
 					end
 					7'b0110011: begin 
+						decode_cat = ALU_CAT;
 						alu_op_ctrl = `OP_RS1_RS2;
 						wb_en = 1'b1;
 						wb_ctrl = WB_ALU;
@@ -231,6 +238,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 							unknow_inst(); 
 					end
 					7'b1101111: begin //jal
+						decode_cat = JUMP_CAT;
 						alu_ctrl = `ALU_ADD;
 						alu_op_ctrl = `OP_PC_IMM;
 						imm = imm_J;
@@ -240,6 +248,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 					end
 					7'b1100111: begin //jalr
 						if (funct3 == 3'b000) begin
+							decode_cat = JUMP_CAT;
 							alu_ctrl = `ALU_ADD;
 							alu_op_ctrl = `OP_RS1_IMM;
 							imm = imm_I;
@@ -251,6 +260,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 							unknow_inst(); 
 					end
 					7'b1100011: begin 
+						decode_cat = JUMP_CAT;
 						alu_ctrl = `ALU_ADD;
 						alu_op_ctrl = `OP_PC_IMM;
 						imm = imm_B;
@@ -278,6 +288,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 							unknow_inst(); 
 					end
 					7'b0000011: begin //lw, lbu, lb
+						decode_cat = LSU_CAT;
 						case (funct3)
 							3'b000,3'b001,3'b010,3'b100,3'b101: begin
 								alu_ctrl = `ALU_ADD;
@@ -295,6 +306,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 						endcase
 				end
 				7'b0100011: begin //sb sw sj
+					decode_cat = LSU_CAT;
 					case (funct3)
 						3'b000, 3'b010, 3'b001: begin
 							alu_ctrl = `ALU_ADD;
@@ -311,6 +323,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 					endcase
 				end
 				7'b1110011: begin //ebreak
+					decode_cat = CSR_CAT;
 					if(imm_I == 32'b1 && rs1 == 0 && 
 						funct3 == 3'b0 && rd == 5'b0) begin
 						ebreak_flag = 1;

@@ -236,7 +236,7 @@ always @(posedge clk) begin
 		rreq <= 1;
 	end
 	if (R_handshaked) begin
-		performance_counter(1);
+		performance_counter(2);
 		arsize_r <= 3'b10;
 		rlsu_ctrl_r <= 0;
 		raddr_r <= 0;		

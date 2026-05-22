@@ -61,7 +61,12 @@ extern "C" void AXI_Access_Falt() {
 	Assert(npc_state.state != NPC_RUNNING,"axi access falt at pc=0x%08x inst=0x%08x", pc,inst);
 }
 static uint64_t IFU_inst_num = 0;
+static uint64_t ALU_inst_num = 0;
 static uint64_t LSU_read_num = 0;
+static uint64_t IDU_alu_num = 0;
+static uint64_t IDU_lsu_num = 0;
+static uint64_t IDU_csr_num = 0;
+static uint64_t IDU_jump_num = 0;
 extern "C" void performance_counter(int category) {
 	if (category==0)
 	{
@@ -69,12 +74,36 @@ extern "C" void performance_counter(int category) {
 	}
 	else if (category==1)
 	{
+		ALU_inst_num++;
+	}
+	else if (category==2)
+	{
 		LSU_read_num++;
 	}
-	
+	else if (category==3)
+	{
+		IDU_alu_num++;
+	}
+	else if (category==4)
+	{
+		IDU_lsu_num++;
+	}
+	else if (category==5)
+	{
+		IDU_csr_num++;
+	}
+	else if (category==6)
+	{
+		IDU_jump_num++;
+	}
 }
 
 void performance_statistic() {
 	Log("total IFU instructions = %lu", IFU_inst_num);
+	Log("total ALU instructions = %lu", ALU_inst_num);
 	Log("total LSU reads = %lu", LSU_read_num);
+	Log("total IDU ALU instructions = %lu", IDU_alu_num);
+	Log("total IDU LSU instructions = %lu", IDU_lsu_num);
+	Log("total IDU CSR instructions = %lu", IDU_csr_num);
+	Log("total IDU jump instructions = %lu", IDU_jump_num);
 }
