@@ -99,7 +99,7 @@ wire [1:0] clint_BRESP, clint_RRESP;
 		.rst(rst),
 		.exu_j_pc(exu_j_pc),
 		.j_pc_addr(exu_out),
-		.ready_npc_in(exu_valid & lsu_ready),
+		.ready_npc_in(lsu_ready),
 		.pc(pc),
 		.inst_valid(inst_valid),
 		.inst_fetch(inst_fetch),
