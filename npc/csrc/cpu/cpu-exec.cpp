@@ -141,7 +141,7 @@ static void exec_one_inst() {
 			return;
 		}
 	}
-	panic("CPU don't finish inst in 3000 cycle");
+	panic("CPU don't finish inst in 4000 cycle");
 	
 }
 
