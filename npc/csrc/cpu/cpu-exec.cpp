@@ -183,7 +183,8 @@ static void execute(uint64_t n) {
 static void statistic() {
 	Log("total guest instructions = %lu", g_nr_guest_inst);
 	Log("total guest cycles = %lu", nr_clk_tick);
-	Log("average instuction per cycle = %.2lf", (double)g_nr_guest_inst / nr_clk_tick);
+	Log("average instuction per cycle = %.4lf", (double)g_nr_guest_inst / nr_clk_tick);
+	Log("average cycle per instruction = %d", nr_clk_tick / g_nr_guest_inst);
 	Log("host time spent = %lu us", g_timer);
 	Log("estimated frequency = %lu MHz", nr_clk_tick/g_timer);
 	performance_statistic();
