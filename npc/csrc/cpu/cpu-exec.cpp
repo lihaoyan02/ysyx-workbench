@@ -134,7 +134,7 @@ extern "C" void npctrap(int a0, int pc) {
 }
 
 static void exec_one_inst() {
-	for(int i =0; i<3000; i++) {
+	for(int i =0; i<4000; i++) {
 		single_cycle();
 		uint32_t current_state = core_read_state();
 		if(current_state==1) {
