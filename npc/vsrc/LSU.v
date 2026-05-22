@@ -1,11 +1,11 @@
 module LSU #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
-	input lsu_en,
 	input clk,
 	input rst,
-	input wen,
-	input [2:0] lsu_ctrl,
-	input [DATA_WIDTH-1:0] wdata,
-	input [ADDR_WIDTH-1:0] addr,
+	input exu_lsu_en,
+	input exu_lsu_wen,
+	input [2:0] exu_lsu_ctrl,
+	input [DATA_WIDTH-1:0] exu_lsu_wdata,
+	input [ADDR_WIDTH-1:0] exu_lsu_addr,
 	output reg [DATA_WIDTH-1:0] rdata,
 	output ready_out,
 
@@ -116,53 +116,53 @@ reg [2:0] awsize_r;
 reg [DATA_WIDTH-1:0] mem_wdata;
 reg [DATA_WIDTH-1:0] mem_wdata_r;
 reg [ADDR_WIDTH-1:0] waddr_r;
-assign AWVALID = ((lsu_en & wen) | wreq) & (wstate==WIDLE | wstate==DSHAK);
-assign WVALID = ((lsu_en & wen) | wreq) & (wstate==WIDLE | wstate==ASHAK);
+assign AWVALID = ((exu_lsu_en & exu_lsu_wen) | wreq) & (wstate==WIDLE | wstate==DSHAK);
+assign WVALID = ((exu_lsu_en & exu_lsu_wen) | wreq) & (wstate==WIDLE | wstate==ASHAK);
 assign WLAST = WVALID;
-assign WDATA = (lsu_en & wen) ? mem_wdata : mem_wdata_r;
-assign WSTRB = (lsu_en & wen) ? wstrb : wstrb_r;
-assign AWSIZE = (lsu_en & wen) ? awsize : awsize_r;
-assign AWADDR = (lsu_en & wen) ? addr : waddr_r;
+assign WDATA = (exu_lsu_en & exu_lsu_wen) ? mem_wdata : mem_wdata_r;
+assign WSTRB = (exu_lsu_en & exu_lsu_wen) ? wstrb : wstrb_r;
+assign AWSIZE = (exu_lsu_en & exu_lsu_wen) ? awsize : awsize_r;
+assign AWADDR = (exu_lsu_en & exu_lsu_wen) ? exu_lsu_addr : waddr_r;
 assign BREADY = wstate==WWAIT & BVALID;
 
 
 always @(*) begin //decode for wdata
-	if(lsu_en&wen) begin
-		case (lsu_ctrl)
+	if(exu_lsu_en&exu_lsu_wen) begin
+		case (exu_lsu_ctrl)
 			3'b000: begin
 				awsize = 3'b0;
-				case (addr[1:0])
+				case (exu_lsu_addr[1:0])
 				2'b00: begin
 					wstrb = 4'b1;
-					mem_wdata = wdata;
+					mem_wdata = exu_lsu_wdata;
 				end
 				2'b01: begin
 					wstrb = 4'b10;
-					mem_wdata = wdata<<8;
+					mem_wdata = exu_lsu_wdata<<8;
 				end
 				2'b10: begin
 					wstrb = 4'b100;
-					mem_wdata = wdata<<16;
+					mem_wdata = exu_lsu_wdata<<16;
 				end
 				2'b11: begin
 					wstrb = 4'b1000;
-					mem_wdata = wdata<<24;
+					mem_wdata = exu_lsu_wdata<<24;
 				end
 				endcase
 			end
 			3'b001: begin
 				awsize = 3'b1;
-				case (addr[1:0])
+				case (exu_lsu_addr[1:0])
 				2'b00: begin
 					wstrb = 4'b11;
-					mem_wdata = wdata;
+					mem_wdata = exu_lsu_wdata;
 				end
 				2'b01: begin
 					$finish;
 				end
 				2'b10: begin
 					wstrb = 4'b1100;
-					mem_wdata = wdata<<16;
+					mem_wdata = exu_lsu_wdata<<16;
 				end
 				2'b11: begin
 					$finish;
@@ -171,10 +171,10 @@ always @(*) begin //decode for wdata
 			end
 			3'b010: begin
 				awsize = 3'b10;
-				if(addr[1:0]!=2'b00)
+				if(exu_lsu_addr[1:0]!=2'b00)
 					$finish;
 				wstrb = 4'b1111;
-				mem_wdata = wdata;
+				mem_wdata = exu_lsu_wdata;
 			end
 			default: $finish;
 		endcase
@@ -189,10 +189,10 @@ always @(posedge clk) begin
 		mem_wdata_r <= 0;
 		wreq <= 0;
 	end
-	else if (lsu_en & wen) begin // save(latch) the message
+	else if (exu_lsu_en & exu_lsu_wen) begin // save(latch) the message
 		wstrb_r <= wstrb;
 		awsize_r <= awsize;
-		waddr_r <= addr;
+		waddr_r <= exu_lsu_addr;
 		mem_wdata_r <= mem_wdata;
 		wreq <= 1;
 	end
@@ -205,6 +205,7 @@ always @(posedge clk) begin
 		mem_wdata_r <= 0;
 	end
 	else if (B_handshaked) begin	
+		performance_counter(7);
 		wreq <= 0;
 		if(BRESP != 0)
 			AXI_Access_Falt();
@@ -215,11 +216,11 @@ end
 reg rreq;
 reg [2:0] rlsu_ctrl_r;
 reg [ADDR_WIDTH-1:0] raddr_r;
-wire [2:0] arsize = lsu_ctrl==3'b010 ? 3'b10 : (lsu_ctrl[0] ? 3'b1 : 3'b0);
+wire [2:0] arsize = exu_lsu_ctrl==3'b010 ? 3'b10 : (exu_lsu_ctrl[0] ? 3'b1 : 3'b0);
 reg [2:0] arsize_r;
-assign ARVALID = (lsu_en & ~wen) | rreq & rstate==IDLE;
-assign ARADDR = (lsu_en & ~wen) ? addr : raddr_r;
-assign ARSIZE = (lsu_en & ~wen) ? arsize : arsize_r;
+assign ARVALID = (exu_lsu_en & ~exu_lsu_wen) | rreq & rstate==IDLE;
+assign ARADDR = (exu_lsu_en & ~exu_lsu_wen) ? exu_lsu_addr : raddr_r;
+assign ARSIZE = (exu_lsu_en & ~exu_lsu_wen) ? arsize : arsize_r;
 assign RREADY = rstate==WAIT & RVALID;
 
 always @(posedge clk) begin
@@ -229,14 +230,14 @@ always @(posedge clk) begin
 		rreq <= 0;
 		arsize_r <= 3'b10;
 	end
-	else if (lsu_en & rstate==IDLE & ~wen) begin
-		rlsu_ctrl_r <= lsu_ctrl;
+	else if (exu_lsu_en & rstate==IDLE & ~exu_lsu_wen) begin
+		rlsu_ctrl_r <= exu_lsu_ctrl;
 		arsize_r <= arsize;
-		raddr_r <= addr;
+		raddr_r <= exu_lsu_addr;
 		rreq <= 1;
 	end
 	if (R_handshaked) begin
-		performance_counter(1);
+		performance_counter(2);
 		arsize_r <= 3'b10;
 		rlsu_ctrl_r <= 0;
 		raddr_r <= 0;		

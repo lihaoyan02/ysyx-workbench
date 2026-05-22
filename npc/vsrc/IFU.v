@@ -1,9 +1,9 @@
 module IFU #(INST_WIDTH = 32, ADDR_WIDTH = 32)(
 	input clk,
 	input rst,
-	input j_pc,
+	input exu_j_pc,
 	input [ADDR_WIDTH-1:0] j_pc_addr,
-	input ready_in,
+	input ready_npc_in,
 	output reg [ADDR_WIDTH-1:0] pc,
 	output reg [INST_WIDTH-1:0] inst_fetch,
 	output reg inst_valid,
@@ -74,7 +74,7 @@ always @(*) begin
 		IDLE:
 			next_state = AR_handshaked ? WAIT : IDLE;
 		WAIT:
-			next_state = (ready_in & R_handshaked_r) ? IDLE : WAIT; //(ready_in & R_handshaked) |
+			next_state = (ready_npc_in & R_handshaked_r) ? IDLE : WAIT; //(ready_npc_in & R_handshaked) |
 	endcase
 end
 
@@ -94,7 +94,7 @@ assign inst_fetch = R_handshaked ? RDATA : 0;
 assign inst_valid = R_handshaked;
 
 wire [ADDR_WIDTH-1:0] next_pc;
-assign next_pc = j_pc ? j_pc_addr : pc + 4; 
+assign next_pc = exu_j_pc ? j_pc_addr : pc + 4; 
 assign wb_valid = state==WAIT & next_state==IDLE;
 always @(posedge clk) begin
 	`ifndef CONFIG_TARGET_SOC

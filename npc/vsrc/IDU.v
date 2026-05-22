@@ -64,6 +64,9 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 	reg [11:0] csr_addr;
 
 	import "DPI-C" function void unknow_inst(); 
+	import "DPI-C" function void performance_counter(int category); 
+	integer decode_cat;
+	localparam ALU_CAT = 3, LSU_CAT = 4, CSR_CAT = 5, JUMP_CAT = 6, OTHER_CAT = 10;
 
 	always @(posedge clk) begin
 		if (rst) begin
@@ -88,14 +91,11 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 		end
 		else if (inst_valid) begin
 			idu_valid <= 1;
-			idu_imm <= imm;
-			idu_rd <= rd;
+			performance_counter(decode_cat);
 			idu_rs1 <= rs1;
 			idu_rs2 <= rs2;
 			idu_alu_ctrl <= alu_ctrl;
 			idu_alu_op_ctrl <= alu_op_ctrl;
-			idu_wb_ctrl <= wb_ctrl;
-			idu_wb_en <= wb_en;
 			idu_lsu_en <= lsu_en;
 			idu_lsu_wen <= lsu_wen;
 			idu_lsu_ctrl <= lsu_ctrl;
@@ -105,9 +105,16 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 			idu_csr_event <= csr_event;
 			idu_csr_wen <= csr_wen;
 			idu_csr_addr <= csr_addr;
+			// to wb (need latch)
+			idu_imm <= imm;
+			idu_rd <= rd;
+			idu_wb_ctrl <= wb_ctrl;
+			idu_wb_en <= wb_en;
 		end
 		else begin
 			idu_valid <= 0;
+			idu_alu_ctrl <= `ALU_IDLE;
+			idu_alu_op_ctrl <= `OP_RS1_RS2;
 			idu_lsu_en <= 0;
 			idu_lsu_wen <= 0;
 			idu_lsu_ctrl <= 0;
@@ -144,6 +151,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 			if (inst_valid) begin
 				case (opcode)
 					7'b0010111: begin //auipc
+						decode_cat = ALU_CAT;
 						alu_ctrl = `ALU_ADD;
 						alu_op_ctrl = `OP_PC_IMM;
 						imm = imm_U;
@@ -151,11 +159,13 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 						wb_ctrl = WB_ALU;
 					end
 					7'b0110111: begin //lui
+						decode_cat = OTHER_CAT;
 						imm = imm_U;
 						wb_en = 1;
 						wb_ctrl = WB_IMM;
 					end
 					7'b0010011: begin
+						decode_cat = ALU_CAT;
 						alu_op_ctrl = `OP_RS1_IMM;
 						imm = imm_I;
 						wb_en = 1'b1;
@@ -191,6 +201,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 							unknow_inst(); 
 					end
 					7'b0110011: begin 
+						decode_cat = ALU_CAT;
 						alu_op_ctrl = `OP_RS1_RS2;
 						wb_en = 1'b1;
 						wb_ctrl = WB_ALU;
@@ -228,6 +239,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 							unknow_inst(); 
 					end
 					7'b1101111: begin //jal
+						decode_cat = JUMP_CAT;
 						alu_ctrl = `ALU_ADD;
 						alu_op_ctrl = `OP_PC_IMM;
 						imm = imm_J;
@@ -237,6 +249,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 					end
 					7'b1100111: begin //jalr
 						if (funct3 == 3'b000) begin
+							decode_cat = JUMP_CAT;
 							alu_ctrl = `ALU_ADD;
 							alu_op_ctrl = `OP_RS1_IMM;
 							imm = imm_I;
@@ -248,6 +261,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 							unknow_inst(); 
 					end
 					7'b1100011: begin 
+						decode_cat = JUMP_CAT;
 						alu_ctrl = `ALU_ADD;
 						alu_op_ctrl = `OP_PC_IMM;
 						imm = imm_B;
@@ -275,6 +289,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 							unknow_inst(); 
 					end
 					7'b0000011: begin //lw, lbu, lb
+						decode_cat = LSU_CAT;
 						case (funct3)
 							3'b000,3'b001,3'b010,3'b100,3'b101: begin
 								alu_ctrl = `ALU_ADD;
@@ -290,68 +305,70 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 							unknow_inst(); 
 						end
 						endcase
-				end
-				7'b0100011: begin //sb sw sj
-					case (funct3)
-						3'b000, 3'b010, 3'b001: begin
-							alu_ctrl = `ALU_ADD;
-							alu_op_ctrl = `OP_RS1_IMM;
-							imm = imm_S;
-							lsu_en = 1'b1;
-							lsu_wen = 1'b1;
-							wb_en = 1'b0;
+					end
+					7'b0100011: begin //sb sw sj
+						decode_cat = LSU_CAT;
+						case (funct3)
+							3'b000, 3'b010, 3'b001: begin
+								alu_ctrl = `ALU_ADD;
+								alu_op_ctrl = `OP_RS1_IMM;
+								imm = imm_S;
+								lsu_en = 1'b1;
+								lsu_wen = 1'b1;
+								wb_en = 1'b0;
+							end
+						default: begin
+							$display("unknow opcode =7'b0100011");
+							unknow_inst(); 
 						end
+						endcase
+					end
+					7'b1110011: begin //ebreak
+						decode_cat = CSR_CAT;
+						if(imm_I == 32'b1 && rs1 == 0 && 
+							funct3 == 3'b0 && rd == 5'b0) begin
+							ebreak_flag = 1;
+						end
+						/*------ecall------*/
+						else if(inst_fetch[31:7] == 25'b0) begin
+							csr_addr = 12'h305; //mtvec
+							csr_event = 1'b1;
+							alu_ctrl = `ALU_OP2;
+							alu_op_ctrl = `OP_RS1_CSR;
+							j_en = 1'b1;
+						end
+						/*------mret------*/
+						else if(inst_fetch[31:7] == 25'b001100000010_00000_000_00000) begin
+							csr_addr = 12'h341; //mepc
+							alu_ctrl = `ALU_OP2;
+							alu_op_ctrl = `OP_RS1_CSR;
+							j_en = 1'b1;
+						end
+						/*------csrrw------*/
+						else if(funct3 == 3'b001) begin
+							alu_ctrl = `ALU_OP2;
+							alu_op_ctrl = `OP_RS1_CSR;
+							csr_wen = 1'b1;
+							wb_en = 1'b1;
+							wb_ctrl = WB_ALU;
+						end
+						/*------csrrs------*/
+						else if(funct3 == 3'b010) begin 
+							alu_ctrl = `ALU_OR;
+							alu_op_ctrl = `OP_RS1_CSR;
+							csr_wen = 1'b0;
+							wb_en = 1'b1;
+							wb_ctrl = WB_ALU;
+						end
+						else begin
+							$display("unknow opcode =7'b1110011");
+							unknow_inst(); 
+						end
+					end
 					default: begin
-						$display("unknow opcode =7'b0100011");
+						$display("unknow opcode");
 						unknow_inst(); 
-					end
-					endcase
-				end
-				7'b1110011: begin //ebreak
-					if(imm_I == 32'b1 && rs1 == 0 && 
-						funct3 == 3'b0 && rd == 5'b0) begin
-						ebreak_flag = 1;
-					end
-					/*------ecall------*/
-					else if(inst_fetch[31:7] == 25'b0) begin
-						csr_addr = 12'h305; //mtvec
-						csr_event = 1'b1;
-						alu_ctrl = `ALU_OP2;
-						alu_op_ctrl = `OP_RS1_CSR;
-						j_en = 1'b1;
-					end
-					/*------mret------*/
-					else if(inst_fetch[31:7] == 25'b001100000010_00000_000_00000) begin
-						csr_addr = 12'h341; //mepc
-						alu_ctrl = `ALU_OP2;
-						alu_op_ctrl = `OP_RS1_CSR;
-						j_en = 1'b1;
-					end
-					/*------csrrw------*/
-					else if(funct3 == 3'b001) begin
-						alu_ctrl = `ALU_OP2;
-						alu_op_ctrl = `OP_RS1_CSR;
-						csr_wen = 1'b1;
-						wb_en = 1'b1;
-						wb_ctrl = WB_ALU;
-					end
-					/*------csrrs------*/
-					else if(funct3 == 3'b010) begin 
-						alu_ctrl = `ALU_OR;
-						alu_op_ctrl = `OP_RS1_CSR;
-						csr_wen = 1'b0;
-						wb_en = 1'b1;
-						wb_ctrl = WB_ALU;
-					end
-					else begin
-						$display("unknow opcode =7'b1110011");
-						unknow_inst(); 
-					end
-				end
-				default: begin
-					$display("unknow opcode");
-					unknow_inst(); 
-				end				
+					end				
 				endcase
 			end
 		end
