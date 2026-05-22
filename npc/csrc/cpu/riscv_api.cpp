@@ -67,6 +67,7 @@ static uint64_t IDU_alu_num = 0;
 static uint64_t IDU_lsu_num = 0;
 static uint64_t IDU_csr_num = 0;
 static uint64_t IDU_jump_num = 0;
+static uint64_t LSU_write_num = 0;
 extern "C" void performance_counter(int category) {
 	if (category==0)
 	{
@@ -96,12 +97,17 @@ extern "C" void performance_counter(int category) {
 	{
 		IDU_jump_num++;
 	}
+	else if (category==7)
+	{
+		LSU_write_num++;
+	}
 }
 
 void performance_statistic() {
 	Log("total IFU instructions = %lu", IFU_inst_num);
 	Log("total ALU instructions = %lu", ALU_inst_num);
 	Log("total LSU reads = %lu", LSU_read_num);
+	Log("total LSU writes = %lu", LSU_write_num);
 	Log("total IDU ALU instructions = %lu", IDU_alu_num);
 	Log("total IDU LSU instructions = %lu", IDU_lsu_num);
 	Log("total IDU CSR instructions = %lu", IDU_csr_num);

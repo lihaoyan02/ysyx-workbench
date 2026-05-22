@@ -205,6 +205,7 @@ always @(posedge clk) begin
 		mem_wdata_r <= 0;
 	end
 	else if (B_handshaked) begin	
+		performance_counter(7);
 		wreq <= 0;
 		if(BRESP != 0)
 			AXI_Access_Falt();
