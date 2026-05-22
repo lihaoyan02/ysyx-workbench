@@ -39,9 +39,9 @@ module core #(INST_WIDTH = 32, DATA_WIDTH = 32) (
 
 import "DPI-C" function void npctrap(int a0, int c_pc);
 
-wire j_pc, j_en, wb_en, ebreak_flag, inst_valid, lsu_en, lsu_wen, csr_wen, lsu_ready, wb_valid;
+wire exu_j_pc, j_en, wb_en, ebreak_flag, inst_valid, lsu_en, lsu_wen, csr_wen, lsu_ready, wb_valid;
 wire [INST_WIDTH-1:0] pc;
-wire [DATA_WIDTH-1:0] alu_out;
+wire [DATA_WIDTH-1:0] exu_out;
 wire [INST_WIDTH-1:0] inst_fetch;
 wire [DATA_WIDTH-1:0] imm;
 wire [DATA_WIDTH-1:0] lsu_rdata;
@@ -55,9 +55,16 @@ wire [2:0] wb_ctrl;
 wire [2:0] lsu_ctrl;
 wire [2:0] j_cond;
 
+wire exu_lsu_en;
+wire exu_lsu_wen;
+wire [2:0] exu_lsu_ctrl;
+
 wire [DATA_WIDTH-1:0] wb_data;
 wire [DATA_WIDTH-1:0] rs1_data;
 wire [DATA_WIDTH-1:0] rs2_data;
+wire [DATA_WIDTH-1:0] exu_lsu_wdata;
+
+wire exu_valid;
 
 wire [DATA_WIDTH-1:0] csr_rdata;
 wire [11:0] csr_addr;
@@ -90,9 +97,9 @@ wire [1:0] clint_BRESP, clint_RRESP;
 	IFU u_IFU (
 		.clk(clk),
 		.rst(rst),
-		.j_pc(j_pc),
-		.j_pc_addr(alu_out),
-		.ready_in(lsu_ready),
+		.exu_j_pc(exu_j_pc),
+		.j_pc_addr(exu_out),
+		.ready_npc_in(exu_valid & lsu_ready),
 		.pc(pc),
 		.inst_valid(inst_valid),
 		.inst_fetch(inst_fetch),
@@ -172,27 +179,38 @@ wire [1:0] clint_BRESP, clint_RRESP;
 	);
 
 	EXU u_EXU (
-		.op_ctrl(alu_op_ctrl),
-		.j_en(j_en),
-		.j_cond(j_cond),
+		.clk(clk),
+		.rst(rst),
+		.idu_valid(idu_valid),
+		.idu_alu_op_ctrl(alu_op_ctrl),
+		.idu_alu_ctrl(alu_ctrl),
+		.idu_j_en(j_en),
+		.idu_j_cond(j_cond),
 		.pc(pc),
 		.csr(csr_rdata),
-		.alu_ctrl(alu_ctrl),
 		.rs1_data(rs1_data),
 		.rs2_data(rs2_data),
-		.immval(imm),
-		.alu_out(alu_out),
-		.j_pc(j_pc)
+		.idu_imm(imm),
+		.idu_lsu_en(lsu_en),
+		.idu_lsu_wen(lsu_wen),
+		.idu_lsu_ctrl(lsu_ctrl),
+		.exu_lsu_en(exu_lsu_en),
+		.exu_lsu_wen(exu_lsu_wen),
+		.exu_lsu_ctrl(exu_lsu_ctrl),
+		.exu_lsu_wdata(exu_lsu_wdata),
+		.exu_valid(exu_valid),
+		.exu_out(exu_out),
+		.exu_j_pc(exu_j_pc)
 	);
 
 	LSU u_LSU (
-		.lsu_en(lsu_en),
 		.clk(clk),
 		.rst(rst),
-		.wen(lsu_wen),
-		.lsu_ctrl(lsu_ctrl),
-		.wdata(rs2_data),
-		.addr(alu_out),
+		.exu_lsu_en(exu_lsu_en),
+		.exu_lsu_wen(exu_lsu_wen),
+		.exu_lsu_ctrl(exu_lsu_ctrl),
+		.exu_lsu_addr(exu_out),
+		.exu_lsu_wdata(exu_lsu_wdata),
 		.rdata(lsu_rdata),
 		.ready_out(lsu_ready),
 
@@ -230,6 +248,20 @@ wire [1:0] clint_BRESP, clint_RRESP;
 		.RLAST(lsu_RLAST),
 		.RID(lsu_RID)
 	);
+
+	WBU u_WBU (
+		.exu_out(exu_out),
+		.mem_out(lsu_rdata),
+		.wb_ctrl(wb_ctrl),
+		.imm(imm),
+		.pc(pc),
+		.wb_data(wb_data)
+	);
+	
+always @(*) begin
+	if(ebreak_flag)
+		npctrap(u_gpr.rf[10], pc);
+end
 `ifndef CONFIG_TARGET_SOC
 
 wire uart_AWVALID, uart_AWREADY, uart_WVALID, uart_WREADY, 
@@ -538,19 +570,6 @@ wire [1:0] uart_BRESP, uart_RRESP;
 		.RRESP(clint_RRESP)
 	);
 	
-	WBU u_WBU (
-		.alu_out(alu_out),
-		.mem_out(lsu_rdata),
-		.wb_ctrl(wb_ctrl),
-		.imm(imm),
-		.pc(pc),
-		.wb_data(wb_data)
-	);
-	
-always @(*) begin
-	if(ebreak_flag)
-		npctrap(u_gpr.rf[10], pc);
-end
 
 endmodule
 

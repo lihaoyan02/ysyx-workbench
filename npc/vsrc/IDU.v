@@ -88,14 +88,10 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 		end
 		else if (inst_valid) begin
 			idu_valid <= 1;
-			idu_imm <= imm;
-			idu_rd <= rd;
 			idu_rs1 <= rs1;
 			idu_rs2 <= rs2;
 			idu_alu_ctrl <= alu_ctrl;
 			idu_alu_op_ctrl <= alu_op_ctrl;
-			idu_wb_ctrl <= wb_ctrl;
-			idu_wb_en <= wb_en;
 			idu_lsu_en <= lsu_en;
 			idu_lsu_wen <= lsu_wen;
 			idu_lsu_ctrl <= lsu_ctrl;
@@ -105,9 +101,16 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 			idu_csr_event <= csr_event;
 			idu_csr_wen <= csr_wen;
 			idu_csr_addr <= csr_addr;
+			// to wb (need latch)
+			idu_imm <= imm;
+			idu_rd <= rd;
+			idu_wb_ctrl <= wb_ctrl;
+			idu_wb_en <= wb_en;
 		end
 		else begin
 			idu_valid <= 0;
+			idu_alu_ctrl <= `ALU_IDLE;
+			idu_alu_op_ctrl <= `OP_RS1_RS2;
 			idu_lsu_en <= 0;
 			idu_lsu_wen <= 0;
 			idu_lsu_ctrl <= 0;
