@@ -66,7 +66,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 	import "DPI-C" function void unknow_inst(); 
 	import "DPI-C" function void performance_counter(int category); 
 	integer decode_cat;
-	localparam ALU_CAT = 3, LSU_CAT = 4, CSR_CAT = 5, JUMP_CAT = 6;
+	localparam ALU_CAT = 3, LSU_CAT = 4, CSR_CAT = 5, JUMP_CAT = 6, OTHER_CAT = 10;
 
 	always @(posedge clk) begin
 		if (rst) begin
@@ -159,6 +159,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 						wb_ctrl = WB_ALU;
 					end
 					7'b0110111: begin //lui
+						decode_cat = OTHER_CAT;
 						imm = imm_U;
 						wb_en = 1;
 						wb_ctrl = WB_IMM;
@@ -304,70 +305,70 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 							unknow_inst(); 
 						end
 						endcase
-				end
-				7'b0100011: begin //sb sw sj
-					decode_cat = LSU_CAT;
-					case (funct3)
-						3'b000, 3'b010, 3'b001: begin
-							alu_ctrl = `ALU_ADD;
-							alu_op_ctrl = `OP_RS1_IMM;
-							imm = imm_S;
-							lsu_en = 1'b1;
-							lsu_wen = 1'b1;
-							wb_en = 1'b0;
+					end
+					7'b0100011: begin //sb sw sj
+						decode_cat = LSU_CAT;
+						case (funct3)
+							3'b000, 3'b010, 3'b001: begin
+								alu_ctrl = `ALU_ADD;
+								alu_op_ctrl = `OP_RS1_IMM;
+								imm = imm_S;
+								lsu_en = 1'b1;
+								lsu_wen = 1'b1;
+								wb_en = 1'b0;
+							end
+						default: begin
+							$display("unknow opcode =7'b0100011");
+							unknow_inst(); 
 						end
+						endcase
+					end
+					7'b1110011: begin //ebreak
+						decode_cat = CSR_CAT;
+						if(imm_I == 32'b1 && rs1 == 0 && 
+							funct3 == 3'b0 && rd == 5'b0) begin
+							ebreak_flag = 1;
+						end
+						/*------ecall------*/
+						else if(inst_fetch[31:7] == 25'b0) begin
+							csr_addr = 12'h305; //mtvec
+							csr_event = 1'b1;
+							alu_ctrl = `ALU_OP2;
+							alu_op_ctrl = `OP_RS1_CSR;
+							j_en = 1'b1;
+						end
+						/*------mret------*/
+						else if(inst_fetch[31:7] == 25'b001100000010_00000_000_00000) begin
+							csr_addr = 12'h341; //mepc
+							alu_ctrl = `ALU_OP2;
+							alu_op_ctrl = `OP_RS1_CSR;
+							j_en = 1'b1;
+						end
+						/*------csrrw------*/
+						else if(funct3 == 3'b001) begin
+							alu_ctrl = `ALU_OP2;
+							alu_op_ctrl = `OP_RS1_CSR;
+							csr_wen = 1'b1;
+							wb_en = 1'b1;
+							wb_ctrl = WB_ALU;
+						end
+						/*------csrrs------*/
+						else if(funct3 == 3'b010) begin 
+							alu_ctrl = `ALU_OR;
+							alu_op_ctrl = `OP_RS1_CSR;
+							csr_wen = 1'b0;
+							wb_en = 1'b1;
+							wb_ctrl = WB_ALU;
+						end
+						else begin
+							$display("unknow opcode =7'b1110011");
+							unknow_inst(); 
+						end
+					end
 					default: begin
-						$display("unknow opcode =7'b0100011");
+						$display("unknow opcode");
 						unknow_inst(); 
-					end
-					endcase
-				end
-				7'b1110011: begin //ebreak
-					decode_cat = CSR_CAT;
-					if(imm_I == 32'b1 && rs1 == 0 && 
-						funct3 == 3'b0 && rd == 5'b0) begin
-						ebreak_flag = 1;
-					end
-					/*------ecall------*/
-					else if(inst_fetch[31:7] == 25'b0) begin
-						csr_addr = 12'h305; //mtvec
-						csr_event = 1'b1;
-						alu_ctrl = `ALU_OP2;
-						alu_op_ctrl = `OP_RS1_CSR;
-						j_en = 1'b1;
-					end
-					/*------mret------*/
-					else if(inst_fetch[31:7] == 25'b001100000010_00000_000_00000) begin
-						csr_addr = 12'h341; //mepc
-						alu_ctrl = `ALU_OP2;
-						alu_op_ctrl = `OP_RS1_CSR;
-						j_en = 1'b1;
-					end
-					/*------csrrw------*/
-					else if(funct3 == 3'b001) begin
-						alu_ctrl = `ALU_OP2;
-						alu_op_ctrl = `OP_RS1_CSR;
-						csr_wen = 1'b1;
-						wb_en = 1'b1;
-						wb_ctrl = WB_ALU;
-					end
-					/*------csrrs------*/
-					else if(funct3 == 3'b010) begin 
-						alu_ctrl = `ALU_OR;
-						alu_op_ctrl = `OP_RS1_CSR;
-						csr_wen = 1'b0;
-						wb_en = 1'b1;
-						wb_ctrl = WB_ALU;
-					end
-					else begin
-						$display("unknow opcode =7'b1110011");
-						unknow_inst(); 
-					end
-				end
-				default: begin
-					$display("unknow opcode");
-					unknow_inst(); 
-				end				
+					end				
 				endcase
 			end
 		end
