@@ -138,6 +138,7 @@ static void exec_one_inst() {
 		single_cycle();
 		uint32_t current_state = core_read_state();
 		if(current_state==1) {
+			cycle_record(i+1);
 			return;
 		}
 	}
