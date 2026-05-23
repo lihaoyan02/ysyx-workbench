@@ -68,7 +68,9 @@ static uint64_t IDU_lsu_num = 0;
 static uint64_t IDU_csr_num = 0;
 static uint64_t IDU_jump_num = 0;
 static uint64_t LSU_write_num = 0;
+static int inst_cat;
 extern "C" void performance_counter(int category) {
+	inst_cat = category;
 	if (category==0)
 	{
 		IFU_inst_num++;
@@ -103,6 +105,19 @@ extern "C" void performance_counter(int category) {
 	}
 }
 
+static uint64_t Load_Store_cycle_num = 0;
+static uint64_t ALU_cycle_num = 0;
+void cycle_record(int cycle) {
+	if (inst_cat==4)
+	{
+		Load_Store_cycle_num += (uint64_t)cycle;
+	}
+	else if (inst_cat==3)
+	{
+		ALU_cycle_num += (uint64_t)cycle;
+	}	
+}
+
 void performance_statistic() {
 	Log("total IFU instructions = %lu", IFU_inst_num);
 	Log("total ALU instructions = %lu", ALU_inst_num);
@@ -112,4 +127,6 @@ void performance_statistic() {
 	Log("total IDU LSU instructions = %lu", IDU_lsu_num);
 	Log("total IDU CSR instructions = %lu", IDU_csr_num);
 	Log("total IDU jump instructions = %lu", IDU_jump_num);
+	Log("average Load Store inst cycle = %lu", Load_Store_cycle_num/IDU_lsu_num);
+	Log("average ALU inst cycle = %lu", ALU_cycle_num/IDU_alu_num);
 }
