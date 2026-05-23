@@ -99,6 +99,7 @@ extern "C" void performance_counter(int category) {
 	else if (category==6)
 	{
 		IDU_jump_num++;
+		inst_cat = category;
 	}
 	else if (category==7)
 	{
@@ -108,6 +109,7 @@ extern "C" void performance_counter(int category) {
 
 static uint64_t Load_Store_cycle_num = 0;
 static uint64_t ALU_cycle_num = 0;
+static uint64_t jump_cycle_num = 0;
 void cycle_record(int cycle) {
 	if (inst_cat==4)
 	{
@@ -116,7 +118,11 @@ void cycle_record(int cycle) {
 	else if (inst_cat==3)
 	{
 		ALU_cycle_num += (uint64_t)cycle;
-	}	
+	}
+	else if (inst_cat==6)
+	{
+		jump_cycle_num += (uint64_t)cycle;
+	}
 }
 
 void performance_statistic() {
@@ -130,4 +136,5 @@ void performance_statistic() {
 	Log("total IDU jump instructions = %lu", IDU_jump_num);
 	Log("average Load Store inst cycle = %lu", Load_Store_cycle_num/IDU_lsu_num);
 	Log("average ALU inst cycle = %lu", ALU_cycle_num/IDU_alu_num);
+	Log("average jump inst cycle = %lu", jump_cycle_num/IDU_jump_num);
 }
