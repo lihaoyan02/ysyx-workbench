@@ -70,7 +70,6 @@ static uint64_t IDU_jump_num = 0;
 static uint64_t LSU_write_num = 0;
 static int inst_cat;
 extern "C" void performance_counter(int category) {
-	inst_cat = category;
 	if (category==0)
 	{
 		IFU_inst_num++;
@@ -86,10 +85,12 @@ extern "C" void performance_counter(int category) {
 	else if (category==3)
 	{
 		IDU_alu_num++;
+		inst_cat = category;
 	}
 	else if (category==4)
 	{
 		IDU_lsu_num++;
+		inst_cat = category;
 	}
 	else if (category==5)
 	{
