@@ -123,6 +123,7 @@ void cycle_record(int cycle) {
 	{
 		jump_cycle_num += (uint64_t)cycle;
 	}
+	inst_cat = 0;
 }
 
 void performance_statistic() {
