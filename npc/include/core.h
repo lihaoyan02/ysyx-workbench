@@ -37,4 +37,6 @@ uint32_t core_read_state();
 
 void performance_statistic();
 
+void cycle_record(int cycle);
+
 #endif
