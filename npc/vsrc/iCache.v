@@ -43,7 +43,9 @@ module icache #(XLEN=32, BLOCK_SIZE=4, BLOCK_NUM=16) (
 	// input RLAST,
 	// input [3:0] RID
 );
-
+//
+localparam SRAM_ADDR_DOWN = 32'h0f000000;
+localparam SRAM_ADDR_UP = SRAM_ADDR_DOWN + 32'h2000;
 // parameter
 localparam IDLE=0, FETCH=1, WAIT_BUS=2, WAIT_IFU=3;
 localparam OFFSET_LEN       = $clog2(BLOCK_SIZE);
@@ -119,9 +121,11 @@ always @(posedge clk) begin
             WAIT_BUS: begin
                 if (RVALID) begin
                     state <= WAIT_IFU;
-                    cache_valid[araddr_r_indx] <= 1;
-                    cache_tag[araddr_r_indx] <= araddr_r_tag;
-                    cache_rf[araddr_r_indx] <= RDATA;
+                    if ((araddr_r>=SRAM_ADDR_DOWN) && (araddr_r<SRAM_ADDR_UP)) begin
+                        cache_valid[araddr_r_indx] <= 1;
+                        cache_tag[araddr_r_indx] <= araddr_r_tag;
+                        cache_rf[araddr_r_indx] <= RDATA;
+                    end
                     rdata <= RDATA;
                     rvalid <= 1;
                 end
