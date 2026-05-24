@@ -9,54 +9,68 @@ module IFU #(INST_WIDTH = 32, ADDR_WIDTH = 32)(
 	output reg inst_valid,
 	output wb_valid,
 	
-	output AWVALID,
-	input AWREADY,
-	output [ADDR_WIDTH-1:0] AWADDR,
-	// output [3:0] AWID,
-	// output [7:0] AWLEN,
-	// output [2:0] AWSIZE,
-	// output [1:0] AWBURST,
+	// to icache
+	output [ADDR_WIDTH-1:0] raddr,
+    output avalid,
+    input aready,
 
-	output WVALID,
-	input WREADY,
-	output [INST_WIDTH-1:0] WDATA,
-	output [3:0] WSTRB,
-	// output WLAST,
+    input [INST_WIDTH-1:0] rdata,
+    input rvalid,
+    output rready
 
-	input BVALID,
-	output BREADY,
-	input [1:0] BRESP,
-	// input [3:0] BID,
+	// output AWVALID,
+	// input AWREADY,
+	// output [ADDR_WIDTH-1:0] AWADDR,
+	// // output [3:0] AWID,
+	// // output [7:0] AWLEN,
+	// // output [2:0] AWSIZE,
+	// // output [1:0] AWBURST,
 
-	output ARVALID,
-	input ARREADY,
-	output [ADDR_WIDTH-1:0] ARADDR,
-	// output [3:0] ARID,
-	// output [7:0] ARLEN,
-	// output [2:0] ARSIZE,
-	// output [1:0] ARBURST,
+	// output WVALID,
+	// input WREADY,
+	// output [INST_WIDTH-1:0] WDATA,
+	// output [3:0] WSTRB,
+	// // output WLAST,
 
-	input RVALID,
-	output RREADY,
-	input [INST_WIDTH-1:0] RDATA,
-	input [1:0] RRESP
-	// input RLAST,
-	// input [3:0] RID
+	// input BVALID,
+	// output BREADY,
+	// input [1:0] BRESP,
+	// // input [3:0] BID,
+
+	// output ARVALID,
+	// input ARREADY,
+	// output [ADDR_WIDTH-1:0] ARADDR,
+	// // output [3:0] ARID,
+	// // output [7:0] ARLEN,
+	// // output [2:0] ARSIZE,
+	// // output [1:0] ARBURST,
+
+	// input RVALID,
+	// output RREADY,
+	// input [INST_WIDTH-1:0] RDATA,
+	// input [1:0] RRESP
+	// // input RLAST,
+	// // input [3:0] RID
 );
 
 import "DPI-C" function void performance_counter(int category); 
 
-wire AR_handshaked, R_handshaked;
-assign AR_handshaked = ARVALID & ARREADY;
-assign R_handshaked = RVALID & RREADY;
+// wire AR_handshaked, R_handshaked;
+// assign AR_handshaked = ARVALID & ARREADY;
+// assign R_handshaked = RVALID & RREADY;
 
-assign AWVALID=0;
-assign AWADDR=0;
-assign WVALID=0;
-assign WDATA=0;
-assign WSTRB=0;
-assign BREADY=0;
-assign RREADY = RVALID & state==WAIT;
+wire AR_handshaked, R_handshaked;
+assign AR_handshaked = avalid & aready;
+assign R_handshaked = rvalid & rready;
+
+// assign AWVALID=0;
+// assign AWADDR=0;
+// assign WVALID=0;
+// assign WDATA=0;
+// assign WSTRB=0;
+// assign BREADY=0;
+// assign RREADY = RVALID & state==WAIT;
+assign rready = rvalid & state==WAIT;
 
 localparam IDLE = 1'b0, WAIT = 1'b1;
 reg state, next_state;
@@ -88,9 +102,14 @@ always @(posedge clk) begin
 	end
 end
 
-assign ARVALID = ~rst & state==IDLE;
-assign ARADDR = pc;
-assign inst_fetch = R_handshaked ? RDATA : 0;
+// assign ARVALID = ~rst & state==IDLE;
+// assign ARADDR = pc;
+// assign inst_fetch = R_handshaked ? RDATA : 0;
+// assign inst_valid = R_handshaked;
+
+assign avalid = ~rst & state==IDLE;
+assign raddr = pc;
+assign inst_fetch = R_handshaked ? rdata : 0;
 assign inst_valid = R_handshaked;
 
 wire [ADDR_WIDTH-1:0] next_pc;

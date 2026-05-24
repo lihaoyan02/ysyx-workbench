@@ -94,6 +94,9 @@ wire [DATA_WIDTH-1:0] clint_AWADDR, clint_WDATA, clint_ARADDR, clint_RDATA;
 wire [3:0] clint_WSTRB;
 wire [1:0] clint_BRESP, clint_RRESP;
 
+// ifu_icache signal
+wire [DATA_WIDTH-1:0] ifu_icache_raddr, icache_ifu_rdata;
+wire ifu_icache_avalid, icache_ifu_aready, icache_ifu_rvalid, ifu_icache_rready;
 	IFU u_IFU (
 		.clk(clk),
 		.rst(rst),
@@ -104,6 +107,48 @@ wire [1:0] clint_BRESP, clint_RRESP;
 		.inst_valid(inst_valid),
 		.inst_fetch(inst_fetch),
 		.wb_valid(wb_valid),
+
+		.raddr(ifu_icache_raddr),
+		.avalid(ifu_icache_avalid),
+		.aready(icache_ifu_aready),
+
+		.rdata(icache_ifu_rdata),
+		.rvalid(icache_ifu_rvalid),
+		.rready(ifu_icache_rready)
+
+		// .AWVALID(ifu_AWVALID),
+		// .AWREADY(ifu_AWREADY),
+		// .AWADDR(ifu_AWADDR),
+
+		// .WVALID(ifu_WVALID),
+		// .WREADY(ifu_WREADY),
+		// .WDATA(ifu_WDATA),
+		// .WSTRB(ifu_WSTRB),
+
+		// .BVALID(ifu_BVALID),
+		// .BREADY(ifu_BREADY),
+		// .BRESP(ifu_BRESP),
+
+		// .ARVALID(ifu_ARVALID),
+		// .ARREADY(ifu_ARREADY),
+		// .ARADDR(ifu_ARADDR),
+
+		// .RVALID(ifu_RVALID),
+		// .RREADY(ifu_RREADY),
+		// .RDATA(ifu_RDATA),
+		// .RRESP(ifu_RRESP)
+	);
+
+	icache u_icache (
+		.clk(clk),
+		.rst(rst),
+		
+		.raddr(ifu_icache_raddr),
+		.avalid(ifu_icache_avalid),
+		.aready(icache_ifu_aready),
+		.rdata(icache_ifu_rdata),
+		.rvalid(icache_ifu_rvalid),
+		.rready(ifu_icache_rready),
 
 		.AWVALID(ifu_AWVALID),
 		.AWREADY(ifu_AWREADY),
