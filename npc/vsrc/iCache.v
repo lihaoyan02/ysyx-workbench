@@ -121,7 +121,7 @@ always @(posedge clk) begin
             WAIT_BUS: begin
                 if (RVALID) begin
                     state <= WAIT_IFU;
-                    if ((araddr_r>=SRAM_ADDR_DOWN) && (araddr_r<SRAM_ADDR_UP)) begin
+                    if (!((araddr_r>=SRAM_ADDR_DOWN) && (araddr_r<SRAM_ADDR_UP))) begin
                         cache_valid[araddr_r_indx] <= 1;
                         cache_tag[araddr_r_indx] <= araddr_r_tag;
                         cache_rf[araddr_r_indx] <= RDATA;
