@@ -110,6 +110,10 @@ extern "C" void performance_counter(int category) {
 static uint64_t Load_Store_cycle_num = 0;
 static uint64_t ALU_cycle_num = 0;
 static uint64_t jump_cycle_num = 0;
+
+static uint64_t cache_acc_num = 0;
+static uint64_t cache_acc_cycle_num = 0;
+
 void cycle_record(int cycle) {
 	if (inst_cat==4)
 	{
@@ -138,4 +142,15 @@ void performance_statistic() {
 	Log("average Load Store inst cycle = %lu", Load_Store_cycle_num/IDU_lsu_num);
 	Log("average ALU inst cycle = %lu", ALU_cycle_num/IDU_alu_num);
 	Log("average jump inst cycle = %lu", jump_cycle_num/IDU_jump_num);
+	Log("average icache cycle = %lu", cache_acc_cycle_num/cache_acc_num);
+}
+
+
+extern "C" void icache_access_rcd(char hit, int access_time) {
+	cache_acc_num++;
+	cache_acc_cycle_num += access_time;
+	if (hit)
+	{
+		assert(access_time==1);
+	}
 }
