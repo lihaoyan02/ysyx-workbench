@@ -144,7 +144,7 @@ void performance_statistic() {
 	Log("average ALU inst cycle = %lu", ALU_cycle_num/IDU_alu_num);
 	Log("average jump inst cycle = %lu", jump_cycle_num/IDU_jump_num);
 	Log("average icache cycle = %lu", cache_acc_cycle_num/cache_acc_num);
-	Log("average icache hit rate = %f", cache_hit_num/cache_acc_num);
+	Log("average icache hit rate = %f", (double)cache_hit_num/(double)cache_acc_num);
 }
 
 
