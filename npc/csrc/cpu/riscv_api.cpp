@@ -112,6 +112,7 @@ static uint64_t ALU_cycle_num = 0;
 static uint64_t jump_cycle_num = 0;
 
 static uint64_t cache_acc_num = 0;
+static uint64_t cache_hit_num = 0;
 static uint64_t cache_acc_cycle_num = 0;
 
 void cycle_record(int cycle) {
@@ -143,6 +144,7 @@ void performance_statistic() {
 	Log("average ALU inst cycle = %lu", ALU_cycle_num/IDU_alu_num);
 	Log("average jump inst cycle = %lu", jump_cycle_num/IDU_jump_num);
 	Log("average icache cycle = %lu", cache_acc_cycle_num/cache_acc_num);
+	Log("average icache hit rate = %f", cache_hit_num/cache_acc_num);
 }
 
 
@@ -151,6 +153,7 @@ extern "C" void icache_access_rcd(char hit, int access_time) {
 	cache_acc_cycle_num += access_time;
 	if (hit)
 	{
+		cache_hit_num++;
 		assert(access_time==1);
 	}
 }
