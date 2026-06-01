@@ -129,10 +129,9 @@ always @(posedge clk) begin
             WAIT_BUS: begin
                 cnt <= cnt + 1;
                 if (RVALID) begin
-                    
+                    icache_access_rcd(0,cnt+1);
                     state <= WAIT_IFU;
                     if (!((araddr_r>=SRAM_ADDR_DOWN) && (araddr_r<SRAM_ADDR_UP))) begin
-                        icache_access_rcd(0,cnt+1);
                         cache_valid[araddr_r_indx] <= 1;
                         cache_tag[araddr_r_indx] <= araddr_r_tag;
                         cache_rf[araddr_r_indx] <= RDATA;
