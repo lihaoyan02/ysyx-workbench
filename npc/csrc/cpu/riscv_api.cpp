@@ -132,19 +132,19 @@ void cycle_record(int cycle) {
 }
 
 void performance_statistic() {
-	Log("total IFU instructions = %lu", IFU_inst_num);
-	Log("total ALU instructions = %lu", ALU_inst_num);
-	Log("total IDU ALU instructions = %lu", IDU_alu_num);
-	Log("total LSU reads = %lu", LSU_read_num);
-	Log("total LSU writes = %lu", LSU_write_num);
-	Log("total IDU LSU instructions = %lu", IDU_lsu_num);
-	Log("total IDU CSR instructions = %lu", IDU_csr_num);
-	Log("total IDU jump instructions = %lu", IDU_jump_num);
-	Log("average Load Store inst cycle = %lu", Load_Store_cycle_num/IDU_lsu_num);
-	Log("average ALU inst cycle = %lu", ALU_cycle_num/IDU_alu_num);
-	Log("average jump inst cycle = %lu", jump_cycle_num/IDU_jump_num);
-	Log("average icache cycle = %lu", cache_acc_cycle_num/cache_acc_num);
-	Log("average icache hit rate = %f", (double)cache_hit_num/(double)cache_acc_num);
+	Log("\ntotal IFU instructions = %lu", IFU_inst_num);
+	Log("\ntotal ALU instructions = %lu", ALU_inst_num);
+	Log("\ntotal IDU ALU instructions = %lu", IDU_alu_num);
+	Log("\ntotal LSU reads = %lu", LSU_read_num);
+	Log("\ntotal LSU writes = %lu", LSU_write_num);
+	Log("\ntotal IDU LSU instructions = %lu", IDU_lsu_num);
+	Log("\ntotal IDU CSR instructions = %lu", IDU_csr_num);
+	Log("\ntotal IDU jump instructions = %lu", IDU_jump_num);
+	Log("\naverage Load Store inst cycle = %lu", Load_Store_cycle_num/IDU_lsu_num);
+	Log("\naverage ALU inst cycle = %lu", ALU_cycle_num/IDU_alu_num);
+	Log("\naverage jump inst cycle = %lu", jump_cycle_num/IDU_jump_num);
+	Log("\naverage icache cycle = %lu", cache_acc_cycle_num/cache_acc_num);
+	Log("\naverage icache hit rate = %f", (double)cache_hit_num/(double)cache_acc_num);
 }
 
 
