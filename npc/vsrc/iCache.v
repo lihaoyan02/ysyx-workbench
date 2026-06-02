@@ -30,7 +30,7 @@ module icache #(XLEN=32, BLOCK_SIZE=4, BLOCK_NUM=16) (
 
 	output reg ARVALID,
 	input ARREADY,
-	output [XLEN-1:0] ARADDR,
+	output reg [XLEN-1:0] ARADDR,
 	// output [3:0] ARID,
 	// output [7:0] ARLEN,
 	// output [2:0] ARSIZE,
@@ -72,7 +72,7 @@ assign BREADY=0;
 
 reg [XLEN-1:0]  araddr_r;
 assign aready = (state==IDLE);
-assign ARADDR = ARVALID ? araddr_r : 0;
+// assign ARADDR = ARVALID ? araddr_r : 0;
 assign RREADY = state==WAIT_BUS;
 
 wire [INDEX_LEN-1:0]    araddr_r_indx = araddr_r[INDEX_BIT_H-1:OFFSET_BIT_H];
@@ -97,6 +97,7 @@ always @(posedge clk) begin
         rvalid <= 0;
         araddr_r <= 0;
         ARVALID <= 0;
+        ARADDR <= 0;
         cnt <= 0;
     end
     else begin
@@ -117,6 +118,7 @@ always @(posedge clk) begin
                         state <= FETCH;
                         araddr_r <= raddr;
                         ARVALID <= 1;
+                        ARADDR <= {raddr[XLEN-1:OFFSET_BIT_H],{OFFSET_LEN{1'b0}}};
                     end
                 end
                 else begin
