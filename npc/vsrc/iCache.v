@@ -80,6 +80,9 @@ wire [TAG_LEN-1:0]      araddr_r_tag = araddr_r[XLEN-1:INDEX_BIT_H];
 wire [INDEX_LEN-1:0]    raddr_indx = raddr[INDEX_BIT_H-1:OFFSET_BIT_H];
 wire [TAG_LEN-1:0]      raddr_tag = raddr[XLEN-1:INDEX_BIT_H];
 
+reg [31:0] cnt;
+import "DPI-C" function void icache_access_rcd(byte hit, int access_time); 
+
 always @(posedge clk) begin
     if (rst) begin
         for (integer i=0; i<BLOCK_NUM ; i=i+1) begin
@@ -92,17 +95,20 @@ always @(posedge clk) begin
         rvalid <= 0;
         araddr_r <= 0;
         ARVALID <= 0;
+        cnt <= 0;
     end
     else begin
         case (state)
             IDLE: begin
                 if (avalid) begin
                     if (cache_hit) begin
+                        icache_access_rcd(1,1);
                         state <= WAIT_IFU;
                         rdata <= cache_rf[raddr_indx];
                         rvalid <= 1;
                     end
                     else begin
+                        cnt <= cnt + 1;
                         state <= FETCH;
                         araddr_r <= raddr;
                         ARVALID <= 1;
@@ -110,16 +116,20 @@ always @(posedge clk) begin
                 end
                 else begin
                     state <= IDLE;
+                    cnt <= 0;
                 end
             end
             FETCH: begin
+                cnt <= cnt + 1;
                 if (AWREADY) begin
                     state <= WAIT_BUS;
                     ARVALID <= 0;
                 end
             end
             WAIT_BUS: begin
+                cnt <= cnt + 1;
                 if (RVALID) begin
+                    icache_access_rcd(0,cnt+1);
                     state <= WAIT_IFU;
                     if (!((araddr_r>=SRAM_ADDR_DOWN) && (araddr_r<SRAM_ADDR_UP))) begin
                         cache_valid[araddr_r_indx] <= 1;
@@ -131,6 +141,7 @@ always @(posedge clk) begin
                 end
             end
             WAIT_IFU: begin
+                cnt <= 0;
                 if (rready) begin
                     rvalid <= 0;
                     state <= IDLE;
