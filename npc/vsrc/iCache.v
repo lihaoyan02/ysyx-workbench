@@ -121,7 +121,7 @@ always @(posedge clk) begin
             end
             FETCH: begin
                 cnt <= cnt + 1;
-                if (AWREADY) begin
+                if (ARREADY) begin
                     state <= WAIT_BUS;
                     ARVALID <= 0;
                 end
