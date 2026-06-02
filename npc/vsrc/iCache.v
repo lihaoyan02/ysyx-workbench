@@ -55,7 +55,8 @@ localparam OFFSET_BIT_H     = OFFSET_LEN;
 localparam INDEX_BIT_H      = OFFSET_BIT_H + $clog2(BLOCK_NUM);
 
 // cache data
-reg [BLOCK_SIZE*8-1:0] cache_rf [BLOCK_NUM-1:0];
+// reg [BLOCK_SIZE*8-1:0] cache_rf [BLOCK_NUM-1:0];
+reg [7:0] cache_rf [BLOCK_NUM-1:0][BLOCK_SIZE-1:0];
 reg [TAG_LEN-1:0] cache_tag [BLOCK_NUM-1:0];
 reg cache_valid [BLOCK_NUM-1:0];
 
@@ -79,6 +80,7 @@ wire [TAG_LEN-1:0]      araddr_r_tag = araddr_r[XLEN-1:INDEX_BIT_H];
 
 wire [INDEX_LEN-1:0]    raddr_indx = raddr[INDEX_BIT_H-1:OFFSET_BIT_H];
 wire [TAG_LEN-1:0]      raddr_tag = raddr[XLEN-1:INDEX_BIT_H];
+wire [OFFSET_LEN-1:0]    raddr_off = raddr[OFFSET_BIT_H-1:0];
 
 reg [31:0] cnt;
 import "DPI-C" function void icache_access_rcd(byte hit, int access_time); 
@@ -86,7 +88,7 @@ import "DPI-C" function void icache_access_rcd(byte hit, int access_time);
 always @(posedge clk) begin
     if (rst) begin
         for (integer i=0; i<BLOCK_NUM ; i=i+1) begin
-            cache_rf[i] <= 0;
+            // cache_rf[i] <= 0;
             cache_tag[i] <= 0;
             cache_valid[i] <= 0;
         end
@@ -104,7 +106,10 @@ always @(posedge clk) begin
                     if (cache_hit) begin
                         icache_access_rcd(1,1);
                         state <= WAIT_IFU;
-                        rdata <= cache_rf[raddr_indx];
+                        rdata <= {cache_rf[raddr_indx][raddr_off+3],
+                            cache_rf[raddr_indx][raddr_off+2],
+                            cache_rf[raddr_indx][raddr_off+1],
+                            cache_rf[raddr_indx][raddr_off]};
                         rvalid <= 1;
                     end
                     else begin
@@ -134,7 +139,10 @@ always @(posedge clk) begin
                     if (!((araddr_r>=SRAM_ADDR_DOWN) && (araddr_r<SRAM_ADDR_UP))) begin
                         cache_valid[araddr_r_indx] <= 1;
                         cache_tag[araddr_r_indx] <= araddr_r_tag;
-                        cache_rf[araddr_r_indx] <= RDATA;
+                        {cache_rf[araddr_r_indx][3],
+                        cache_rf[araddr_r_indx][2],
+                        cache_rf[araddr_r_indx][1],
+                        cache_rf[araddr_r_indx][0]} <= RDATA;
                     end
                     rdata <= RDATA;
                     rvalid <= 1;
