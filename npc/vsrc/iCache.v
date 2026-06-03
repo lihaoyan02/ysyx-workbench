@@ -248,6 +248,7 @@ always @(posedge clk) begin
             end
             WAIT_IFU: begin
                 cnt <= 0;
+                ARADDR <= 0;
                 if (rready) begin
                     rvalid <= 0;
                     state <= IDLE;
