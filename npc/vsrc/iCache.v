@@ -86,7 +86,7 @@ assign ARSIZE = 3'b10;
 reg [XLEN-1:0]  araddr_r;
 assign aready = (state==IDLE);
 // assign ARADDR = ARVALID ? araddr_r : 0;
-assign RREADY = (state==WAIT_BUS_BURST) | (state==WAIT_BUS_SIGLE);
+assign RREADY = (state==WAIT_BUS_BURST) | (state==WAIT_BUS_SIGLE) | (state==WAIT_BUS_SRAM);
 
 wire [INDEX_LEN-1:0]    araddr_r_indx = araddr_r[INDEX_BIT_H-1:OFFSET_BIT_H];
 wire [TAG_LEN-1:0]      araddr_r_tag = araddr_r[XLEN-1:INDEX_BIT_H];
