@@ -143,17 +143,17 @@ always @(posedge clk) begin
                     end
                     else begin
                         cnt <= cnt + 1;
-                        if (((raddr>=SDRAM_ADDR_DOWN) && (raddr<SDRAM_ADDR_UP))) begin
-                            state <= FETCH_BURST;
-                            ARLEN <= BLOCK_SIZE/4-1;
-                            ARBURST <= 2'b01;
-                        end
-                        else begin
+                        // if (((raddr>=SDRAM_ADDR_DOWN) && (raddr<SDRAM_ADDR_UP))) begin
+                        //     state <= FETCH_BURST;
+                        //     ARLEN <= BLOCK_SIZE/4-1;
+                        //     ARBURST <= 2'b01;
+                        // end
+                        // else begin
                             state <= FETCH_SIGLE;
                             ARLEN <= 0;
                             ARBURST <= 2'b0;
                             ptr <= 0;
-                        end
+                        // end
                         araddr_r <= raddr;
                         ARVALID <= 1;
                         ARADDR <= {raddr[XLEN-1:OFFSET_BIT_H],{OFFSET_LEN{1'b0}}};
