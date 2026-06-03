@@ -6,24 +6,36 @@ module Xbar_2x2 #(DATA_WIDTH = 32, ADDR_WIDTH=32) (
     input m1_AWVALID,
 	output reg m1_AWREADY,
 	input [ADDR_WIDTH-1:0] m1_AWADDR,
+	input [3:0] m1_AWID,
+	input [7:0] m1_AWLEN,
+	input [2:0] m1_AWSIZE,
+	input [1:0] m1_AWBURST,
 
 	input m1_WVALID,
 	output reg m1_WREADY,
 	input [DATA_WIDTH-1:0] m1_WDATA,
 	input [3:0] m1_WSTRB,
+	input m1_WLAST,
 
 	output reg m1_BVALID,
 	input m1_BREADY,
 	output reg [1:0] m1_BRESP,
+	output reg [3:0] m1_BID,
 
 	input m1_ARVALID,
 	output reg m1_ARREADY,
 	input [ADDR_WIDTH-1:0] m1_ARADDR,
+	input [3:0] m1_ARID,
+	input [7:0] m1_ARLEN,
+	input [2:0] m1_ARSIZE,
+	input [1:0] m1_ARBURST,
 
 	output reg m1_RVALID,
 	input m1_RREADY,
 	output reg [DATA_WIDTH-1:0] m1_RDATA,
 	output reg [1:0] m1_RRESP,
+	output reg m1_RLAST,
+	output reg [3:0] m1_RID,
 // m2 AXI4
     input m2_AWVALID,
 	output reg m2_AWREADY,
@@ -149,13 +161,13 @@ always @(*) begin
 			end
         end 
         GRANT_m1: begin
-			if(m1_RVALID & m1_RREADY & m2_req) begin
+			if(m1_RVALID & m1_RREADY & m1_RLAST & m2_req) begin
                 next_mstate = GRANT_m2;
 			end
             else if (m1_BVALID & m1_BREADY & m2_req) begin
                 next_mstate = GRANT_m2;
 			end
-            else if(m1_RVALID & m1_RREADY) begin
+            else if(m1_RVALID & m1_RREADY & m1_RLAST) begin
                 next_mstate = IDLE;
 			end
             else if (m1_BVALID & m1_BREADY) begin
@@ -166,13 +178,13 @@ always @(*) begin
 			end
         end
         GRANT_m2: begin
-            if(m2_RVALID & m2_RREADY & m1_req) begin
+            if(m2_RVALID & m2_RREADY & m2_RLAST & m1_req) begin
                 next_mstate = GRANT_m1;
 			end
             else if (m2_BVALID & m2_BREADY & m1_req) begin
                 next_mstate = GRANT_m1;
 			end
-            else if(m2_RVALID & m2_RREADY) begin
+            else if(m2_RVALID & m2_RREADY & m2_RLAST) begin
                 next_mstate = IDLE;
 			end
             else if (m2_BVALID & m2_BREADY) begin
@@ -348,7 +360,7 @@ always @(*) begin
 			if (s1_BVALID & s1_BREADY) begin
 				next_sstate = IDLE;
 			end
-			else if (s1_RVALID & s1_RREADY) begin
+			else if (s1_RVALID & s1_RREADY & s1_RLAST) begin
 				next_sstate = IDLE;
 			end
 			else
@@ -393,15 +405,15 @@ always @(*) begin
 			inter_ARVALID = m1_ARVALID;
 			inter_ARADDR = m1_ARADDR;
 			inter_RREADY = m1_RREADY;
-			inter_AWID = 0;
-			inter_ARID = 0;
-			inter_AWLEN = 0;
-			inter_ARLEN = 0;
-			inter_AWSIZE = 3'b10;
-			inter_ARSIZE = 3'b10;
-			inter_AWBURST = 0;
-			inter_ARBURST = 0;
-			inter_WLAST = m1_WVALID;
+			inter_AWID = m1_AWID;
+			inter_ARID = m1_ARID;
+			inter_AWLEN = m1_AWLEN;
+			inter_ARLEN = m1_ARLEN;
+			inter_AWSIZE = m1_AWSIZE;
+			inter_ARSIZE = m1_ARSIZE;
+			inter_AWBURST = m1_AWBURST;
+			inter_ARBURST = m1_ARBURST;
+			inter_WLAST = m1_WLAST;
 
 			m1_AWREADY = inter_AWREADY;
 			m1_WREADY = inter_WREADY;
@@ -411,6 +423,9 @@ always @(*) begin
 			m1_RVALID = inter_RVALID;
 			m1_RDATA = inter_RDATA;
 			m1_RRESP = inter_RRESP;
+			m1_BID = inter_BID;
+			m1_RID = inter_RID;
+			m1_RLAST = inter_RLAST;
 
 			m2_AWREADY = 0;
 			m2_WREADY = 0;
@@ -463,6 +478,8 @@ always @(*) begin
 			m1_RVALID = 0;
 			m1_RDATA = 0;
 			m1_RRESP = 0;
+			m1_BID = 0;
+			m1_RID = 0;
 		end
 		default: begin
 			inter_AWVALID = 0;
@@ -492,6 +509,9 @@ always @(*) begin
 			m1_RVALID = 0;
 			m1_RDATA = 0;
 			m1_RRESP = 0;
+			m1_BID = 0;
+			m1_RID = 0;
+			m1_RLAST = 0;
 
 			m2_AWREADY = 0;
 			m2_WREADY = 0;

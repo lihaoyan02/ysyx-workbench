@@ -143,7 +143,7 @@ void performance_statistic() {
 	Log("\naverage Load Store inst cycle = %lu", Load_Store_cycle_num/IDU_lsu_num);
 	Log("\naverage ALU inst cycle = %lu", ALU_cycle_num/IDU_alu_num);
 	Log("\naverage jump inst cycle = %lu", jump_cycle_num/IDU_jump_num);
-	Log("\naverage icache cycle = %lu", cache_acc_cycle_num/cache_acc_num);
+	Log("\naverage icache cycle = %f", (double)cache_acc_cycle_num/(double)cache_acc_num);
 	Log("\naverage icache hit rate = %f", (double)cache_hit_num/(double)cache_acc_num);
 }
 
