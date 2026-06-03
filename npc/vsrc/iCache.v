@@ -46,8 +46,11 @@ module icache #(XLEN=32, BLOCK_SIZE=16, BLOCK_NUM=16) (
 //
 localparam SRAM_ADDR_DOWN = 32'h0f000000;
 localparam SRAM_ADDR_UP = SRAM_ADDR_DOWN + 32'h2000;
+localparam SDRAM_ADDR_DOWN = 32'ha0000000;
+localparam SDRAM_ADDR_UP = SDRAM_ADDR_DOWN + 32'h4000000;
 // parameter
-localparam IDLE=0, FETCH_BURST=1, FETCH_SIGLE=2, WAIT_BUS_BURST=3, WAIT_BUS_SIGLE=4, WAIT_IFU=5;
+localparam IDLE=0, FETCH_BURST=1, FETCH_SIGLE=2, WAIT_BUS_BURST=3, 
+WAIT_BUS_SIGLE=4, WAIT_IFU=5, FETCH_SRAM=6, WAIT_BUS_SRAM=7;
 localparam OFFSET_LEN       = $clog2(BLOCK_SIZE);
 localparam INDEX_LEN        = $clog2(BLOCK_NUM);
 localparam TAG_LEN          = XLEN - OFFSET_LEN - INDEX_LEN;
@@ -130,7 +133,7 @@ always @(posedge clk) begin
                     end
                     else if (((raddr>=SRAM_ADDR_DOWN) && (raddr<SRAM_ADDR_UP))) begin
                         cnt <= cnt + 1;
-                        state <= FETCH_SIGLE;
+                        state <= FETCH_SRAM;
                         araddr_r <= raddr;
                         ARLEN <= 0;
                         ARBURST <= 2'b0;
@@ -139,10 +142,18 @@ always @(posedge clk) begin
                     end
                     else begin
                         cnt <= cnt + 1;
-                        state <= FETCH_BURST;
+                        // if (((raddr>=SDRAM_ADDR_DOWN) && (raddr<SDRAM_ADDR_UP))) begin
+                        //     state <= FETCH_BURST;
+                        //     ARLEN <= BLOCK_SIZE/4-1;
+                        //     ARBURST <= 2'b01;
+                        // end
+                        // else begin
+                            state <= FETCH_SIGLE;
+                            ARLEN <= 0;
+                            ARBURST <= 2'b0;
+                            ptr <= 0;
+                        // end
                         araddr_r <= raddr;
-                        ARLEN <= BLOCK_SIZE/4-1;
-                        ARBURST <= 2'b01;
                         ARVALID <= 1;
                         ARADDR <= {raddr[XLEN-1:OFFSET_BIT_H],{OFFSET_LEN{1'b0}}};
                     end
@@ -167,13 +178,45 @@ always @(posedge clk) begin
                     ARVALID <= 0;
                 end
             end
-            WAIT_BUS_SIGLE: begin
+            FETCH_SRAM: begin
+                cnt <= cnt + 1;
+                if (ARREADY) begin
+                    state <= WAIT_BUS_SRAM;
+                    ARVALID <= 0;
+                end
+            end
+            WAIT_BUS_SRAM: begin
                 cnt <= cnt + 1;
                 if (RVALID) begin
                     icache_access_rcd(0,cnt+1);
                     state <= WAIT_IFU;
                     rdata <= RDATA;
                     rvalid <= 1;
+                end
+            end
+            WAIT_BUS_SIGLE: begin
+                cnt <= cnt + 1;
+                if (RVALID) begin
+                    if (ptr==(BLOCK_SIZE-4)) begin
+                        icache_access_rcd(0,cnt+1);
+                        state <= WAIT_IFU;
+                        cache_valid[araddr_r_indx] <= 1;
+                        cache_tag[araddr_r_indx] <= araddr_r_tag;
+                        rvalid <= 1;
+                    end
+                    else begin
+                        state <= FETCH_SIGLE;
+                        ARVALID <= 1;
+                        ARADDR <= {raddr[XLEN-1:OFFSET_BIT_H],{OFFSET_LEN{1'b0}}};
+                    end
+                    {cache_rf[araddr_r_indx][ptr[OFFSET_LEN-1:0]+3],
+                    cache_rf[araddr_r_indx][ptr[OFFSET_LEN-1:0]+2],
+                    cache_rf[araddr_r_indx][ptr[OFFSET_LEN-1:0]+1],
+                    cache_rf[araddr_r_indx][ptr[OFFSET_LEN-1:0]]} <= RDATA;
+                    ptr <= ptr + 4;
+                    if (araddr_r_off==ptr[OFFSET_LEN-1:0]) begin
+                        rdata <= RDATA;
+                    end
                 end
             end
             WAIT_BUS_BURST: begin
