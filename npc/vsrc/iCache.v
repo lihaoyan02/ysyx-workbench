@@ -98,6 +98,7 @@ wire [OFFSET_LEN-1:0]    raddr_off = raddr[OFFSET_BIT_H-1:0];
 
 reg [31:0] cnt;
 reg [7:0] ptr;
+wire [7:0] n_ptr = ptr + 4;
 import "DPI-C" function void icache_access_rcd(byte hit, int access_time); 
 
 always @(posedge clk) begin
@@ -197,7 +198,7 @@ always @(posedge clk) begin
             WAIT_BUS_SIGLE: begin
                 cnt <= cnt + 1;
                 if (RVALID) begin
-                    if (ptr==(BLOCK_SIZE-4)) begin
+                    if (n_ptr==BLOCK_SIZE) begin
                         icache_access_rcd(0,cnt+1);
                         state <= WAIT_IFU;
                         cache_valid[araddr_r_indx] <= 1;
@@ -207,13 +208,13 @@ always @(posedge clk) begin
                     else begin
                         state <= FETCH_SIGLE;
                         ARVALID <= 1;
-                        ARADDR <= {raddr[XLEN-1:OFFSET_BIT_H],ptr[OFFSET_LEN-1:0]};
+                        ARADDR <= {raddr[XLEN-1:OFFSET_BIT_H],n_ptr[OFFSET_LEN-1:0]};
                     end
                     {cache_rf[araddr_r_indx][ptr[OFFSET_LEN-1:0]+3],
                     cache_rf[araddr_r_indx][ptr[OFFSET_LEN-1:0]+2],
                     cache_rf[araddr_r_indx][ptr[OFFSET_LEN-1:0]+1],
                     cache_rf[araddr_r_indx][ptr[OFFSET_LEN-1:0]]} <= RDATA;
-                    ptr <= ptr + 4;
+                    ptr <= n_ptr;
                     if (araddr_r_off==ptr[OFFSET_LEN-1:0]) begin
                         rdata <= RDATA;
                     end
@@ -237,7 +238,7 @@ always @(posedge clk) begin
                     cache_rf[araddr_r_indx][ptr[OFFSET_LEN-1:0]+2],
                     cache_rf[araddr_r_indx][ptr[OFFSET_LEN-1:0]+1],
                     cache_rf[araddr_r_indx][ptr[OFFSET_LEN-1:0]]} <= RDATA;
-                    ptr <= ptr + 4;
+                    ptr <= n_ptr;
                     if (araddr_r_off==ptr[OFFSET_LEN-1:0]) begin
                         rdata <= RDATA;
                     end
