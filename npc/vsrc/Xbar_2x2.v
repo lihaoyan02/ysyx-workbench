@@ -161,13 +161,13 @@ always @(*) begin
 			end
         end 
         GRANT_m1: begin
-			if(m1_RVALID & m1_RREADY & m2_req) begin
+			if(m1_RVALID & m1_RREADY & m1_RLAST & m2_req) begin
                 next_mstate = GRANT_m2;
 			end
             else if (m1_BVALID & m1_BREADY & m2_req) begin
                 next_mstate = GRANT_m2;
 			end
-            else if(m1_RVALID & m1_RREADY) begin
+            else if(m1_RVALID & m1_RREADY & m1_RLAST) begin
                 next_mstate = IDLE;
 			end
             else if (m1_BVALID & m1_BREADY) begin
@@ -178,13 +178,13 @@ always @(*) begin
 			end
         end
         GRANT_m2: begin
-            if(m2_RVALID & m2_RREADY & m1_req) begin
+            if(m2_RVALID & m2_RREADY & m2_RLAST & m1_req) begin
                 next_mstate = GRANT_m1;
 			end
             else if (m2_BVALID & m2_BREADY & m1_req) begin
                 next_mstate = GRANT_m1;
 			end
-            else if(m2_RVALID & m2_RREADY) begin
+            else if(m2_RVALID & m2_RREADY & m2_RLAST) begin
                 next_mstate = IDLE;
 			end
             else if (m2_BVALID & m2_BREADY) begin
@@ -360,7 +360,7 @@ always @(*) begin
 			if (s1_BVALID & s1_BREADY) begin
 				next_sstate = IDLE;
 			end
-			else if (s1_RVALID & s1_RREADY) begin
+			else if (s1_RVALID & s1_RREADY & s1_RLAST) begin
 				next_sstate = IDLE;
 			end
 			else
