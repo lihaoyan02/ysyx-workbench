@@ -76,6 +76,12 @@ wire [DATA_WIDTH-1:0] ifu_AWADDR, ifu_WDATA, ifu_ARADDR, ifu_RDATA;
 wire [3:0] ifu_WSTRB;
 wire [1:0] ifu_BRESP, ifu_RRESP;
 
+wire ifu_WLAST, ifu_RLAST;
+wire [3:0] ifu_AWID, ifu_ARID, ifu_BID, ifu_RID;
+wire [7:0] ifu_AWLEN, ifu_ARLEN;
+wire [2:0] ifu_AWSIZE, ifu_ARSIZE;
+wire [1:0] ifu_AWBURST, ifu_ARBURST;
+
 wire lsu_AWVALID, lsu_AWREADY, lsu_WVALID, lsu_WREADY, 
 lsu_BVALID, lsu_BREADY, lsu_ARVALID, lsu_ARREADY, lsu_RVALID,lsu_RREADY;
 wire [DATA_WIDTH-1:0] lsu_AWADDR, lsu_WDATA, lsu_ARADDR, lsu_RDATA;
@@ -153,24 +159,36 @@ wire ifu_icache_avalid, icache_ifu_aready, icache_ifu_rvalid, ifu_icache_rready;
 		.AWVALID(ifu_AWVALID),
 		.AWREADY(ifu_AWREADY),
 		.AWADDR(ifu_AWADDR),
+		.AWID(ifu_AWID),
+		.AWLEN(ifu_AWLEN),
+		.AWSIZE(ifu_AWSIZE),
+		.AWBURST(ifu_AWBURST),
 
 		.WVALID(ifu_WVALID),
 		.WREADY(ifu_WREADY),
 		.WDATA(ifu_WDATA),
 		.WSTRB(ifu_WSTRB),
+		.WLAST(ifu_WLAST),
 
 		.BVALID(ifu_BVALID),
 		.BREADY(ifu_BREADY),
 		.BRESP(ifu_BRESP),
+		.BID(ifu_BID),
 
 		.ARVALID(ifu_ARVALID),
 		.ARREADY(ifu_ARREADY),
 		.ARADDR(ifu_ARADDR),
+		.ARID(ifu_ARID),
+		.ARLEN(ifu_ARLEN),
+		.ARSIZE(ifu_ARSIZE),
+		.ARBURST(ifu_ARBURST),
 
 		.RVALID(ifu_RVALID),
 		.RREADY(ifu_RREADY),
 		.RDATA(ifu_RDATA),
-		.RRESP(ifu_RRESP)
+		.RRESP(ifu_RRESP),
+		.RLAST(ifu_RLAST),
+		.RID(ifu_RID)
 	);
 
 	wire idu_valid;
@@ -476,24 +494,36 @@ wire [1:0] uart_BRESP, uart_RRESP;
 		.m1_AWVALID(ifu_AWVALID),
 		.m1_AWREADY(ifu_AWREADY),
 		.m1_AWADDR(ifu_AWADDR),
+		.m1_AWID(ifu_AWID),
+		.m1_AWLEN(ifu_AWLEN),
+		.m1_AWSIZE(ifu_AWSIZE),
+		.m1_AWBURST(ifu_AWBURST),
 
 		.m1_WVALID(ifu_WVALID),
 		.m1_WREADY(ifu_WREADY),
 		.m1_WDATA(ifu_WDATA),
 		.m1_WSTRB(ifu_WSTRB),
+		.m1_WLAST(ifu_WLAST),
 
 		.m1_BVALID(ifu_BVALID),
 		.m1_BREADY(ifu_BREADY),
 		.m1_BRESP(ifu_BRESP),
+		.m1_BID(ifu_BID),
 
 		.m1_ARVALID(ifu_ARVALID),
 		.m1_ARREADY(ifu_ARREADY),
 		.m1_ARADDR(ifu_ARADDR),
+		.m1_ARID(ifu_ARID),
+		.m1_ARLEN(ifu_ARLEN),
+		.m1_ARSIZE(ifu_ARSIZE),
+		.m1_ARBURST(ifu_ARBURST),
 
 		.m1_RVALID(ifu_RVALID),
 		.m1_RREADY(ifu_RREADY),
 		.m1_RDATA(ifu_RDATA),
 		.m1_RRESP(ifu_RRESP),
+		.m1_RLAST(ifu_RLAST),
+		.m1_RID(ifu_RID),
 		//lsu
 		.m2_AWVALID(lsu_AWVALID),
 		.m2_AWREADY(lsu_AWREADY),

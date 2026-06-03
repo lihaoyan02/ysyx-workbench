@@ -12,42 +12,42 @@ module icache #(XLEN=32, BLOCK_SIZE=4, BLOCK_NUM=16) (
     output AWVALID,
 	input AWREADY,
 	output [XLEN-1:0] AWADDR,
-	// output [3:0] AWID,
-	// output [7:0] AWLEN,
-	// output [2:0] AWSIZE,
-	// output [1:0] AWBURST,
+	output [3:0] AWID,
+	output [7:0] AWLEN,
+	output [2:0] AWSIZE,
+	output [1:0] AWBURST,
 
 	output WVALID,
 	input WREADY,
 	output [XLEN-1:0] WDATA,
 	output [3:0] WSTRB,
-	// output WLAST,
+	output WLAST,
 
 	input BVALID,
 	output BREADY,
 	input [1:0] BRESP,
-	// input [3:0] BID,
+	input [3:0] BID,
 
 	output reg ARVALID,
 	input ARREADY,
 	output reg [XLEN-1:0] ARADDR,
-	// output [3:0] ARID,
-	// output [7:0] ARLEN,
-	// output [2:0] ARSIZE,
-	// output [1:0] ARBURST,
+	output [3:0] ARID,
+	output reg [7:0] ARLEN,
+	output [2:0] ARSIZE,
+	output reg [1:0] ARBURST,
 
 	input RVALID,
 	output RREADY,
 	input [XLEN-1:0] RDATA,
-	input [1:0] RRESP
-	// input RLAST,
-	// input [3:0] RID
+	input [1:0] RRESP,
+	input RLAST,
+	input [3:0] RID
 );
 //
 localparam SRAM_ADDR_DOWN = 32'h0f000000;
 localparam SRAM_ADDR_UP = SRAM_ADDR_DOWN + 32'h2000;
 // parameter
-localparam IDLE=0, FETCH=1, WAIT_BUS=2, WAIT_IFU=3;
+localparam IDLE=0, FETCH_BURST=1, FETCH_SIGLE=2, WAIT_BUS_BURST=3, WAIT_BUS_SIGLE=4, WAIT_IFU=5;
 localparam OFFSET_LEN       = $clog2(BLOCK_SIZE);
 localparam INDEX_LEN        = $clog2(BLOCK_NUM);
 localparam TAG_LEN          = XLEN - OFFSET_LEN - INDEX_LEN;
@@ -61,7 +61,7 @@ reg [TAG_LEN-1:0] cache_tag [BLOCK_NUM-1:0];
 reg cache_valid [BLOCK_NUM-1:0];
 
 reg cache_hit;
-reg [1:0] state;
+reg [2:0] state;
 
 assign AWVALID=0;
 assign AWADDR=0;
@@ -69,20 +69,32 @@ assign WVALID=0;
 assign WDATA=0;
 assign WSTRB=0;
 assign BREADY=0;
+assign WLAST = 0;
+assign AWID = 0;
+assign AWLEN = 0;
+assign AWBURST = 0;
+assign AWSIZE = 0;
+
+assign ARID = 0;
+// assign ARLEN = BLOCK_SIZE/4-1;
+assign ARSIZE = 3'b10;
+// assign ARBURST = 2'b01;
 
 reg [XLEN-1:0]  araddr_r;
 assign aready = (state==IDLE);
 // assign ARADDR = ARVALID ? araddr_r : 0;
-assign RREADY = state==WAIT_BUS;
+assign RREADY = (state==WAIT_BUS_BURST) | (state==WAIT_BUS_SIGLE);
 
 wire [INDEX_LEN-1:0]    araddr_r_indx = araddr_r[INDEX_BIT_H-1:OFFSET_BIT_H];
 wire [TAG_LEN-1:0]      araddr_r_tag = araddr_r[XLEN-1:INDEX_BIT_H];
+wire [OFFSET_LEN-1:0]    araddr_r_off = araddr_r[OFFSET_BIT_H-1:0];
 
 wire [INDEX_LEN-1:0]    raddr_indx = raddr[INDEX_BIT_H-1:OFFSET_BIT_H];
 wire [TAG_LEN-1:0]      raddr_tag = raddr[XLEN-1:INDEX_BIT_H];
 wire [OFFSET_LEN-1:0]    raddr_off = raddr[OFFSET_BIT_H-1:0];
 
 reg [31:0] cnt;
+reg [7:0] ptr;
 import "DPI-C" function void icache_access_rcd(byte hit, int access_time); 
 
 always @(posedge clk) begin
@@ -98,7 +110,10 @@ always @(posedge clk) begin
         araddr_r <= 0;
         ARVALID <= 0;
         ARADDR <= 0;
+        ARLEN = 0;
+        ARBURST = 2'b0;
         cnt <= 0;
+        ptr <= 0;
     end
     else begin
         case (state)
@@ -113,10 +128,21 @@ always @(posedge clk) begin
                             cache_rf[raddr_indx][raddr_off]};
                         rvalid <= 1;
                     end
+                    else if (((raddr>=SRAM_ADDR_DOWN) && (raddr<SRAM_ADDR_UP))) begin
+                        cnt <= cnt + 1;
+                        state <= FETCH_SIGLE;
+                        araddr_r <= raddr;
+                        ARLEN <= 0;
+                        ARBURST <= 2'b0;
+                        ARVALID <= 1;
+                        ARADDR <= raddr;
+                    end
                     else begin
                         cnt <= cnt + 1;
-                        state <= FETCH;
+                        state <= FETCH_BURST;
                         araddr_r <= raddr;
+                        ARLEN <= BLOCK_SIZE/4-1;
+                        ARBURST <= 2'b01;
                         ARVALID <= 1;
                         ARADDR <= {raddr[XLEN-1:OFFSET_BIT_H],{OFFSET_LEN{1'b0}}};
                     end
@@ -126,28 +152,54 @@ always @(posedge clk) begin
                     cnt <= 0;
                 end
             end
-            FETCH: begin
+            FETCH_BURST: begin
                 cnt <= cnt + 1;
                 if (ARREADY) begin
-                    state <= WAIT_BUS;
+                    state <= WAIT_BUS_BURST;
+                    ARVALID <= 0;
+                    ptr <= 0;
+                end
+            end
+            FETCH_SIGLE: begin
+                cnt <= cnt + 1;
+                if (ARREADY) begin
+                    state <= WAIT_BUS_SIGLE;
                     ARVALID <= 0;
                 end
             end
-            WAIT_BUS: begin
+            WAIT_BUS_SIGLE: begin
                 cnt <= cnt + 1;
                 if (RVALID) begin
                     icache_access_rcd(0,cnt+1);
                     state <= WAIT_IFU;
-                    if (!((araddr_r>=SRAM_ADDR_DOWN) && (araddr_r<SRAM_ADDR_UP))) begin
-                        cache_valid[araddr_r_indx] <= 1;
-                        cache_tag[araddr_r_indx] <= araddr_r_tag;
-                        {cache_rf[araddr_r_indx][3],
-                        cache_rf[araddr_r_indx][2],
-                        cache_rf[araddr_r_indx][1],
-                        cache_rf[araddr_r_indx][0]} <= RDATA;
-                    end
                     rdata <= RDATA;
                     rvalid <= 1;
+                end
+            end
+            WAIT_BUS_BURST: begin
+                cnt <= cnt + 1;
+                if (RVALID) begin
+                    if (RLAST) begin
+                        icache_access_rcd(0,cnt+1);
+                        state <= WAIT_IFU;
+                        cache_valid[araddr_r_indx] <= 1;
+                        cache_tag[araddr_r_indx] <= araddr_r_tag;
+                        rvalid <= 1;
+                    end
+                    else begin
+                        state <= WAIT_BUS_BURST;
+                    end
+                    // if (!((araddr_r>=SRAM_ADDR_DOWN) && (araddr_r<SRAM_ADDR_UP))) begin
+                    {cache_rf[araddr_r_indx][ptr[OFFSET_LEN-1:0]+3],
+                    cache_rf[araddr_r_indx][ptr[OFFSET_LEN-1:0]+2],
+                    cache_rf[araddr_r_indx][ptr[OFFSET_LEN-1:0]+1],
+                    cache_rf[araddr_r_indx][ptr[OFFSET_LEN-1:0]]} <= RDATA;
+                    ptr <= ptr + 4;
+                    if (araddr_r_off==ptr[OFFSET_LEN-1:0]) begin
+                        rdata <= RDATA;
+                    end
+                    // end
+                    
                 end
             end
             WAIT_IFU: begin
