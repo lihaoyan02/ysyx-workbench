@@ -207,7 +207,7 @@ always @(posedge clk) begin
                     else begin
                         state <= FETCH_SIGLE;
                         ARVALID <= 1;
-                        ARADDR <= {raddr[XLEN-1:OFFSET_BIT_H],{OFFSET_LEN{1'b0}}};
+                        ARADDR <= {raddr[XLEN-1:OFFSET_BIT_H],ptr[OFFSET_LEN-1:0]};
                     end
                     {cache_rf[araddr_r_indx][ptr[OFFSET_LEN-1:0]+3],
                     cache_rf[araddr_r_indx][ptr[OFFSET_LEN-1:0]+2],
