@@ -21,7 +21,7 @@ SECTIONS {
   } > SRAM AT> flash : ssbl
   _ssbl_load = LOADADDR(.ssbl);
 
-  .text : ALIGN(16) {
+  .text : {
     _text_start = .;
     *(.text*)
     *(.rodata*)
