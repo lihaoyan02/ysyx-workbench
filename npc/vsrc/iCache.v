@@ -1,4 +1,4 @@
-module icache #(XLEN=32, BLOCK_SIZE=4, BLOCK_NUM=16) (
+module icache #(XLEN=32, BLOCK_SIZE=16, BLOCK_NUM=16) (
     input clk,
     input rst,
     input [XLEN-1:0] raddr,
