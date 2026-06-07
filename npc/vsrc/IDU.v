@@ -20,6 +20,8 @@ module IDU #(INST_WIDTH = 32, REGADDR_WIDTH = 5, DATA_WIDTH = 32) (
 	output reg idu_j_en,
 	output [2:0] idu_j_cond,
 
+	output reg icache_flush,
+
 	output reg idu_csr_wen,
 	output reg idu_csr_event,
 	output reg [11:0] idu_csr_addr
@@ -62,6 +64,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 	reg csr_event;
 	reg csr_wen;
 	reg [11:0] csr_addr;
+	reg icache_flush_nxt;
 
 	import "DPI-C" function void unknow_inst(); 
 	import "DPI-C" function void performance_counter(int category); 
@@ -88,6 +91,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 			idu_csr_event <= 0;
 			idu_csr_wen <= 0;
 			idu_csr_addr <= 0;
+			icache_flush <= 0;
 		end
 		else if (inst_valid) begin
 			idu_valid <= 1;
@@ -110,6 +114,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 			idu_rd <= rd;
 			idu_wb_ctrl <= wb_ctrl;
 			idu_wb_en <= wb_en;
+			icache_flush <= icache_flush_nxt;
 		end
 		else begin
 			idu_valid <= 0;
@@ -123,6 +128,7 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 			idu_csr_event <= 0;
 			idu_csr_wen <= 0;
 			idu_csr_addr <= 0;
+			icache_flush <= 0;
 		end
 		
 	end
@@ -362,6 +368,15 @@ localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010,
 						end
 						else begin
 							$display("unknow opcode =7'b1110011");
+							unknow_inst(); 
+						end
+					end
+					7'b0001111: begin
+						if(funct3 == 3'b001 & inst_fetch[31:20]==0) begin
+							icache_flush_nxt = 1;
+						end
+						else begin
+							$display("unknow opcode =7'b0001111");
 							unknow_inst(); 
 						end
 					end

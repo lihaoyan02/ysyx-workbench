@@ -8,6 +8,7 @@ module icache #(XLEN=32, BLOCK_SIZE=16, BLOCK_NUM=16) (
     output reg [XLEN-1:0] rdata,
     output reg rvalid,
     input rready,
+    input icache_flush,
     
     output AWVALID,
 	input AWREADY,
@@ -122,6 +123,11 @@ always @(posedge clk) begin
     else begin
         case (state)
             IDLE: begin
+                if (icache_flush) begin
+                    for (integer i=0; i<BLOCK_NUM ; i=i+1) begin
+                        cache_valid[i] <= 0;
+                    end
+                end
                 if (avalid) begin
                     if (cache_hit) begin
                         icache_access_rcd(1,1);
@@ -249,6 +255,11 @@ always @(posedge clk) begin
             WAIT_IFU: begin
                 cnt <= 0;
                 ARADDR <= 0;
+                if (icache_flush) begin
+                    for (integer i=0; i<BLOCK_NUM ; i=i+1) begin
+                        cache_valid[i] <= 0;
+                    end
+                end
                 if (rready) begin
                     rvalid <= 0;
                     state <= IDLE;

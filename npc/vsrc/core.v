@@ -103,6 +103,8 @@ wire [1:0] clint_BRESP, clint_RRESP;
 // ifu_icache signal
 wire [DATA_WIDTH-1:0] ifu_icache_raddr, icache_ifu_rdata;
 wire ifu_icache_avalid, icache_ifu_aready, icache_ifu_rvalid, ifu_icache_rready;
+
+wire icache_flush;
 	IFU u_IFU (
 		.clk(clk),
 		.rst(rst),
@@ -155,6 +157,7 @@ wire ifu_icache_avalid, icache_ifu_aready, icache_ifu_rvalid, ifu_icache_rready;
 		.rdata(icache_ifu_rdata),
 		.rvalid(icache_ifu_rvalid),
 		.rready(ifu_icache_rready),
+		.icache_flush(icache_flush),
 
 		.AWVALID(ifu_AWVALID),
 		.AWREADY(ifu_AWREADY),
@@ -212,6 +215,7 @@ wire ifu_icache_avalid, icache_ifu_aready, icache_ifu_rvalid, ifu_icache_rready;
 		.idu_ebreak_flag(ebreak_flag),
 		.idu_j_en(j_en),
 		.idu_j_cond(j_cond),
+		.icache_flush(icache_flush),
 		.idu_csr_wen(csr_wen),
 		.idu_csr_event(csr_event),
 		.idu_csr_addr(csr_addr)
