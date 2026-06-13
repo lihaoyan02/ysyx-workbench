@@ -38,6 +38,7 @@ VINC_PATH = ../ysyxSoC/perip/uart16550/rtl ../ysyxSoC/perip/spi/rtl
 VINCFLAGS = $(addprefix -I, $(VINC_PATH))
 VERILATOR_CFLAGS += $(VINCFLAGS)
 VERILATOR_CFLAGS += --timescale "1ns/1ns" --no-timing -DCONFIG_TARGET_SOC=y
+$(info "config_tag_soc")
 endif
 
 # $(NVBOARD_ARCHIVE)
@@ -55,6 +56,7 @@ INCFLAGS = $(addprefix -I, $(INC_PATH))
 CXXFLAGS += $(INCFLAGS)
 CXXFLAGS += $(if $(CONFIG_CC_DEBUG),-g,)
 CXXFLAGS += $(if $(CONFIG_CC_ASAN),-fsanitize=address,)
+CXXFLAGS += $(if $(CONFIG_TARGET_SOC),-DCONFIG_TARGET_SOC=y,)
 
 # Some convenient rules 
 include $(NPC_HOME)/scripts/difftest.mk
