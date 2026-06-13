@@ -17,59 +17,13 @@ module IFU #(INST_WIDTH = 32, ADDR_WIDTH = 32)(
     input [INST_WIDTH-1:0] rdata,
     input rvalid,
     output rready
-
-	// output AWVALID,
-	// input AWREADY,
-	// output [ADDR_WIDTH-1:0] AWADDR,
-	// // output [3:0] AWID,
-	// // output [7:0] AWLEN,
-	// // output [2:0] AWSIZE,
-	// // output [1:0] AWBURST,
-
-	// output WVALID,
-	// input WREADY,
-	// output [INST_WIDTH-1:0] WDATA,
-	// output [3:0] WSTRB,
-	// // output WLAST,
-
-	// input BVALID,
-	// output BREADY,
-	// input [1:0] BRESP,
-	// // input [3:0] BID,
-
-	// output ARVALID,
-	// input ARREADY,
-	// output [ADDR_WIDTH-1:0] ARADDR,
-	// // output [3:0] ARID,
-	// // output [7:0] ARLEN,
-	// // output [2:0] ARSIZE,
-	// // output [1:0] ARBURST,
-
-	// input RVALID,
-	// output RREADY,
-	// input [INST_WIDTH-1:0] RDATA,
-	// input [1:0] RRESP
-	// // input RLAST,
-	// // input [3:0] RID
 );
 
 import "DPI-C" function void performance_counter(int category); 
 
-// wire AR_handshaked, R_handshaked;
-// assign AR_handshaked = ARVALID & ARREADY;
-// assign R_handshaked = RVALID & RREADY;
-
 wire AR_handshaked, R_handshaked;
 assign AR_handshaked = avalid & aready;
 assign R_handshaked = rvalid & rready;
-
-// assign AWVALID=0;
-// assign AWADDR=0;
-// assign WVALID=0;
-// assign WDATA=0;
-// assign WSTRB=0;
-// assign BREADY=0;
-// assign RREADY = RVALID & state==WAIT;
 assign rready = rvalid & state==WAIT;
 
 localparam IDLE = 1'b0, WAIT = 1'b1;
@@ -102,10 +56,24 @@ always @(posedge clk) begin
 	end
 end
 
-// assign ARVALID = ~rst & state==IDLE;
-// assign ARADDR = pc;
-// assign inst_fetch = R_handshaked ? RDATA : 0;
-// assign inst_valid = R_handshaked;
+// reg if_id_valid;
+// always @(posedge clk) begin
+// 	if (rst) begin
+// 		if_id_valid <= 0;
+// 	end
+// 	else if (R_handshaked) begin
+// 		if_id_valid <= 0;
+// 	end
+// 	else if (if_id_valid & id_if_ready) begin
+// 		if_id_valid <= 0;
+// 	end
+// 	else if (flush) begin
+// 		if_id_valid <= 0;
+// 	end
+// 	else begin
+// 		if_id_valid <= if_id_valid;
+// 	end
+// end
 
 assign avalid = ~rst & state==IDLE;
 assign raddr = pc;
