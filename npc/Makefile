@@ -38,7 +38,6 @@ VINC_PATH = ../ysyxSoC/perip/uart16550/rtl ../ysyxSoC/perip/spi/rtl
 VINCFLAGS = $(addprefix -I, $(VINC_PATH))
 VERILATOR_CFLAGS += $(VINCFLAGS)
 VERILATOR_CFLAGS += --timescale "1ns/1ns" --no-timing -DCONFIG_TARGET_SOC=y
-$(info "config_tag_soc")
 endif
 
 # $(NVBOARD_ARCHIVE)
