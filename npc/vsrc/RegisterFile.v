@@ -3,8 +3,8 @@ module RegisterFile #(ADDR_WIDTH = 5, DATA_WIDTH = 32, REG_NUM = 16) (
 	input rst,
 	input en,
 	input wen,
-	input [DATA_WIDTH-1:0] wdata,
 	input [ADDR_WIDTH-1:0] waddr,
+	input [DATA_WIDTH-1:0] wdata,
 
 	input [ADDR_WIDTH-1:0] raddr1,
 	input [ADDR_WIDTH-1:0] raddr2,

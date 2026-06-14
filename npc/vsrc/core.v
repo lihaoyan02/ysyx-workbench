@@ -221,16 +221,19 @@ wire ex_glb_flush;
 /*-----------------------------------------------*/
 /*----------------register file------------------*/
 /*-----------------------------------------------*/
-wire [XLEN-1:0] wb_data;
+wire wb_rf_valid, wb_rf_wen;
+wire [4:0] wb_rf_rd;
+wire [XLEN-1:0] wb_rf_data;
+
 wire [XLEN-1:0] rs1_data;
 wire [XLEN-1:0] rs2_data;
 	RegisterFile u_gpr (
 		.clk(clk),
 		.rst(rst),
-		.en(wb_valid),
-		.wen(wb_en),
-		.wdata(wb_data),
-		.waddr(rd),
+		.en(wb_rf_valid),
+		.wen(wb_rf_wen),
+		.waddr(wb_rf_rd),
+		.wdata(wb_rf_data),
 		.raddr1(id_rf_rs1),
 		.raddr2(id_rf_rs2),
 		.rdata1(rs1_data),
@@ -387,19 +390,34 @@ wire [XLEN-1:0] ls_wb_exu_data, ls_wb_rdata;
 		.RLAST(lsu_RLAST),
 		.RID(lsu_RID)
 	);
-
+/*-----------------------------------------------*/
+/*-------------------LSU WBU---------------------*/
+/*-----------------------------------------------*/
+wire ebreak_flag;
 	WBU u_WBU (
-		.exu_out(exu_out),
-		.mem_out(lsu_rdata),
-		.wb_ctrl(wb_ctrl),
-		.imm(imm),
-		.pc(pc),
-		.wb_data(wb_data)
+		.ls_wb_valid(ls_wb_valid),
+		.ls_wb_ready(ls_wb_ready),
+		.ls_wb_pc(ls_wb_pc),
+		.ls_wb_inst(ls_wb_inst),
+		.ls_wb_imm(ls_wb_imm),
+		.ls_wb_rd(ls_wb_rd),
+		.ls_wb_ctrl(ls_wb_ctrl),
+		.ls_wb_en(ls_wb_en),
+		.ls_wb_ebreak(ls_wb_ebreak),
+		.ls_wb_exu_data(ls_wb_exu_data),
+		.ls_wb_rdata(ls_wb_rdata),
+
+		.wb_rf_valid(wb_rf_valid),
+		.wb_rf_wen(wb_rf_wen),
+		.wb_rf_rd(wb_rf_rd),
+		.wb_rf_data(wb_rf_data),
+		
+		.ebreak_flag(ebreak_flag)
 	);
 	
 always @(*) begin
 	if(ebreak_flag)
-		npctrap(u_gpr.rf[10], pc);
+		npctrap(u_gpr.rf[10], ls_wb_pc);
 end
 `ifndef CONFIG_TARGET_SOC
 
