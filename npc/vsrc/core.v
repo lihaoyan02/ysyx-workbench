@@ -1,10 +1,10 @@
-module core #(INST_WIDTH = 32, DATA_WIDTH = 32) (
+module core #(XLEN = 32) (
 	input clk,
 	input rst,
 
   	output mem_AWVALID,
 	input mem_AWREADY,
-	output [DATA_WIDTH-1:0] mem_AWADDR,
+	output [XLEN-1:0] mem_AWADDR,
 	output [3:0] mem_AWID,
 	output [7:0] mem_AWLEN,
 	output [2:0] mem_AWSIZE,
@@ -12,7 +12,7 @@ module core #(INST_WIDTH = 32, DATA_WIDTH = 32) (
 
 	output mem_WVALID,
 	input mem_WREADY,
-	output [DATA_WIDTH-1:0] mem_WDATA,
+	output [XLEN-1:0] mem_WDATA,
 	output [3:0] mem_WSTRB,
 	output mem_WLAST,
 
@@ -23,7 +23,7 @@ module core #(INST_WIDTH = 32, DATA_WIDTH = 32) (
 
 	output mem_ARVALID,
 	input mem_ARREADY,
-	output [DATA_WIDTH-1:0] mem_ARADDR,
+	output [XLEN-1:0] mem_ARADDR,
 	output [3:0] mem_ARID,
 	output [7:0] mem_ARLEN,
 	output [2:0] mem_ARSIZE,
@@ -31,7 +31,7 @@ module core #(INST_WIDTH = 32, DATA_WIDTH = 32) (
 
 	input mem_RVALID,
 	output mem_RREADY,
-	input [DATA_WIDTH-1:0] mem_RDATA,
+	input [XLEN-1:0] mem_RDATA,
 	input [1:0] mem_RRESP,
 	input mem_RLAST,
 	input [3:0] mem_RID
@@ -39,40 +39,9 @@ module core #(INST_WIDTH = 32, DATA_WIDTH = 32) (
 
 import "DPI-C" function void npctrap(int a0, int c_pc);
 
-wire exu_j_pc, j_en, wb_en, ebreak_flag, inst_valid, lsu_en, lsu_wen, csr_wen, lsu_ready, wb_valid;
-wire [INST_WIDTH-1:0] pc;
-wire [DATA_WIDTH-1:0] exu_out;
-wire [INST_WIDTH-1:0] inst_fetch;
-wire [DATA_WIDTH-1:0] imm;
-wire [DATA_WIDTH-1:0] lsu_rdata;
-wire [4:0] rd;
-wire [4:0] rs1;
-wire [4:0] rs2;
-
-wire [3:0] alu_ctrl;
-wire [1:0] alu_op_ctrl;
-wire [2:0] wb_ctrl;
-wire [2:0] lsu_ctrl;
-wire [2:0] j_cond;
-
-wire exu_lsu_en;
-wire exu_lsu_wen;
-wire [2:0] exu_lsu_ctrl;
-
-wire [DATA_WIDTH-1:0] wb_data;
-wire [DATA_WIDTH-1:0] rs1_data;
-wire [DATA_WIDTH-1:0] rs2_data;
-wire [DATA_WIDTH-1:0] exu_lsu_wdata;
-
-wire exu_valid;
-
-wire [DATA_WIDTH-1:0] csr_rdata;
-wire [11:0] csr_addr;
-wire csr_event;
-
 wire ifu_AWVALID, ifu_AWREADY, ifu_WVALID, ifu_WREADY, 
 ifu_BVALID, ifu_BREADY, ifu_ARVALID, ifu_ARREADY, ifu_RVALID,ifu_RREADY;
-wire [DATA_WIDTH-1:0] ifu_AWADDR, ifu_WDATA, ifu_ARADDR, ifu_RDATA;
+wire [XLEN-1:0] ifu_AWADDR, ifu_WDATA, ifu_ARADDR, ifu_RDATA;
 wire [3:0] ifu_WSTRB;
 wire [1:0] ifu_BRESP, ifu_RRESP;
 
@@ -84,7 +53,7 @@ wire [1:0] ifu_AWBURST, ifu_ARBURST;
 
 wire lsu_AWVALID, lsu_AWREADY, lsu_WVALID, lsu_WREADY, 
 lsu_BVALID, lsu_BREADY, lsu_ARVALID, lsu_ARREADY, lsu_RVALID,lsu_RREADY;
-wire [DATA_WIDTH-1:0] lsu_AWADDR, lsu_WDATA, lsu_ARADDR, lsu_RDATA;
+wire [XLEN-1:0] lsu_AWADDR, lsu_WDATA, lsu_ARADDR, lsu_RDATA;
 wire [3:0] lsu_WSTRB;
 wire [1:0] lsu_BRESP, lsu_RRESP;
 
@@ -96,25 +65,36 @@ wire [1:0] lsu_AWBURST, lsu_ARBURST;
 
 wire clint_AWVALID, clint_AWREADY, clint_WVALID, clint_WREADY, 
 clint_BVALID, clint_BREADY, clint_ARVALID, clint_ARREADY, clint_RVALID,clint_RREADY;
-wire [DATA_WIDTH-1:0] clint_AWADDR, clint_WDATA, clint_ARADDR, clint_RDATA;
+wire [XLEN-1:0] clint_AWADDR, clint_WDATA, clint_ARADDR, clint_RDATA;
 wire [3:0] clint_WSTRB;
 wire [1:0] clint_BRESP, clint_RRESP;
 
-// ifu_icache signal
-wire [DATA_WIDTH-1:0] ifu_icache_raddr, icache_ifu_rdata;
+/*-----------------------------------------------*/
+/*---------------IFU ICache----------------------*/
+/*-----------------------------------------------*/
+wire [XLEN-1:0] ifu_icache_raddr, icache_ifu_rdata;
 wire ifu_icache_avalid, icache_ifu_aready, icache_ifu_rvalid, ifu_icache_rready;
 
-wire icache_flush;
+/*-----------------------------------------------*/
+/*----------------IFU IDU------------------------*/
+/*-----------------------------------------------*/
+wire if_id_valid, id_if_ready;
+wire [XLEN-1:0] if_id_pc, if_id_inst;
+
 	IFU u_IFU (
 		.clk(clk),
 		.rst(rst),
-		.exu_j_pc(exu_j_pc),
-		.j_pc_addr(exu_out),
-		.ready_npc_in(~idu_valid & lsu_ready),
-		.pc(pc),
-		.inst_valid(inst_valid),
-		.inst_fetch(inst_fetch),
-		.wb_valid(wb_valid),
+
+		.ex_if_jvalid(ex_if_jvalid),
+		.if_ex_jready(if_ex_jready),
+		.ex_if_jpc(ex_if_jpc),
+
+		// .ready_npc_in(~idu_valid & lsu_ready),
+		.if_id_valid(if_id_valid),
+		.id_if_ready(id_if_ready),
+		.if_id_pc(if_id_pc),
+		.if_id_inst(if_id_inst),
+		// .wb_valid(wb_valid),
 
 		.raddr(ifu_icache_raddr),
 		.avalid(ifu_icache_avalid),
@@ -123,28 +103,6 @@ wire icache_flush;
 		.rdata(icache_ifu_rdata),
 		.rvalid(icache_ifu_rvalid),
 		.rready(ifu_icache_rready)
-
-		// .AWVALID(ifu_AWVALID),
-		// .AWREADY(ifu_AWREADY),
-		// .AWADDR(ifu_AWADDR),
-
-		// .WVALID(ifu_WVALID),
-		// .WREADY(ifu_WREADY),
-		// .WDATA(ifu_WDATA),
-		// .WSTRB(ifu_WSTRB),
-
-		// .BVALID(ifu_BVALID),
-		// .BREADY(ifu_BREADY),
-		// .BRESP(ifu_BRESP),
-
-		// .ARVALID(ifu_ARVALID),
-		// .ARREADY(ifu_ARREADY),
-		// .ARADDR(ifu_ARADDR),
-
-		// .RVALID(ifu_RVALID),
-		// .RREADY(ifu_RREADY),
-		// .RDATA(ifu_RDATA),
-		// .RRESP(ifu_RRESP)
 	);
 
 	icache u_icache (
@@ -194,92 +152,209 @@ wire icache_flush;
 		.RID(ifu_RID)
 	);
 
-	wire idu_valid;
+/*-----------------------------------------------*/
+/*----------------IDU EXU------------------------*/
+/*-----------------------------------------------*/
+wire id_ex_valid, ex_id_ready;
+wire [XLEN-1:0] id_ex_pc;
+wire [XLEN-1:0] id_ex_inst;
+
+wire [3:0] id_ex_alu_ctrl;
+wire [1:0] id_ex_alu_op_ctrl;
+wire [XLEN-1:0] id_ex_imm;
+wire [4:0] id_ex_rd;
+wire [4:0] id_rf_rs1; // to rf
+wire [4:0] id_rf_rs2; // to rf
+wire id_ex_j_en;
+wire [2:0] id_ex_j_cond;
+
+wire id_ex_lsu_en, id_ex_lsu_wen;
+wire [2:0] id_ex_lsu_ctrl;
+
+wire [2:0] id_ex_wb_ctrl;
+wire id_ex_wb_en, id_ex_ebreak_flag;
+
+wire id_csr_valid, id_csr_wen, id_csr_event;
+wire [11:0] id_csr_addr;
+
+wire icache_flush;
+
 	IDU u_IDU (
 		.clk(clk),
 		.rst(rst),
-		.inst_fetch(inst_fetch),
-		.inst_valid(inst_valid),
-		.idu_valid(idu_valid),
-		.idu_imm(imm),
-		.idu_rd(rd),
-		.idu_rs1(rs1),
-		.idu_rs2(rs2),
-		.idu_alu_ctrl(alu_ctrl),
-		.idu_alu_op_ctrl(alu_op_ctrl),
-		.idu_wb_ctrl(wb_ctrl),
-		.idu_wb_en(wb_en),
-		.idu_lsu_en(lsu_en),
-		.idu_lsu_wen(lsu_wen),
-		.idu_lsu_ctrl(lsu_ctrl),
-		.idu_ebreak_flag(ebreak_flag),
-		.idu_j_en(j_en),
-		.idu_j_cond(j_cond),
-		.icache_flush(icache_flush),
-		.idu_csr_wen(csr_wen),
-		.idu_csr_event(csr_event),
-		.idu_csr_addr(csr_addr)
-	);
+		
+		.if_id_valid(if_id_valid),
+		.id_if_ready(id_if_ready),
+		.if_id_pc(if_id_pc),
+		.if_id_inst(if_id_inst),
 
+		.id_ex_valid(id_ex_valid),
+		.ex_id_ready(ex_id_ready),
+		.id_ex_pc(id_ex_pc),
+		.id_ex_inst(id_ex_inst),
+
+		.id_ex_alu_ctrl(id_ex_alu_ctrl),
+		.id_ex_alu_op_ctrl(id_ex_alu_op_ctrl),
+		.id_ex_imm(id_ex_imm),
+		.id_ex_rd(id_ex_rd),
+		.id_rf_rs1(id_rf_rs1),
+		.id_rf_rs2(id_rf_rs2),
+		.id_ex_j_en(id_ex_j_en),
+		.id_ex_j_cond(id_ex_j_cond),
+		
+		.id_ex_lsu_en(id_ex_lsu_en),
+		.id_ex_lsu_wen(id_ex_lsu_wen),
+		.id_ex_lsu_ctrl(id_ex_lsu_ctrl),
+
+		.id_ex_wb_ctrl(id_ex_wb_ctrl),
+		.id_ex_wb_en(id_ex_wb_en),
+		.id_ex_ebreak_flag(id_ex_ebreak_flag),
+
+		// .icache_flush(icache_flush),
+		.id_csr_valid(id_csr_valid),
+		.id_csr_wen(id_csr_wen),
+		.id_csr_event(id_csr_event),
+		.id_csr_addr(id_csr_addr),
+
+		.ex_glb_flush(ex_glb_flush)
+	);
+/*-----------------------------------------------*/
+/*----------------register file------------------*/
+/*-----------------------------------------------*/
+wire wb_rf_valid, wb_rf_wen;
+wire [4:0] wb_rf_rd;
+wire [XLEN-1:0] wb_rf_data;
+
+wire [XLEN-1:0] rs1_data;
+wire [XLEN-1:0] rs2_data;
 	RegisterFile u_gpr (
 		.clk(clk),
 		.rst(rst),
-		.en(wb_valid),
-		.wen(wb_en),
-		.wdata(wb_data),
-		.waddr(rd),
-		.raddr1(rs1),
-		.raddr2(rs2),
+		.en(wb_rf_valid),
+		.wen(wb_rf_wen),
+		.waddr(wb_rf_rd),
+		.wdata(wb_rf_data),
+		.raddr1(id_rf_rs1),
+		.raddr2(id_rf_rs2),
 		.rdata1(rs1_data),
 		.rdata2(rs2_data)
 	);
-
+/*-----------------------------------------------*/
+/*-------------------CSR-------------------------*/
+/*-----------------------------------------------*/
+wire [XLEN-1:0] csr_rdata;
 	CSR_group u_csr (
 		.clk(clk),
 		.rst(rst),
-		.wen(csr_wen),
-		.pc(pc),
-		.csr_event(csr_event),
-		.addr(csr_addr),
+		.csr_valid(id_csr_valid),
+		.wen(id_csr_wen),
+		.pc(id_ex_pc),
+		.csr_event(id_csr_event),
+		.addr(id_csr_addr),
 		.wdata(rs1_data),
 		.rdata(csr_rdata)
 	);
 
+/*-----------------------------------------------*/
+/*----------------EXU LSU------------------------*/
+/*-----------------------------------------------*/
+wire ex_ls_valid, ls_ex_ready, ex_ls_en, ex_ls_wen;
+wire [2:0] ex_ls_ctrl;
+wire [XLEN-1:0] ex_ls_wdata, ex_ls_data_out, ex_ls_pc, ex_ls_inst, ex_ls_imm, ex_if_jpc;
+wire [4:0] ex_ls_rd;
+wire [2:0] ex_ls_wb_ctrl;
+wire ex_ls_wb_en, ex_ls_ebreak_flag;
+wire ex_if_jvalid, if_ex_jready, ex_glb_flush;
+
 	EXU u_EXU (
 		.clk(clk),
 		.rst(rst),
-		.idu_valid(idu_valid),
-		.idu_alu_op_ctrl(alu_op_ctrl),
-		.idu_alu_ctrl(alu_ctrl),
-		.idu_j_en(j_en),
-		.idu_j_cond(j_cond),
-		.pc(pc),
-		.csr(csr_rdata),
-		.rs1_data(rs1_data),
-		.rs2_data(rs2_data),
-		.idu_imm(imm),
-		.idu_lsu_en(lsu_en),
-		.idu_lsu_wen(lsu_wen),
-		.idu_lsu_ctrl(lsu_ctrl),
-		.exu_lsu_en(exu_lsu_en),
-		.exu_lsu_wen(exu_lsu_wen),
-		.exu_lsu_ctrl(exu_lsu_ctrl),
-		.exu_lsu_wdata(exu_lsu_wdata),
-		.exu_valid(exu_valid),
-		.exu_out(exu_out),
-		.exu_j_pc(exu_j_pc)
-	);
+		.id_ex_valid(id_ex_valid),
+		.ex_id_ready(ex_id_ready),
+		.id_ex_pc(id_ex_pc),
+		.id_ex_inst(id_ex_inst),
 
+		.id_ex_alu_ctrl(id_ex_alu_ctrl),
+		.id_ex_alu_op_ctrl(id_ex_alu_op_ctrl),
+		.id_ex_imm(id_ex_imm),
+		.id_ex_rd(id_ex_rd),
+		.rf_ex_rs1_data(rs1_data),
+		.rf_ex_rs2_data(rs2_data),
+		.id_ex_j_en(id_ex_j_en),
+		.id_ex_j_cond(id_ex_j_cond),
+		.csr_ex_data(csr_rdata),
+
+		.id_ex_lsu_en(id_ex_lsu_en),
+		.id_ex_lsu_wen(id_ex_lsu_wen),
+		.id_ex_lsu_ctrl(id_ex_lsu_ctrl),
+		.id_ex_wb_ctrl(id_ex_wb_ctrl),
+		.id_ex_wb_en(id_ex_wb_en),
+		.id_ex_ebreak_flag(id_ex_ebreak_flag),
+
+		.ex_ls_valid(ex_ls_valid),
+		.ls_ex_ready(ls_ex_ready),
+		.ex_ls_en(ex_ls_en),
+		.ex_ls_wen(ex_ls_wen),
+		.ex_ls_ctrl(ex_ls_ctrl),
+		.ex_ls_wdata(ex_ls_wdata),
+		.ex_ls_data_out(ex_ls_data_out),
+		.ex_ls_pc(ex_ls_pc),
+		.ex_ls_inst(ex_ls_inst),
+		.ex_ls_imm(ex_ls_imm),
+
+		.ex_ls_rd(ex_ls_rd),
+		.ex_ls_wb_ctrl(ex_ls_wb_ctrl),
+		.ex_ls_wb_en(ex_ls_wb_en),
+		.ex_ls_ebreak_flag(ex_ls_ebreak_flag),
+
+		.ex_if_jvalid(ex_if_jvalid),
+		.if_ex_jready(if_ex_jready),
+		.ex_if_jpc(ex_if_jpc),
+
+		.ex_glb_flush(ex_glb_flush)
+		
+	);
+/*-----------------------------------------------*/
+/*-------------------LSU WBU---------------------*/
+/*-----------------------------------------------*/
+wire ls_wb_valid, ls_wb_ready;
+wire [XLEN-1:0] ls_wb_pc, ls_wb_inst, ls_wb_imm;
+wire [4:0] ls_wb_rd;
+wire [2:0] ls_wb_ctrl;
+wire ls_wb_en, ls_wb_ebreak;
+wire [XLEN-1:0] ls_wb_exu_data, ls_wb_rdata;
 	LSU u_LSU (
 		.clk(clk),
 		.rst(rst),
-		.exu_lsu_en(exu_lsu_en),
-		.exu_lsu_wen(exu_lsu_wen),
-		.exu_lsu_ctrl(exu_lsu_ctrl),
-		.exu_lsu_addr(exu_out),
-		.exu_lsu_wdata(exu_lsu_wdata),
-		.rdata(lsu_rdata),
-		.ready_out(lsu_ready),
+
+		.ex_ls_valid(ex_ls_valid),
+		.ls_ex_ready(ls_ex_ready),
+		.ex_ls_en(ex_ls_en),
+		.ex_ls_wen(ex_ls_wen),
+		.ex_ls_ctrl(ex_ls_ctrl),
+		.ex_ls_wdata(ex_ls_wdata),
+		.ex_ls_addr(ex_ls_data_out),
+		.ex_ls_data(ex_ls_data_out),
+		.ex_ls_pc(ex_ls_pc),
+		.ex_ls_inst(ex_ls_inst),
+		.ex_ls_imm(ex_ls_imm),
+
+		.ex_ls_wb_en(ex_ls_wb_en),
+		.ex_ls_wb_ctrl(ex_ls_wb_ctrl),
+		.ex_ls_rd(ex_ls_rd),
+		.ex_ls_ebreak_flag(ex_ls_ebreak_flag),
+
+		.ls_wb_valid(ls_wb_valid),
+		.ls_wb_ready(ls_wb_ready),
+		.ls_wb_pc(ls_wb_pc),
+		.ls_wb_inst(ls_wb_inst),
+		.ls_wb_imm(ls_wb_imm),
+		.ls_wb_rd(ls_wb_rd),
+		.ls_wb_ctrl(ls_wb_ctrl),
+		.ls_wb_en(ls_wb_en),
+		.ls_wb_ebreak(ls_wb_ebreak),
+		.ls_wb_exu_data(ls_wb_exu_data),
+		.ls_wb_rdata(ls_wb_rdata),
 
 		.AWVALID(lsu_AWVALID),
 		.AWREADY(lsu_AWREADY),
@@ -315,25 +390,42 @@ wire icache_flush;
 		.RLAST(lsu_RLAST),
 		.RID(lsu_RID)
 	);
-
+/*-----------------------------------------------*/
+/*-------------------LSU WBU---------------------*/
+/*-----------------------------------------------*/
+wire ebreak_flag;
 	WBU u_WBU (
-		.exu_out(exu_out),
-		.mem_out(lsu_rdata),
-		.wb_ctrl(wb_ctrl),
-		.imm(imm),
-		.pc(pc),
-		.wb_data(wb_data)
+		.clk(clk),
+		.rst(rst),
+		.ls_wb_valid(ls_wb_valid),
+		.ls_wb_ready(ls_wb_ready),
+		.ls_wb_pc(ls_wb_pc),
+		.ls_wb_inst(ls_wb_inst),
+		.ls_wb_imm(ls_wb_imm),
+		.ls_wb_rd(ls_wb_rd),
+		.ls_wb_ctrl(ls_wb_ctrl),
+		.ls_wb_en(ls_wb_en),
+		.ls_wb_ebreak(ls_wb_ebreak),
+		.ls_wb_exu_data(ls_wb_exu_data),
+		.ls_wb_rdata(ls_wb_rdata),
+
+		.wb_rf_valid(wb_rf_valid),
+		.wb_rf_wen(wb_rf_wen),
+		.wb_rf_rd(wb_rf_rd),
+		.wb_rf_data(wb_rf_data),
+		
+		.ebreak_flag(ebreak_flag)
 	);
 	
 always @(*) begin
 	if(ebreak_flag)
-		npctrap(u_gpr.rf[10], pc);
+		npctrap(u_gpr.rf[10], ls_wb_pc);
 end
 `ifndef CONFIG_TARGET_SOC
 
 wire uart_AWVALID, uart_AWREADY, uart_WVALID, uart_WREADY, 
 uart_BVALID, uart_BREADY, uart_ARVALID, uart_ARREADY, uart_RVALID,uart_RREADY;
-wire [DATA_WIDTH-1:0] uart_AWADDR, uart_WDATA, uart_ARADDR, uart_RDATA;
+wire [XLEN-1:0] uart_AWADDR, uart_WDATA, uart_ARADDR, uart_RDATA;
 wire [3:0] uart_WSTRB;
 wire [1:0] uart_BRESP, uart_RRESP;
 
