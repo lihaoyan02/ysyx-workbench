@@ -13,28 +13,32 @@ VerilatedVcdC* tfp = NULL;
 
 #ifndef CONFIG_TARGET_SOC
 char IFUscope[] = "TOP.top.u_core.u_IFU";
+char LSUscope[] = "TOP.top.u_core.u_LSU";
+char WBUscope[] = "TOP.top.u_core.u_WBU";
 char gprscope[] = "TOP.top.u_core.u_gpr";
 #else
 char IFUscope[] = "TOP.ysyxSoCFull.asic.cpu.cpu.u_core.u_IFU";
+char LSUscope[] = "TOP.ysyxSoCFull.asic.cpu.cpu.u_core.u_LSU";
+char WBUscope[] = "TOP.ysyxSoCFull.asic.cpu.cpu.u_core.u_WBU";
 char gprscope[] = "TOP.ysyxSoCFull.asic.cpu.cpu.u_core.u_gpr";
 #endif
 
 uint32_t core_read_inst() {
-	const svScope scope = svGetScopeFromName(IFUscope);
+	const svScope scope = svGetScopeFromName(WBUscope);
 	assert(scope); 
 	svSetScope(scope);
 	return read_inst(); 
 }
 
 uint32_t core_read_pc() {
-	const svScope scope = svGetScopeFromName(IFUscope);
+	const svScope scope = svGetScopeFromName(WBUscope);
 	assert(scope); 
 	svSetScope(scope);
 	return read_pc(); 
 }
 
 uint32_t core_read_dnpc() {
-	const svScope scope = svGetScopeFromName(IFUscope);
+	const svScope scope = svGetScopeFromName(LSUscope);
 	assert(scope); 
 	svSetScope(scope);
 	return read_dnpc(); 
@@ -49,7 +53,7 @@ uint32_t core_read_reg(uint32_t idx) {
 }
 
 uint32_t core_read_state() {
-	const svScope scope = svGetScopeFromName(IFUscope);
+	const svScope scope = svGetScopeFromName(WBUscope);
 	assert(scope); 
 	svSetScope(scope);
 	return read_state();
