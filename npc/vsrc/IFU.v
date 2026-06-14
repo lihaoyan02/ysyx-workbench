@@ -1,24 +1,24 @@
-module IFU #(INST_WIDTH = 32, ADDR_WIDTH = 32)(
+module IFU #(XLEN = 32)(
 	input clk,
 	input rst,
 
 	input ex_if_jvalid,
 	output if_ex_jready,
-	input [ADDR_WIDTH-1:0] ex_if_jpc,
+	input [XLEN-1:0] ex_if_jpc,
 
 	// input ready_npc_in,
 	output if_id_valid,
 	input id_if_ready,
-	output [ADDR_WIDTH-1:0] if_id_pc,
-	output [INST_WIDTH-1:0] if_id_inst,
+	output [XLEN-1:0] if_id_pc,
+	output [XLEN-1:0] if_id_inst,
 	// output wb_valid,
 	
 	// to icache
-	output [ADDR_WIDTH-1:0] raddr,
+	output [XLEN-1:0] raddr,
     output avalid,
     input aready,
 
-    input [INST_WIDTH-1:0] rdata,
+    input [XLEN-1:0] rdata,
     input rvalid,
     output rready
 );
@@ -43,7 +43,7 @@ always @(posedge clk) begin
 	end
 end
 
-reg [INST_WIDTH-1:0] inst_fetch;
+reg [XLEN-1:0] inst_fetch;
 always @(posedge clk) begin
 	if (rst) begin
 		inst_fetch <= 0;
@@ -58,13 +58,13 @@ assign if_id_inst = inst_fetch;
 assign if_id_pc = pc;
 /*--------------ICache-------------------------*/
 // change pc at R_handshaked
-wire [ADDR_WIDTH-1:0] next_pc;
+wire [XLEN-1:0] next_pc;
 assign next_pc = pc + 4; 
-reg [ADDR_WIDTH-1:0] pc;
+reg [XLEN-1:0] pc;
 // assign wb_valid = state==WAIT & next_state==IDLE;
 always @(posedge clk) begin
 	`ifndef CONFIG_TARGET_SOC
-	if (rst) pc <= 32'h8000_0000;//{ADDR_WIDTH{1'b0}}; 
+	if (rst) pc <= 32'h8000_0000;//{XLEN{1'b0}}; 
 	`else
 	// if (rst) pc <= 32'h2000_0000; // MROM
 	if (rst) pc <= 32'h3000_0000; // flash
