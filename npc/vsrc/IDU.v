@@ -10,7 +10,7 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 	
 	output id_ex_valid,
 	input ex_id_ready,
-	output id_ex_pc,
+	output [XLEN-1:0] id_ex_pc,
 	output [XLEN-1:0] id_ex_inst,
 
 	// exu control signal
@@ -18,8 +18,8 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 	output [1:0] id_ex_alu_op_ctrl,
 	output [XLEN-1:0] id_ex_imm,
 	output [REGADDR_WIDTH-1:0] id_ex_rd,
-	output [REGADDR_WIDTH-1:0] id_ex_rs1, 	
-	output [REGADDR_WIDTH-1:0] id_ex_rs2,
+	output [REGADDR_WIDTH-1:0] id_rf_rs1, 	
+	output [REGADDR_WIDTH-1:0] id_rf_rs2,
 	output id_ex_j_en,
 	output [2:0] id_ex_j_cond,
 	
@@ -39,7 +39,9 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 	// csr control signal
 	output id_csr_wen,
 	output id_csr_event,
-	output [11:0] id_csr_addr
+	output [11:0] id_csr_addr,
+
+	input ex_glb_flush
 
 );
 
@@ -49,7 +51,7 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 	localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010, 
 		WB_IMM = 3'b011, WB_MEM = 3'b100;
 
-	assign id_if_ready = ~id_ex_valid | (id_ex_valid & ex_id_ready);
+	assign id_if_ready = (~id_ex_valid | (id_ex_valid & ex_id_ready)) & (~idu_ebreak_flag);
 	assign id_ex_valid = idu_valid;
 	assign id_ex_pc = idu_pc;
 	assign id_ex_inst = idu_inst;
@@ -139,13 +141,13 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 		if (rst) begin
 			idu_valid <= 0;
 		end
+		else if (ex_glb_flush) begin
+			idu_valid <= 0;
+		end
 		else if (if_id_valid & id_if_ready) begin
 			idu_valid <= 1;
 		end
 		else if (id_ex_valid & ex_id_ready) begin
-			idu_valid <= 0;
-		end
-		else if (glb_flush) begin
 			idu_valid <= 0;
 		end
 	end
