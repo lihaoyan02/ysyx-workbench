@@ -117,7 +117,7 @@ always @(posedge clk) begin
 		lsu_rd <= 0;
 		lsu_wbu_ebreak <= 0;
 	end
-	else if (ls_wb_valid & ls_wb_ready) begin
+	else if (ex_ls_valid & ls_ex_ready) begin
 		lsu_wbu_en <= ex_ls_wb_en;
 		lsu_wbu_ctrl <= ex_ls_wb_ctrl;
 		lsu_pc <= ex_ls_pc;
