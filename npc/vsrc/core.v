@@ -39,16 +39,6 @@ module core #(XLEN = 32) (
 
 import "DPI-C" function void npctrap(int a0, int c_pc);
 
-
-
-wire exu_lsu_en;
-wire exu_lsu_wen;
-wire [2:0] exu_lsu_ctrl;
-
-
-wire [XLEN-1:0] exu_lsu_wdata;
-
-
 wire ifu_AWVALID, ifu_AWREADY, ifu_WVALID, ifu_WREADY, 
 ifu_BVALID, ifu_BREADY, ifu_ARVALID, ifu_ARREADY, ifu_RVALID,ifu_RREADY;
 wire [XLEN-1:0] ifu_AWADDR, ifu_WDATA, ifu_ARADDR, ifu_RDATA;
@@ -78,11 +68,6 @@ clint_BVALID, clint_BREADY, clint_ARVALID, clint_ARREADY, clint_RVALID,clint_RRE
 wire [XLEN-1:0] clint_AWADDR, clint_WDATA, clint_ARADDR, clint_RDATA;
 wire [3:0] clint_WSTRB;
 wire [1:0] clint_BRESP, clint_RRESP;
-
-// ifu_icache signal
-
-
-// wire icache_flush;
 
 /*-----------------------------------------------*/
 /*---------------IFU ICache----------------------*/
@@ -272,7 +257,7 @@ wire [XLEN-1:0] csr_rdata;
 /*-----------------------------------------------*/
 wire ex_ls_valid, ls_ex_ready, ex_ls_en, ex_ls_wen;
 wire [2:0] ex_ls_ctrl;
-wire [XLEN-1:0] ex_ls_wdata, ex_ls_data_out, ex_if_jpc;
+wire [XLEN-1:0] ex_ls_wdata, ex_ls_data_out, ex_ls_pc, ex_ls_inst, ex_ls_imm, ex_if_jpc;
 wire [4:0] ex_ls_rd;
 wire [2:0] ex_ls_wb_ctrl;
 wire ex_ls_wb_en, ex_ls_ebreak_flag;
@@ -310,6 +295,9 @@ wire ex_if_jvalid, if_ex_jready, ex_glb_flush;
 		.ex_ls_ctrl(ex_ls_ctrl),
 		.ex_ls_wdata(ex_ls_wdata),
 		.ex_ls_data_out(ex_ls_data_out),
+		.ex_ls_pc(ex_ls_pc),
+		.ex_ls_inst(ex_ls_inst),
+		.ex_ls_imm(ex_ls_imm),
 
 		.ex_ls_rd(ex_ls_rd),
 		.ex_ls_wb_ctrl(ex_ls_wb_ctrl),
@@ -326,17 +314,44 @@ wire ex_if_jvalid, if_ex_jready, ex_glb_flush;
 /*-----------------------------------------------*/
 /*-------------------LSU WBU---------------------*/
 /*-----------------------------------------------*/
-wire [XLEN-1:0] lsu_rdata;
+wire ls_wb_valid, ls_wb_ready;
+wire [XLEN-1:0] ls_wb_pc, ls_wb_inst, ls_wb_imm;
+wire [4:0] ls_wb_rd;
+wire [2:0] ls_wb_ctrl;
+wire ls_wb_en, ls_wb_ebreak;
+wire [XLEN-1:0] ls_wb_exu_data, ls_wb_rdata;
 	LSU u_LSU (
 		.clk(clk),
 		.rst(rst),
-		.exu_lsu_en(exu_lsu_en),
-		.exu_lsu_wen(exu_lsu_wen),
-		.exu_lsu_ctrl(exu_lsu_ctrl),
-		.exu_lsu_addr(exu_out),
-		.exu_lsu_wdata(exu_lsu_wdata),
-		.rdata(lsu_rdata),
-		.ready_out(lsu_ready),
+
+		.ex_ls_valid(ex_ls_valid),
+		.ls_ex_ready(ls_ex_ready),
+		.ex_ls_en(ex_ls_en),
+		.ex_ls_wen(ex_ls_wen),
+		.ex_ls_ctrl(ex_ls_ctrl),
+		.ex_ls_wdata(ex_ls_wdata),
+		.ex_ls_addr(ex_ls_data_out),
+		.ex_ls_data(ex_ls_data_out),
+		.ex_ls_pc(ex_ls_pc),
+		.ex_ls_inst(ex_ls_inst),
+		.ex_ls_imm(ex_ls_imm),
+
+		.ex_ls_wb_en(ex_ls_wb_en),
+		.ex_ls_wb_ctrl(ex_ls_wb_ctrl),
+		.ex_ls_rd(ex_ls_rd),
+		.ex_ls_ebreak_flag(ex_ls_ebreak_flag),
+
+		.ls_wb_valid(ls_wb_valid),
+		.ls_wb_ready(ls_wb_ready),
+		.ls_wb_pc(ls_wb_pc),
+		.ls_wb_inst(ls_wb_inst),
+		.ls_wb_imm(ls_wb_imm),
+		.ls_wb_rd(ls_wb_rd),
+		.ls_wb_ctrl(ls_wb_ctrl),
+		.ls_wb_en(ls_wb_en),
+		.ls_wb_ebreak(ls_wb_ebreak),
+		.ls_wb_exu_data(ls_wb_exu_data),
+		.ls_wb_rdata(ls_wb_rdata),
 
 		.AWVALID(lsu_AWVALID),
 		.AWREADY(lsu_AWREADY),

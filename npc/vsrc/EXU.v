@@ -33,6 +33,9 @@ module EXU #(XLEN = 32) (
 	output [2:0] ex_ls_ctrl,
 	output [XLEN-1:0] ex_ls_wdata,
 	output [XLEN-1:0] ex_ls_data_out,
+	output [XLEN-1:0] ex_ls_pc,
+	output [XLEN-1:0] ex_ls_inst,
+	output [XLEN-1:0] ex_ls_imm,
 	// signal for WBU
 	output [4:0] ex_ls_rd,
 	output [2:0] ex_ls_wb_ctrl,
@@ -55,6 +58,9 @@ reg exu_lsu_wen;
 reg [2:0] exu_lsu_ctrl;
 reg [XLEN-1:0] exu_lsu_wdata;
 reg [XLEN-1:0] exu_out;
+reg [XLEN-1:0] exu_pc;
+reg [XLEN-1:0] exu_inst;
+reg [XLEN-1:0] exu_imm;
 reg [4:0] exu_rd;
 reg [2:0] exu_wb_ctrl;
 reg exu_wb_en;
@@ -69,6 +75,9 @@ assign ex_ls_wen = exu_lsu_wen;
 assign ex_ls_ctrl = exu_lsu_ctrl;
 assign ex_ls_wdata = exu_lsu_wdata;
 assign ex_ls_data_out = exu_out;
+assign ex_ls_pc = exu_pc;
+assign ex_ls_inst = exu_inst;
+assign ex_ls_imm = exu_imm;
 assign ex_ls_rd = exu_rd;
 assign ex_ls_wb_ctrl = exu_wb_ctrl;
 assign ex_ls_wb_en = exu_wb_en;
@@ -177,6 +186,9 @@ always @(posedge clk) begin
 		exu_lsu_wen <= 1'b0;
 		exu_lsu_ctrl <= 3'b0;
 		exu_lsu_wdata <= {XLEN{1'b0}};
+		exu_pc <= 0;
+		exu_inst <= 0;
+		exu_imm <= 0
 		exu_rd <= 0;
 		exu_wb_ctrl <= 3'b0;
 		exu_wb_en <= 1'b0;
@@ -191,6 +203,9 @@ always @(posedge clk) begin
 		exu_lsu_wen <= id_ex_lsu_wen;
 		exu_lsu_ctrl <= id_ex_lsu_ctrl;
 		exu_lsu_wdata <= rs2_data;
+		exu_pc <= id_ex_pc;
+		exu_inst <= id_ex_inst;
+		exu_imm <= id_ex_imm;
 		exu_rd <= id_ex_rd;
 		exu_wb_ctrl <= id_ex_wb_ctrl;
 		exu_wb_en <= id_ex_wb_en;
