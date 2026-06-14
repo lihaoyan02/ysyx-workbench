@@ -55,7 +55,7 @@ end
 
 assign if_id_valid = inst_valid;
 assign if_id_inst = inst_fetch;
-assign if_id_pc = pc;
+assign if_id_pc = if_pc;
 /*--------------ICache-------------------------*/
 // change pc at R_handshaked
 wire [XLEN-1:0] next_pc;
@@ -74,6 +74,16 @@ always @(posedge clk) begin
 	end
 	else if(R_handshaked)
 		pc <= next_pc;
+end
+
+reg [XLEN-1:0] if_pc;
+always @(posedge clk) begin
+	if (rst) begin
+		if_pc <= 1; // fetch first inst
+	end
+	else if (R_handshaked) begin
+		if_pc <= pc;
+	end
 end
 
 reg if_ica_avalid;
