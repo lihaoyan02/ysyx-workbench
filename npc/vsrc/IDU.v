@@ -37,6 +37,7 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 	// output reg icache_flush,
 
 	// csr control signal
+	output id_csr_valid,
 	output id_csr_wen,
 	output id_csr_event,
 	output [11:0] id_csr_addr,
@@ -69,6 +70,7 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 	assign id_ex_wb_ctrl = idu_wb_ctrl;
 	assign id_ex_wb_en = idu_wb_en;
 	assign id_ex_ebreak_flag = idu_ebreak_flag;
+	assign id_csr_valid = idu_csr_valid;
 	assign id_csr_wen = idu_csr_wen;
 	assign id_csr_event = idu_csr_event;
 	assign id_csr_addr = idu_csr_addr;
@@ -133,9 +135,10 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 	reg idu_wb_en; //enable write back
 	reg idu_ebreak_flag;
 	// registers for csr control signal
-	reg idu_csr_wen,
-	reg idu_csr_event,
-	reg [11:0] idu_csr_addr
+	reg idu_csr_valid;
+	reg idu_csr_wen;
+	reg idu_csr_event;
+	reg [11:0] idu_csr_addr;
 
 	always @(posedge clk) begin
 		if (rst) begin
@@ -149,6 +152,21 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 		end
 		else if (id_ex_valid & ex_id_ready) begin
 			idu_valid <= 0;
+		end
+	end
+
+	always @(posedge clk) begin
+		if (rst) begin
+			idu_csr_valid <= 0;
+		end
+		else if (ex_glb_flush) begin
+			idu_csr_valid <= 0;
+		end
+		else if (if_id_valid & id_if_ready) begin
+			idu_csr_valid <= 1;
+		end
+		else begin
+			idu_csr_valid <= 0;
 		end
 	end
 

@@ -1,6 +1,7 @@
 module CSR_group #(CSR_ADDR_WIDTH = 12, DATA_WIDTH = 32, CSR_NUM = 8) (
 	input clk,
 	input rst,
+	input csr_valid,
 	input wen,
 	input [DATA_WIDTH-1:0] pc,
 	input csr_event,
@@ -24,29 +25,31 @@ always @(posedge clk) begin
 		end
 	end
 	else begin
-		if(wen != 1 | ~(addr == 12'hb00 | addr == 12'hb80)) begin
+		if(~((csr_valid&wen) & (addr == 12'hb00 | addr == 12'hb80))) begin
 			{csr[5],csr[4]} <= {csr[5],csr[4]} + 1;
 		end
-		if(wen) begin
-			case (addr)
-				12'h300: //mestatus
-					csr[0] <= wdata; 
-				12'h305: //mtvec
-					csr[1] <= wdata; 
-				12'h341: //mepc
-					csr[2] <= wdata;
-				12'h342: //mecause
-					csr[3] <= wdata;
-				12'hb00: //mcycle
-					csr[4] <= wdata;
-				12'hb80: //mcycleh
-					csr[5] <= wdata;
-				default: unknow_inst();
-			endcase
-		end
-		if(csr_event) begin
-			csr[2] <= pc;
-			csr[3] <= 32'hb;
+		if (csr_valid) begin
+			if(wen) begin
+				case (addr)
+					12'h300: //mestatus
+						csr[0] <= wdata; 
+					12'h305: //mtvec
+						csr[1] <= wdata; 
+					12'h341: //mepc
+						csr[2] <= wdata;
+					12'h342: //mecause
+						csr[3] <= wdata;
+					12'hb00: //mcycle
+						csr[4] <= wdata;
+					12'hb80: //mcycleh
+						csr[5] <= wdata;
+					default: unknow_inst();
+				endcase
+			end
+			if(csr_event) begin
+				csr[2] <= pc;
+				csr[3] <= 32'hb;
+			end
 		end
 	end
 end

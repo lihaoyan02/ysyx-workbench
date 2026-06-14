@@ -189,7 +189,7 @@ wire [2:0] id_ex_lsu_ctrl;
 wire [2:0] id_ex_wb_ctrl;
 wire id_ex_wb_en, id_ex_ebreak_flag;
 
-wire id_csr_wen, id_csr_event;
+wire id_csr_valid, id_csr_wen, id_csr_event;
 wire [11:0] id_csr_addr;
 
 wire ex_glb_flush;
@@ -226,6 +226,7 @@ wire ex_glb_flush;
 		.id_ex_ebreak_flag(id_ex_ebreak_flag),
 
 		// .icache_flush(icache_flush),
+		.id_csr_valid(id_csr_valid),
 		.id_csr_wen(id_csr_wen),
 		.id_csr_event(id_csr_event),
 		.id_csr_addr(id_csr_addr),
@@ -254,10 +255,10 @@ wire [XLEN-1:0] rs2_data;
 /*-------------------CSR-------------------------*/
 /*-----------------------------------------------*/
 wire [XLEN-1:0] csr_rdata;
-wire [11:0] csr_addr;
 	CSR_group u_csr (
 		.clk(clk),
 		.rst(rst),
+		.csr_valid(id_csr_valid),
 		.wen(id_csr_wen),
 		.pc(id_ex_pc),
 		.csr_event(id_csr_event),
