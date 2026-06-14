@@ -150,9 +150,7 @@ static void exec_once(Decode *s) {
 	exec_one_inst();
 	s->inst = core_read_inst();
 	s->pc = core_read_pc();
-	s->dnpc = core_read_dnpc();
-	// printf("pc=%x, inst=%x, dnpc=%x\n",s->pc,s->inst,s->dnpc);
-	// Assert(0,"over");
+	s->dnpc = core_read_dnpc(); 
 #ifdef CONFIG_ITRACE
 	char *p = s->logbuf;
 	p += snprintf(p, sizeof(s->logbuf), "0x%08x:", s->pc);
