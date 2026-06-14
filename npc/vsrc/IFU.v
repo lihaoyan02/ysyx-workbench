@@ -55,7 +55,7 @@ end
 
 assign if_id_valid = inst_valid;
 assign if_id_inst = inst_fetch;
-assign if_id_pc = pc;
+assign if_id_pc = if_pc;
 /*--------------ICache-------------------------*/
 // change pc at R_handshaked
 wire [XLEN-1:0] next_pc;
@@ -74,6 +74,16 @@ always @(posedge clk) begin
 	end
 	else if(R_handshaked)
 		pc <= next_pc;
+end
+
+reg [XLEN-1:0] if_pc;
+always @(posedge clk) begin
+	if (rst) begin
+		if_pc <= 1; // fetch first inst
+	end
+	else if (R_handshaked) begin
+		if_pc <= pc;
+	end
 end
 
 reg if_ica_avalid;
@@ -95,28 +105,17 @@ assign raddr = pc;
 assign rready = ~if_id_valid | (if_id_valid & id_if_ready); // ready when no if_id data is pending
 
 /*---------------------DPI-C--------------------*/
-function int read_inst();
-	return inst_fetch;
-endfunction
 
-export "DPI-C" function read_inst;
+// function int read_dnpc();
+// 	return next_pc;
+// endfunction
 
-function int read_pc();
-	return pc;
-endfunction
+// export "DPI-C" function read_dnpc;
 
-export "DPI-C" function read_pc;
+// function int read_state();
+// 	return {31'b0,state&(~next_state)};
+// endfunction
 
-function int read_dnpc();
-	return next_pc;
-endfunction
-
-export "DPI-C" function read_dnpc;
-
-function int read_state();
-	return {31'b0,state&(~next_state)};
-endfunction
-
-export "DPI-C" function read_state;
+// export "DPI-C" function read_state;
 
 endmodule

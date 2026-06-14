@@ -60,8 +60,8 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 	assign id_ex_alu_op_ctrl = idu_alu_op_ctrl;
 	assign id_ex_imm = idu_imm;
 	assign id_ex_rd = idu_rd;
-	assign id_ex_rs1 = idu_rs1;
-	assign id_ex_rs2 = idu_rs2;
+	assign id_rf_rs1 = idu_rs1;
+	assign id_rf_rs2 = idu_rs2;
 	assign id_ex_j_en = idu_j_en;
 	assign id_ex_j_cond = idu_j_cond;
 	assign id_ex_lsu_en = idu_lsu_en;

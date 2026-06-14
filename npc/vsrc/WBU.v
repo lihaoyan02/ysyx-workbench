@@ -1,4 +1,6 @@
 module WBU #(XLEN = 32) (
+	input clk,
+	input rst,
 	input ls_wb_valid,
 	output ls_wb_ready,
 	input [XLEN-1:0] ls_wb_pc,
@@ -40,5 +42,40 @@ assign wb_rf_wen = wb_rf_valid ? ls_wb_en : 0;
 assign wb_rf_rd =  wb_rf_valid ? ls_wb_rd : 0;
 assign wb_rf_data =  wb_rf_valid ? wb_data : 0;
 assign ebreak_flag =  wb_rf_valid ? ls_wb_ebreak : 0;
+
+reg [XLEN-1:0] commit_pc, commit_inst, commit;
+always @(posedge clk) begin
+	if (rst) begin
+		commit_pc <= 0;
+		commit_inst <= 0;
+		commit <= 0;
+	end
+	else if (wb_rf_valid) begin
+		commit_pc <= ls_wb_pc;
+		commit_inst <= ls_wb_inst;
+		commit <= 1;
+	end
+	else begin
+		commit <= 0;
+	end
+end
+
+function int read_inst();
+	return commit_inst;
+endfunction
+
+export "DPI-C" function read_inst;
+
+function int read_pc();
+	return commit_pc;
+endfunction
+
+export "DPI-C" function read_pc;
+
+function int read_state();
+	return commit;
+endfunction
+
+export "DPI-C" function read_state;
 
 endmodule

@@ -40,7 +40,7 @@ module EXU #(XLEN = 32) (
 	output [4:0] ex_ls_rd,
 	output [2:0] ex_ls_wb_ctrl,
 	output ex_ls_wb_en,
-	output ex_ls_ebreak_flag
+	output ex_ls_ebreak_flag,
 	// to IFU
 	output ex_if_jvalid,
 	input if_ex_jready,
@@ -188,7 +188,7 @@ always @(posedge clk) begin
 		exu_lsu_wdata <= {XLEN{1'b0}};
 		exu_pc <= 0;
 		exu_inst <= 0;
-		exu_imm <= 0
+		exu_imm <= 0;
 		exu_rd <= 0;
 		exu_wb_ctrl <= 3'b0;
 		exu_wb_en <= 1'b0;
@@ -202,7 +202,7 @@ always @(posedge clk) begin
 		exu_lsu_en <= id_ex_lsu_en;
 		exu_lsu_wen <= id_ex_lsu_wen;
 		exu_lsu_ctrl <= id_ex_lsu_ctrl;
-		exu_lsu_wdata <= rs2_data;
+		exu_lsu_wdata <= rf_ex_rs2_data;
 		exu_pc <= id_ex_pc;
 		exu_inst <= id_ex_inst;
 		exu_imm <= id_ex_imm;

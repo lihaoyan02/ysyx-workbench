@@ -10,8 +10,8 @@ module LSU #(XLEN = 32) (
 	input [XLEN-1:0] ex_ls_addr,
 	input [XLEN-1:0] ex_ls_data,
 	input [XLEN-1:0] ex_ls_pc,
-	input [XLNE-1:0] ex_ls_inst,
-	input [XLNE-1:0] ex_ls_imm,
+	input [XLEN-1:0] ex_ls_inst,
+	input [XLEN-1:0] ex_ls_imm,
 
 	input ex_ls_wb_en,
 	input [2:0] ex_ls_wb_ctrl,
@@ -21,8 +21,8 @@ module LSU #(XLEN = 32) (
 	output ls_wb_valid,
 	input ls_wb_ready,
 	output [XLEN-1:0] ls_wb_pc,
-	output [XLNE-1:0] ls_wb_inst,
-	output [XLNE-1:0] ls_wb_imm,
+	output [XLEN-1:0] ls_wb_inst,
+	output [XLEN-1:0] ls_wb_imm,
 	output [4:0] ls_wb_rd,
 	output [2:0] ls_wb_ctrl,
 	output ls_wb_en,
@@ -117,7 +117,7 @@ always @(posedge clk) begin
 		lsu_rd <= 0;
 		lsu_wbu_ebreak <= 0;
 	end
-	else if (ls_wb_valid & ls_wb_ready) begin
+	else if (ex_ls_valid & ls_ex_ready) begin
 		lsu_wbu_en <= ex_ls_wb_en;
 		lsu_wbu_ctrl <= ex_ls_wb_ctrl;
 		lsu_pc <= ex_ls_pc;
@@ -132,6 +132,12 @@ always @(posedge clk) begin
 		lsu_rdata <= rdata;
 	end
 end
+
+function int read_dnpc();
+	return lsu_pc;
+endfunction
+
+export "DPI-C" function read_dnpc;
 
 localparam WIDLE = 2'b0, ASHAK=2'b01, DSHAK=2'b10, WWAIT = 2'b11;
 localparam IDLE = 1'b0, WAIT = 1'b1;

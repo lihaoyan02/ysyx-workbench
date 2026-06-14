@@ -115,7 +115,7 @@ wire [XLEN-1:0] if_id_pc, if_id_inst;
 		.rdata(icache_ifu_rdata),
 		.rvalid(icache_ifu_rvalid),
 		.rready(ifu_icache_rready),
-		// .icache_flush(icache_flush),
+		.icache_flush(icache_flush),
 
 		.AWVALID(ifu_AWVALID),
 		.AWREADY(ifu_AWREADY),
@@ -177,7 +177,7 @@ wire id_ex_wb_en, id_ex_ebreak_flag;
 wire id_csr_valid, id_csr_wen, id_csr_event;
 wire [11:0] id_csr_addr;
 
-wire ex_glb_flush;
+wire icache_flush;
 
 	IDU u_IDU (
 		.clk(clk),
@@ -395,6 +395,8 @@ wire [XLEN-1:0] ls_wb_exu_data, ls_wb_rdata;
 /*-----------------------------------------------*/
 wire ebreak_flag;
 	WBU u_WBU (
+		.clk(clk),
+		.rst(rst),
 		.ls_wb_valid(ls_wb_valid),
 		.ls_wb_ready(ls_wb_ready),
 		.ls_wb_pc(ls_wb_pc),
