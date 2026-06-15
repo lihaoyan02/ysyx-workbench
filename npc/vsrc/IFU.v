@@ -106,11 +106,11 @@ assign rready = ~if_id_valid | (if_id_valid & id_if_ready); // ready when no if_
 
 /*---------------------DPI-C--------------------*/
 
-// function int read_dnpc();
-// 	return next_pc;
-// endfunction
+function int read_ifpc();
+	return pc;
+endfunction
 
-// export "DPI-C" function read_dnpc;
+export "DPI-C" function read_ifpc;
 
 // function int read_state();
 // 	return {31'b0,state&(~next_state)};

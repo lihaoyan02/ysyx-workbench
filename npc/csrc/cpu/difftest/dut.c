@@ -48,7 +48,7 @@ void init_difftest(char *ref_so_file, long img_size, int port) {
 	#else
 	ref_difftest_memcpy(MROM_BASE, memory_export(MEM_BASE), img_size, DIFFTEST_TO_REF);
 	#endif
-	update_reg_state();
+	init_reg_state();
 	ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
 }
 

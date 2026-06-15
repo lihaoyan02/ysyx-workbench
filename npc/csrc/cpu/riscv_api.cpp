@@ -30,6 +30,13 @@ uint32_t core_read_inst() {
 	return read_inst(); 
 }
 
+uint32_t core_read_ifpc() {
+	const svScope scope = svGetScopeFromName(IFUscope);
+	assert(scope); 
+	svSetScope(scope);
+	return read_ifpc(); 
+}
+
 uint32_t core_read_pc() {
 	const svScope scope = svGetScopeFromName(WBUscope);
 	assert(scope); 
