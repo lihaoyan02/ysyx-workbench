@@ -66,7 +66,6 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 	assign id_if_ready = (~id_ex_valid | (id_ex_valid & ex_id_ready)) 
 						& (~idu_ebreak_flag)  				// last instruction
 						& (~data_hazard) ;					// wait until hazard solved
-						// & ~(id_ex_valid & id_ex_j_en & (id_ex_j_cond==`J_UNCOND));  	// unconditional jump (avoid illigal access)
 	assign id_ex_valid = idu_valid;
 	assign id_ex_pc = idu_pc;
 	assign id_ex_inst = idu_inst;
@@ -324,7 +323,7 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 						alu_ctrl = `ALU_SHIFT_LEFT;
 					end
 					else
-						unknown_flag = 1;
+						unknow_inst(if_id_pc, if_id_inst); 
 				end
 				7'b0110011: begin
 					rd = if_id_inst[11:7];
@@ -365,7 +364,7 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 						alu_ctrl = `ALU_SHIFT_LEFT;
 					end
 					else
-						unknown_flag = 1;
+						unknow_inst(if_id_pc, if_id_inst); 
 				end
 				7'b1101111: begin //jal
 					rd = if_id_inst[11:7];
@@ -390,7 +389,7 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 						j_en = 1'b1;
 					end
 					else
-						unknown_flag = 1;
+						unknow_inst(if_id_pc, if_id_inst); 
 				end
 				7'b1100011: begin
 					rs1 = if_id_inst[19:15];
@@ -420,7 +419,7 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 						j_cond = `J_BLT;
 					end
 					else
-						unknown_flag = 1;
+						unknow_inst(if_id_pc, if_id_inst); 
 				end
 				7'b0000011: begin //lw, lbu, lb
 					decode_cat = LSU_CAT;
@@ -438,7 +437,7 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 						end
 					default: begin
 						$display("unknow opcode =7'b0000011");
-						unknown_flag = 1;
+						unknow_inst(if_id_pc, if_id_inst); 
 					end
 					endcase
 				end
@@ -457,7 +456,7 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 						end
 					default: begin
 						$display("unknow opcode =7'b0100011");
-						unknown_flag = 1;
+						unknow_inst(if_id_pc, if_id_inst); 
 					end
 					endcase
 				end
@@ -501,7 +500,7 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 					end
 					else begin
 						$display("unknow opcode =7'b1110011");
-						unknown_flag = 1;
+						unknow_inst(if_id_pc, if_id_inst); 
 					end
 				end
 				// 7'b0001111: begin
@@ -510,12 +509,12 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 				// 	end
 				// 	else begin
 				// 		$display("unknow opcode =7'b0001111");
-				// 		unknown_flag = 1;
+				// 		unknow_inst(if_id_pc, if_id_inst); 
 				// 	end
 				// end
 				default: begin
 					$display("unknow opcode");
-					unknown_flag = 1;
+					unknow_inst(if_id_pc, if_id_inst); 
 				end				
 			endcase
 		end

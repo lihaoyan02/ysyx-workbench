@@ -111,12 +111,11 @@ always @(posedge clk) begin
 	
 end
 
-wire jump_inst = (rdata[6:0]==7'b1101111) | (rdata[6:0]==7'b1100111);
-assign if_ex_jready = R_handshaked | ~ica_bussy; // handshake with exu when R_handshaked
+wire jump_inst = (rdata[6:0]==7'b1101111) | (rdata[6:0]==7'b1100111); // jal and jalr
+assign if_ex_jready = R_handshaked | ~ica_bussy; // handshake with exu when R_handshaked or cache idle
 assign avalid = if_ica_avalid;
 assign raddr = pc;
 assign rready = ~if_id_valid | (if_id_valid & id_if_ready); // ready when no if_id data is pending
-				// | ex_if_jvalid; // active when jump
 
 /*---------------------DPI-C--------------------*/
 
@@ -125,11 +124,5 @@ function int read_ifpc();
 endfunction
 
 export "DPI-C" function read_ifpc;
-
-// function int read_state();
-// 	return {31'b0,state&(~next_state)};
-// endfunction
-
-// export "DPI-C" function read_state;
 
 endmodule
