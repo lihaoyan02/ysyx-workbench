@@ -216,6 +216,9 @@ wire icache_flush;
 		.id_csr_event(id_csr_event),
 		.id_csr_addr(id_csr_addr),
 
+		.ex_ls_rd(ex_ls_rd),
+		.ls_wb_rd(ls_wb_rd),
+
 		.ex_glb_flush(ex_glb_flush)
 	);
 /*-----------------------------------------------*/
