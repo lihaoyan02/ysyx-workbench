@@ -105,8 +105,8 @@ end
 assign if_ex_jready = R_handshaked; // handshake with exu when R_handshaked
 assign avalid = if_ica_avalid;
 assign raddr = pc;
-assign rready = ~if_id_valid | (if_id_valid & id_if_ready) // ready when no if_id data is pending
-				| ex_if_jvalid; // active when jump
+assign rready = ~if_id_valid | (if_id_valid & id_if_ready); // ready when no if_id data is pending
+				// | ex_if_jvalid; // active when jump
 
 /*---------------------DPI-C--------------------*/
 
