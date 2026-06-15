@@ -103,11 +103,16 @@ always @(posedge clk) begin
 	end
 	else if (ex_if_jvalid & if_ex_jready) begin
 		if_ica_avalid <= 1;
+		ica_bussy <= 1;
 	end
+	else if (R_handshaked & jump_inst) begin
+		ica_bussy <= 0;
+	end
+	
 end
 
 wire jump_inst = (rdata[6:0]==7'b1101111) | (rdata[6:0]==7'b1100111);
-assign if_ex_jready = R_handshaked | jump_inst; // handshake with exu when R_handshaked
+assign if_ex_jready = R_handshaked | ~ica_bussy; // handshake with exu when R_handshaked
 assign avalid = if_ica_avalid;
 assign raddr = pc;
 assign rready = ~if_id_valid | (if_id_valid & id_if_ready); // ready when no if_id data is pending
