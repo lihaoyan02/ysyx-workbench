@@ -96,6 +96,9 @@ always @(posedge clk) begin
 		if (!ex_ls_en) begin
 			lsu_valid <= 1;
 		end
+		else if (ls_wb_valid & ls_wb_ready) begin
+			lsu_valid <= 0;
+		end
 	end
 	else if (B_handshaked) begin
 		lsu_valid <= 1;
