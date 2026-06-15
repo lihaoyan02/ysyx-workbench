@@ -456,8 +456,7 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==id_rf_rs1) | (ex
 					rs1 = if_id_inst[19:15];
 					rs2 = if_id_inst[24:20];
 					decode_cat = CSR_CAT;
-					if(imm_I == 32'b1 && rs1 == 0 && 
-						funct3 == 3'b0 && rd == 5'b0) begin
+					if(imm_I == 32'b1 && if_id_inst[19:7] == 0) begin
 						ebreak_flag = 1;
 					end
 					/*------ecall------*/
