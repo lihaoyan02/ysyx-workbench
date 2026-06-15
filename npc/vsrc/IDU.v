@@ -63,7 +63,10 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 					(id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex_rd==rs2));
 
 /*----------------------output assignment----------------------------*/
-	assign id_if_ready = (~id_ex_valid | (id_ex_valid & ex_id_ready)) & (~idu_ebreak_flag) & (~data_hazard);
+	assign id_if_ready = (~id_ex_valid | (id_ex_valid & ex_id_ready)) 
+						& (~idu_ebreak_flag)  				// last instruction
+						& (~data_hazard) 					// wait until hazard solved
+						& ~(j_en & (j_cond==`J_UNCOND));  	// unconditional jump (avoid illigal access)
 	assign id_ex_valid = idu_valid;
 	assign id_ex_pc = idu_pc;
 	assign id_ex_inst = idu_inst;
