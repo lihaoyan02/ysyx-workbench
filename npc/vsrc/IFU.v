@@ -72,7 +72,7 @@ always @(posedge clk) begin
 	// if (rst) pc <= 32'h2000_0000; // MROM
 	if (rst) pc <= 32'h3000_0000; // flash
 	`endif
-	else if (R_handshaked & ex_if_jvalid) begin
+	else if (if_ex_jready & ex_if_jvalid) begin
 		pc <= ex_if_jpc;
 	end
 	else if(R_handshaked)
@@ -98,12 +98,12 @@ always @(posedge clk) begin
 	else if (AR_handshaked) begin
 		if_ica_avalid <= 0;
 	end
-	else if (R_handshaked & ~jump_inst) begin // launch next fetch
-		if_ica_avalid <= 1;
-	end
 	else if (ex_if_jvalid & if_ex_jready) begin
 		if_ica_avalid <= 1;
 		ica_bussy <= 1;
+	end
+	else if (R_handshaked & ~jump_inst) begin // launch next fetch
+		if_ica_avalid <= 1;
 	end
 	else if (R_handshaked & jump_inst) begin
 		ica_bussy <= 0;
