@@ -67,7 +67,16 @@ endfunction
 export "DPI-C" function read_inst;
 
 function int read_pc();
-	return commit_pc;
+	if (rst) begin
+		`ifndef CONFIG_TARGET_SOC
+		return 32'h8000_0000;
+		`else
+		return 32'h3000_0000; // flash
+		`endif
+	end
+	else begin
+		return commit_pc;
+	end
 endfunction
 
 export "DPI-C" function read_pc;
