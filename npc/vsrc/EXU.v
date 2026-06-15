@@ -69,7 +69,7 @@ reg exu_wb_en;
 reg exu_ebreak_flag;
 
 /*----------------output----------------------*/
-assign ex_id_ready = ~ex_ls_valid | (ex_ls_valid & ls_ex_ready);
+assign ex_id_ready = ~ex_ls_valid | (ex_ls_valid & ls_ex_ready) & (~glb_flush);
 
 assign ex_ls_valid = exu_valid;
 assign ex_ls_en = exu_lsu_en;
@@ -145,10 +145,7 @@ always @(posedge clk) begin
 	if (rst) begin
 		exu_valid <= 0;
 	end
-	// else if (glb_flush) begin
-	// 	exu_valid <= 0;
-	// end
-	else if (id_ex_valid & ex_id_ready & ~glb_flush) begin
+	else if (id_ex_valid & ex_id_ready) begin
 		exu_valid <= 1;
 	end
 	else if (ex_ls_valid & ls_ex_ready) begin
@@ -161,7 +158,7 @@ always @(posedge clk) begin
 	if (rst) begin
 		jump_valid <= 0;
 	end
-	else if (id_ex_valid & ex_id_ready & ~glb_flush) begin
+	else if (id_ex_valid & ex_id_ready) begin
 		jump_valid <= j_enable;
 	end
 	else if (ex_if_jvalid & if_ex_jready) begin
@@ -198,7 +195,7 @@ always @(posedge clk) begin
 		exu_wb_en <= 1'b0;
 		exu_ebreak_flag <= 1'b0;
 	end
-	else if (id_ex_valid & ex_id_ready & ~glb_flush) begin
+	else if (id_ex_valid & ex_id_ready) begin
 		if (id_ex_alu_ctrl!=`ALU_IDLE & id_ex_alu_ctrl!=`ALU_OP2) begin
 			performance_counter(1);
 		end

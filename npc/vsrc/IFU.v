@@ -35,6 +35,9 @@ always @(posedge clk) begin
 	if (rst) begin
 		inst_valid <= 0;
 	end
+	else if (ex_if_jvalid) begin
+		inst_valid <= 0;
+	end
 	else if (R_handshaked & ~ex_if_jvalid) begin
 		inst_valid <= 1;
 	end
@@ -69,7 +72,7 @@ always @(posedge clk) begin
 	// if (rst) pc <= 32'h2000_0000; // MROM
 	if (rst) pc <= 32'h3000_0000; // flash
 	`endif
-	else if (R_handshaked & ex_if_jvalid) begin
+	else if (if_ex_jready & ex_if_jvalid) begin
 		pc <= ex_if_jpc;
 	end
 	else if(R_handshaked)
@@ -86,20 +89,30 @@ always @(posedge clk) begin
 	end
 end
 
-reg if_ica_avalid;
+reg if_ica_avalid, ica_bussy;
 always @(posedge clk) begin
 	if (rst) begin
 		if_ica_avalid <= 1; // fetch first inst
+		ica_bussy <= 1;
 	end
 	else if (AR_handshaked) begin
 		if_ica_avalid <= 0;
 	end
-	else if (R_handshaked) begin // launch next fetch
+	else if (ex_if_jvalid & if_ex_jready) begin
+		if_ica_avalid <= 1;
+		ica_bussy <= 1;
+	end
+	else if (R_handshaked & ~jump_inst) begin // launch next fetch
 		if_ica_avalid <= 1;
 	end
+	else if (R_handshaked & jump_inst) begin
+		ica_bussy <= 0;
+	end
+	
 end
 
-assign if_ex_jready = R_handshaked; // handshake with exu when R_handshaked
+wire jump_inst = (rdata[6:0]==7'b1101111) | (rdata[6:0]==7'b1100111); // jal and jalr
+assign if_ex_jready = R_handshaked | ~ica_bussy; // handshake with exu when R_handshaked or cache idle
 assign avalid = if_ica_avalid;
 assign raddr = pc;
 assign rready = ~if_id_valid | (if_id_valid & id_if_ready); // ready when no if_id data is pending
@@ -111,11 +124,5 @@ function int read_ifpc();
 endfunction
 
 export "DPI-C" function read_ifpc;
-
-// function int read_state();
-// 	return {31'b0,state&(~next_state)};
-// endfunction
-
-// export "DPI-C" function read_state;
 
 endmodule

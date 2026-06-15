@@ -63,7 +63,9 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 					(id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex_rd==rs2));
 
 /*----------------------output assignment----------------------------*/
-	assign id_if_ready = (~id_ex_valid | (id_ex_valid & ex_id_ready)) & (~idu_ebreak_flag) & (~data_hazard);
+	assign id_if_ready = (~id_ex_valid | (id_ex_valid & ex_id_ready)) 
+						& (~idu_ebreak_flag)  				// last instruction
+						& (~data_hazard) ;					// wait until hazard solved
 	assign id_ex_valid = idu_valid;
 	assign id_ex_pc = idu_pc;
 	assign id_ex_inst = idu_inst;
@@ -245,7 +247,6 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 		rd = 0;
 		rs1 = 0;
 		rs2 = 0;
-
 		
 		alu_ctrl = `ALU_IDLE;
 		alu_op_ctrl = `OP_RS1_RS2; // if choose imm
