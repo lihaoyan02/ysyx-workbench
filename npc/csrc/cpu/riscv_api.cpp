@@ -45,7 +45,7 @@ uint32_t core_read_pc() {
 }
 
 uint32_t core_read_dnpc() {
-	const svScope scope = svGetScopeFromName(LSUscope);
+	const svScope scope = svGetScopeFromName(WBUscope);
 	assert(scope); 
 	svSetScope(scope);
 	return read_dnpc(); 
