@@ -13,7 +13,7 @@ module CSR_group #(CSR_ADDR_WIDTH = 12, DATA_WIDTH = 32, CSR_NUM = 8) (
 reg [DATA_WIDTH-1:0] csr [CSR_NUM-1:0];
 integer i = 0;
 
-import "DPI-C" function void unknow_inst();
+import "DPI-C" function void unknow_inst(int pc, int inst);
 
 always @(posedge clk) begin
 	if(rst) begin
@@ -43,7 +43,7 @@ always @(posedge clk) begin
 						csr[4] <= wdata;
 					12'hb80: //mcycleh
 						csr[5] <= wdata;
-					default: unknow_inst();
+					default: unknow_inst(pc, 0);
 				endcase
 			end
 			if(csr_event) begin
