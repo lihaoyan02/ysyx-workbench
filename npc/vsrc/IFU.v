@@ -89,20 +89,25 @@ always @(posedge clk) begin
 	end
 end
 
-reg if_ica_avalid;
+reg if_ica_avalid, ica_bussy;
 always @(posedge clk) begin
 	if (rst) begin
 		if_ica_avalid <= 1; // fetch first inst
+		ica_bussy <= 1;
 	end
 	else if (AR_handshaked) begin
 		if_ica_avalid <= 0;
 	end
-	else if (R_handshaked) begin // launch next fetch
+	else if (R_handshaked & ~jump_inst) begin // launch next fetch
+		if_ica_avalid <= 1;
+	end
+	else if (ex_if_jvalid & if_ex_jready) begin
 		if_ica_avalid <= 1;
 	end
 end
 
-assign if_ex_jready = R_handshaked; // handshake with exu when R_handshaked
+wire jump_inst = (rdata[6:0]==7'b1101111) | (rdata[6:0]==7'b1100111);
+assign if_ex_jready = R_handshaked | jump_inst; // handshake with exu when R_handshaked
 assign avalid = if_ica_avalid;
 assign raddr = pc;
 assign rready = ~if_id_valid | (if_id_valid & id_if_ready); // ready when no if_id data is pending
