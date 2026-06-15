@@ -145,10 +145,10 @@ always @(posedge clk) begin
 	if (rst) begin
 		exu_valid <= 0;
 	end
-	else if (glb_flush) begin
-		exu_valid <= 0;
-	end
-	else if (id_ex_valid & ex_id_ready) begin
+	// else if (glb_flush) begin
+	// 	exu_valid <= 0;
+	// end
+	else if (id_ex_valid & ex_id_ready & ~glb_flush) begin
 		exu_valid <= 1;
 	end
 	else if (ex_ls_valid & ls_ex_ready) begin
