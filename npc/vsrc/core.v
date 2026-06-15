@@ -216,7 +216,9 @@ wire icache_flush;
 		.id_csr_event(id_csr_event),
 		.id_csr_addr(id_csr_addr),
 
+		.exu_bussy(ex_ls_valid),
 		.ex_ls_rd(ex_ls_rd),
+		.lsu_bussy(lsu_bussy),
 		.ls_wb_rd(ls_wb_rd),
 
 		.ex_glb_flush(ex_glb_flush)
@@ -326,6 +328,7 @@ wire [4:0] ls_wb_rd;
 wire [2:0] ls_wb_ctrl;
 wire ls_wb_en, ls_wb_ebreak;
 wire [XLEN-1:0] ls_wb_exu_data, ls_wb_rdata;
+wire lsu_bussy;
 	LSU u_LSU (
 		.clk(clk),
 		.rst(rst),
@@ -358,6 +361,7 @@ wire [XLEN-1:0] ls_wb_exu_data, ls_wb_rdata;
 		.ls_wb_ebreak(ls_wb_ebreak),
 		.ls_wb_exu_data(ls_wb_exu_data),
 		.ls_wb_rdata(ls_wb_rdata),
+		.lsu_bussy(lsu_bussy),
 
 		.AWVALID(lsu_AWVALID),
 		.AWREADY(lsu_AWREADY),

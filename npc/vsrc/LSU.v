@@ -29,7 +29,7 @@ module LSU #(XLEN = 32) (
 	output ls_wb_ebreak,
 	output [XLEN-1:0] ls_wb_exu_data,
 	output [XLEN-1:0] ls_wb_rdata,
-	// output ready_out,
+	output lsu_bussy,
 
 	output AWVALID,
 	input AWREADY,
@@ -79,13 +79,17 @@ assign ls_wb_en = lsu_wbu_en;
 assign ls_wb_ebreak = lsu_wbu_ebreak;
 assign ls_wb_exu_data = exu_data;
 assign ls_wb_rdata = lsu_rdata;
+assign lsu_bussy = bussy;
 /*-----------------sequential logic for output-----------------*/
 reg lsu_valid;
+reg bussy;
 always @(posedge clk) begin
 	if (rst) begin
+		bussy <=0;
 		lsu_valid <= 0;
 	end
 	else if (ex_ls_valid & ls_ex_ready) begin
+		bussy <= 1;
 		if (!ex_ls_en) begin
 			lsu_valid <= 1;
 		end
@@ -97,6 +101,7 @@ always @(posedge clk) begin
 		lsu_valid <= 1;
 	end
 	else if (ls_wb_valid & ls_wb_ready) begin
+		bussy <= 0;
 		lsu_valid <= 0;
 	end
 end
