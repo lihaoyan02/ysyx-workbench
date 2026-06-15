@@ -123,8 +123,6 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 	reg [11:0] csr_addr;
 	// reg icache_flush_nxt;
 
-	reg unknown_flag;
-
 	integer decode_cat;
 	localparam ALU_CAT = 3, LSU_CAT = 4, CSR_CAT = 5, JUMP_CAT = 6, OTHER_CAT = 10;
 
@@ -214,9 +212,6 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 		end
 		else if (if_id_valid & id_if_ready) begin
 			performance_counter(decode_cat);
-			if (unknown_flag) begin
-				unknow_inst(if_id_pc, if_id_inst);
-			end
 			idu_pc <= if_id_pc;
 			idu_inst <= if_id_inst;
 
@@ -267,8 +262,6 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 		csr_event = 1'b0;
 		csr_wen = 1'b0;
 		csr_addr = if_id_inst[31:20];
-
-		unknown_flag = 0;
 		if (if_id_valid) begin
 			case (opcode)
 				7'b0010111: begin //auipc
