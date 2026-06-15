@@ -35,6 +35,9 @@ always @(posedge clk) begin
 	if (rst) begin
 		inst_valid <= 0;
 	end
+	else if (ex_if_jvalid) begin
+		inst_valid <= 0;
+	end
 	else if (R_handshaked & ~ex_if_jvalid) begin
 		inst_valid <= 1;
 	end

@@ -504,6 +504,12 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 				// 		unknow_inst(if_id_pc, if_id_inst); 
 				// 	end
 				// end
+				7'b0000000: begin
+					if (if_id_inst[31:7]!=0) begin
+						$display("unknow inst");
+						unknow_inst(if_id_pc, if_id_inst); 
+					end
+				end
 				default: begin
 					$display("unknow opcode");
 					unknow_inst(if_id_pc, if_id_inst); 
