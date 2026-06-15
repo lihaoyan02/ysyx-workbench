@@ -10,6 +10,7 @@ module LSU #(XLEN = 32) (
 	input [XLEN-1:0] ex_ls_addr,
 	input [XLEN-1:0] ex_ls_data,
 	input [XLEN-1:0] ex_ls_pc,
+	input [XLEN-1:0] ex_ls_npc,
 	input [XLEN-1:0] ex_ls_inst,
 	input [XLEN-1:0] ex_ls_imm,
 
@@ -21,6 +22,7 @@ module LSU #(XLEN = 32) (
 	output ls_wb_valid,
 	input ls_wb_ready,
 	output [XLEN-1:0] ls_wb_pc,
+	output [XLEN-1:0] ls_wb_npc,
 	output [XLEN-1:0] ls_wb_inst,
 	output [XLEN-1:0] ls_wb_imm,
 	output [4:0] ls_wb_rd,
@@ -71,6 +73,7 @@ import "DPI-C" function void performance_counter(int category);
 assign ls_ex_ready = (wstate==WIDLE) & (rstate==IDLE) & (bus_awvalid==0)& (bus_arvalid==0);
 assign ls_wb_valid = lsu_valid;
 assign ls_wb_pc = lsu_pc;
+assign ls_wb_npc = lsu_npc;
 assign ls_wb_inst = lsu_inst;
 assign ls_wb_imm = lsu_imm;
 assign ls_wb_rd = lsu_rd;
@@ -109,12 +112,13 @@ end
 reg [4:0] lsu_rd;
 reg [2:0] lsu_wbu_ctrl;
 reg lsu_wbu_en, lsu_wbu_ebreak;
-reg [XLEN-1:0] lsu_pc, lsu_inst, lsu_imm, exu_data, lsu_rdata;
+reg [XLEN-1:0] lsu_pc, lsu_npc, lsu_inst, lsu_imm, exu_data, lsu_rdata;
 always @(posedge clk) begin
 	if (rst) begin
 		lsu_wbu_en <= 0;
 		lsu_wbu_ctrl <= 0;
 		lsu_pc <= 0;
+		lsu_npc <= 0;
 		lsu_inst <= 0;
 		lsu_imm <= 0;
 		exu_data <= 0;
@@ -126,6 +130,7 @@ always @(posedge clk) begin
 		lsu_wbu_en <= ex_ls_wb_en;
 		lsu_wbu_ctrl <= ex_ls_wb_ctrl;
 		lsu_pc <= ex_ls_pc;
+		lsu_npc <= ex_ls_npc;
 		lsu_inst <= ex_ls_inst;
 		lsu_imm <= ex_ls_imm;
 		exu_data <= ex_ls_data;
@@ -137,12 +142,6 @@ always @(posedge clk) begin
 		lsu_rdata <= rdata;
 	end
 end
-
-function int read_dnpc();
-	return lsu_pc;
-endfunction
-
-export "DPI-C" function read_dnpc;
 
 localparam WIDLE = 2'b0, ASHAK=2'b01, DSHAK=2'b10, WWAIT = 2'b11;
 localparam IDLE = 1'b0, WAIT = 1'b1;

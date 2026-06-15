@@ -4,6 +4,7 @@ module WBU #(XLEN = 32) (
 	input ls_wb_valid,
 	output ls_wb_ready,
 	input [XLEN-1:0] ls_wb_pc,
+	input [XLEN-1:0] ls_wb_npc,
 	input [XLEN-1:0] ls_wb_inst,
 	input [XLEN-1:0] ls_wb_imm,
 	input [4:0] ls_wb_rd,
@@ -43,15 +44,17 @@ assign wb_rf_rd =  wb_rf_valid ? ls_wb_rd : 0;
 assign wb_rf_data =  wb_rf_valid ? wb_data : 0;
 assign ebreak_flag =  wb_rf_valid ? ls_wb_ebreak : 0;
 
-reg [XLEN-1:0] commit_pc, commit_inst, commit;
+reg [XLEN-1:0] commit_pc, commit_npc, commit_inst, commit;
 always @(posedge clk) begin
 	if (rst) begin
 		commit_pc <= 0;
+		commit_npc <= 0;
 		commit_inst <= 0;
 		commit <= 0;
 	end
 	else if (wb_rf_valid) begin
 		commit_pc <= ls_wb_pc;
+		commit_npc <= ls_wb_npc;
 		commit_inst <= ls_wb_inst;
 		commit <= 1;
 	end
@@ -67,19 +70,16 @@ endfunction
 export "DPI-C" function read_inst;
 
 function int read_pc();
-	if (rst) begin
-		`ifndef CONFIG_TARGET_SOC
-		return 32'h8000_0000;
-		`else
-		return 32'h3000_0000; // flash
-		`endif
-	end
-	else begin
-		return commit_pc;
-	end
+	return commit_pc;
 endfunction
 
 export "DPI-C" function read_pc;
+
+function int read_dnpc();
+	return commit_npc;
+endfunction
+
+export "DPI-C" function read_dnpc;
 
 function int read_state();
 	return commit;

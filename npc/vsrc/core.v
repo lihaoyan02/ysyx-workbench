@@ -265,7 +265,7 @@ wire [XLEN-1:0] csr_rdata;
 /*-----------------------------------------------*/
 wire ex_ls_valid, ls_ex_ready, ex_ls_en, ex_ls_wen;
 wire [2:0] ex_ls_ctrl;
-wire [XLEN-1:0] ex_ls_wdata, ex_ls_data_out, ex_ls_pc, ex_ls_inst, ex_ls_imm, ex_if_jpc;
+wire [XLEN-1:0] ex_ls_wdata, ex_ls_data_out, ex_ls_pc, ex_ls_npc, ex_ls_inst, ex_ls_imm, ex_if_jpc;
 wire [4:0] ex_ls_rd;
 wire [2:0] ex_ls_wb_ctrl;
 wire ex_ls_wb_en, ex_ls_ebreak_flag;
@@ -304,6 +304,7 @@ wire ex_if_jvalid, if_ex_jready, ex_glb_flush;
 		.ex_ls_wdata(ex_ls_wdata),
 		.ex_ls_data_out(ex_ls_data_out),
 		.ex_ls_pc(ex_ls_pc),
+		.ex_ls_npc(ex_ls_npc),
 		.ex_ls_inst(ex_ls_inst),
 		.ex_ls_imm(ex_ls_imm),
 
@@ -323,7 +324,7 @@ wire ex_if_jvalid, if_ex_jready, ex_glb_flush;
 /*-------------------LSU WBU---------------------*/
 /*-----------------------------------------------*/
 wire ls_wb_valid, ls_wb_ready;
-wire [XLEN-1:0] ls_wb_pc, ls_wb_inst, ls_wb_imm;
+wire [XLEN-1:0] ls_wb_pc, ls_wb_npc, ls_wb_inst, ls_wb_imm;
 wire [4:0] ls_wb_rd;
 wire [2:0] ls_wb_ctrl;
 wire ls_wb_en, ls_wb_ebreak;
@@ -342,6 +343,7 @@ wire lsu_bussy;
 		.ex_ls_addr(ex_ls_data_out),
 		.ex_ls_data(ex_ls_data_out),
 		.ex_ls_pc(ex_ls_pc),
+		.ex_ls_npc(ex_ls_npc),
 		.ex_ls_inst(ex_ls_inst),
 		.ex_ls_imm(ex_ls_imm),
 
@@ -353,6 +355,7 @@ wire lsu_bussy;
 		.ls_wb_valid(ls_wb_valid),
 		.ls_wb_ready(ls_wb_ready),
 		.ls_wb_pc(ls_wb_pc),
+		.ls_wb_npc(ls_wb_npc),
 		.ls_wb_inst(ls_wb_inst),
 		.ls_wb_imm(ls_wb_imm),
 		.ls_wb_rd(ls_wb_rd),
@@ -407,6 +410,7 @@ wire ebreak_flag;
 		.ls_wb_valid(ls_wb_valid),
 		.ls_wb_ready(ls_wb_ready),
 		.ls_wb_pc(ls_wb_pc),
+		.ls_wb_npc(ls_wb_npc),
 		.ls_wb_inst(ls_wb_inst),
 		.ls_wb_imm(ls_wb_imm),
 		.ls_wb_rd(ls_wb_rd),

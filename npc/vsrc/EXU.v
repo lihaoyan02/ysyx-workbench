@@ -34,6 +34,7 @@ module EXU #(XLEN = 32) (
 	output [XLEN-1:0] ex_ls_wdata,
 	output [XLEN-1:0] ex_ls_data_out,
 	output [XLEN-1:0] ex_ls_pc,
+	output [XLEN-1:0] ex_ls_npc,
 	output [XLEN-1:0] ex_ls_inst,
 	output [XLEN-1:0] ex_ls_imm,
 	// signal for WBU
@@ -59,6 +60,7 @@ reg [2:0] exu_lsu_ctrl;
 reg [XLEN-1:0] exu_lsu_wdata;
 reg [XLEN-1:0] exu_out;
 reg [XLEN-1:0] exu_pc;
+reg [XLEN-1:0] exu_npc;
 reg [XLEN-1:0] exu_inst;
 reg [XLEN-1:0] exu_imm;
 reg [4:0] exu_rd;
@@ -76,6 +78,7 @@ assign ex_ls_ctrl = exu_lsu_ctrl;
 assign ex_ls_wdata = exu_lsu_wdata;
 assign ex_ls_data_out = exu_out;
 assign ex_ls_pc = exu_pc;
+assign ex_ls_npc = exu_npc;
 assign ex_ls_inst = exu_inst;
 assign ex_ls_imm = exu_imm;
 assign ex_ls_rd = exu_rd;
@@ -187,6 +190,7 @@ always @(posedge clk) begin
 		exu_lsu_ctrl <= 3'b0;
 		exu_lsu_wdata <= {XLEN{1'b0}};
 		exu_pc <= 0;
+		exu_npc <= 0;
 		exu_inst <= 0;
 		exu_imm <= 0;
 		exu_rd <= 0;
@@ -204,6 +208,12 @@ always @(posedge clk) begin
 		exu_lsu_ctrl <= id_ex_lsu_ctrl;
 		exu_lsu_wdata <= rf_ex_rs2_data;
 		exu_pc <= id_ex_pc;
+		if (j_enable) begin //for debug
+			exu_npc <= alu_out;
+		end
+		else begin
+			exu_npc <= id_ex_pc+4;
+		end
 		exu_inst <= id_ex_inst;
 		exu_imm <= id_ex_imm;
 		exu_rd <= id_ex_rd;
