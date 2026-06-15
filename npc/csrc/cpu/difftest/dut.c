@@ -99,7 +99,7 @@ void difftest_step(uint32_t pc, uint32_t npc) {
 		ref_difftest_exec(1);
 		ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
 
-		checkregs(&ref_r, pc);
+		checkregs(&ref_r, npc);
 	} else 
 		n_ignore_first = true;
 
