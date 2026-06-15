@@ -161,7 +161,7 @@ always @(posedge clk) begin
 	if (rst) begin
 		jump_valid <= 0;
 	end
-	else if (id_ex_valid & ex_id_ready) begin
+	else if (id_ex_valid & ex_id_ready & ~glb_flush) begin
 		jump_valid <= j_enable;
 	end
 	else if (ex_if_jvalid & if_ex_jready) begin
@@ -198,7 +198,7 @@ always @(posedge clk) begin
 		exu_wb_en <= 1'b0;
 		exu_ebreak_flag <= 1'b0;
 	end
-	else if (id_ex_valid & ex_id_ready) begin
+	else if (id_ex_valid & ex_id_ready & ~glb_flush) begin
 		if (id_ex_alu_ctrl!=`ALU_IDLE & id_ex_alu_ctrl!=`ALU_OP2) begin
 			performance_counter(1);
 		end

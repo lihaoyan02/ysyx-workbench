@@ -96,6 +96,14 @@ void difftest_step(uint32_t pc, uint32_t npc) {
 	
 	if (n_ignore_first) {
 		update_reg_state();
+		ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
+		if (ref_r.pc != pc) {
+			npc_state.state = NPC_ABORT;
+			npc_state.halt_pc = pc;
+			printf("pc is different, ref=0x%08x, dut=0x%08x\n",ref_r.pc, pc);
+			printf("self execution falil: don't reach next pc\n");
+			return;
+		}
 		ref_difftest_exec(1);
 		ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
 
