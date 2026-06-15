@@ -241,9 +241,9 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==id_rf_rs1) | (ex
 	/*-----------------decoder------------------*/
 	always @(*) begin		
 		// default value
-		rd = if_id_inst[11:7];
-		rs1 = if_id_inst[19:15];
-		rs2 = if_id_inst[24:20];
+		rd = 0;
+		rs1 = 0;
+		rs2 = 0;
 
 		
 		alu_ctrl = `ALU_IDLE;
@@ -263,6 +263,7 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==id_rf_rs1) | (ex
 		if (if_id_valid) begin
 			case (opcode)
 				7'b0010111: begin //auipc
+					rd = if_id_inst[11:7];
 					decode_cat = ALU_CAT;
 					alu_ctrl = `ALU_ADD;
 					alu_op_ctrl = `OP_PC_IMM;
@@ -271,12 +272,15 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==id_rf_rs1) | (ex
 					wb_ctrl = WB_ALU;
 				end
 				7'b0110111: begin //lui
+					rd = if_id_inst[11:7];
 					decode_cat = OTHER_CAT;
 					imm = imm_U;
 					wb_en = 1;
 					wb_ctrl = WB_IMM;
 				end
 				7'b0010011: begin
+					rd = if_id_inst[11:7];
+					rs1 = if_id_inst[19:15];
 					decode_cat = ALU_CAT;
 					alu_op_ctrl = `OP_RS1_IMM;
 					imm = imm_I;
@@ -312,7 +316,10 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==id_rf_rs1) | (ex
 					else
 						unknow_inst(); 
 				end
-				7'b0110011: begin 
+				7'b0110011: begin
+					rd = if_id_inst[11:7];
+					rs1 = if_id_inst[19:15];
+					rs2 = if_id_inst[24:20];
 					decode_cat = ALU_CAT;
 					alu_op_ctrl = `OP_RS1_RS2;
 					wb_en = 1'b1;
@@ -351,6 +358,7 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==id_rf_rs1) | (ex
 						unknow_inst(); 
 				end
 				7'b1101111: begin //jal
+					rd = if_id_inst[11:7];
 					decode_cat = JUMP_CAT;
 					alu_ctrl = `ALU_ADD;
 					alu_op_ctrl = `OP_PC_IMM;
@@ -361,6 +369,8 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==id_rf_rs1) | (ex
 				end
 				7'b1100111: begin //jalr
 					if (funct3 == 3'b000) begin
+						rd = if_id_inst[11:7];
+						rs1 = if_id_inst[19:15];
 						decode_cat = JUMP_CAT;
 						alu_ctrl = `ALU_ADD;
 						alu_op_ctrl = `OP_RS1_IMM;
@@ -372,7 +382,9 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==id_rf_rs1) | (ex
 					else
 						unknow_inst(); 
 				end
-				7'b1100011: begin 
+				7'b1100011: begin
+					rs1 = if_id_inst[19:15];
+					rs2 = if_id_inst[24:20];
 					decode_cat = JUMP_CAT;
 					alu_ctrl = `ALU_ADD;
 					alu_op_ctrl = `OP_PC_IMM;
@@ -402,6 +414,8 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==id_rf_rs1) | (ex
 				end
 				7'b0000011: begin //lw, lbu, lb
 					decode_cat = LSU_CAT;
+					rd = if_id_inst[11:7];
+					rs1 = if_id_inst[19:15];
 					case (funct3)
 						3'b000,3'b001,3'b010,3'b100,3'b101: begin
 							alu_ctrl = `ALU_ADD;
@@ -420,6 +434,8 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==id_rf_rs1) | (ex
 				end
 				7'b0100011: begin //sb sw sj
 					decode_cat = LSU_CAT;
+					rs1 = if_id_inst[19:15];
+					rs2 = if_id_inst[24:20];
 					case (funct3)
 						3'b000, 3'b010, 3'b001: begin
 							alu_ctrl = `ALU_ADD;
@@ -436,6 +452,9 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==id_rf_rs1) | (ex
 					endcase
 				end
 				7'b1110011: begin //ebreak
+					rd = if_id_inst[11:7];
+					rs1 = if_id_inst[19:15];
+					rs2 = if_id_inst[24:20];
 					decode_cat = CSR_CAT;
 					if(imm_I == 32'b1 && rs1 == 0 && 
 						funct3 == 3'b0 && rd == 5'b0) begin
