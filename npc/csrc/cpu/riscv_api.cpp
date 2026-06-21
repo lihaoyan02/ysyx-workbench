@@ -81,6 +81,7 @@ static uint64_t IDU_jump_num = 0;
 static uint64_t LSU_write_num = 0;
 static int inst_cat;
 extern "C" void performance_counter(int category) {
+#ifdef CONFIG_PERF_COUNTER
 	if (category==0)
 	{
 		IFU_inst_num++;
@@ -116,6 +117,7 @@ extern "C" void performance_counter(int category) {
 	{
 		LSU_write_num++;
 	}
+#endif
 }
 
 static uint64_t Load_Store_cycle_num = 0;
