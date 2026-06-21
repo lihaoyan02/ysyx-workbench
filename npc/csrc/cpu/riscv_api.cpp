@@ -13,28 +13,39 @@ VerilatedVcdC* tfp = NULL;
 
 #ifndef CONFIG_TARGET_SOC
 char IFUscope[] = "TOP.top.u_core.u_IFU";
+char LSUscope[] = "TOP.top.u_core.u_LSU";
+char WBUscope[] = "TOP.top.u_core.u_WBU";
 char gprscope[] = "TOP.top.u_core.u_gpr";
 #else
 char IFUscope[] = "TOP.ysyxSoCFull.asic.cpu.cpu.u_core.u_IFU";
+char LSUscope[] = "TOP.ysyxSoCFull.asic.cpu.cpu.u_core.u_LSU";
+char WBUscope[] = "TOP.ysyxSoCFull.asic.cpu.cpu.u_core.u_WBU";
 char gprscope[] = "TOP.ysyxSoCFull.asic.cpu.cpu.u_core.u_gpr";
 #endif
 
 uint32_t core_read_inst() {
-	const svScope scope = svGetScopeFromName(IFUscope);
+	const svScope scope = svGetScopeFromName(WBUscope);
 	assert(scope); 
 	svSetScope(scope);
 	return read_inst(); 
 }
 
-uint32_t core_read_pc() {
+uint32_t core_read_ifpc() {
 	const svScope scope = svGetScopeFromName(IFUscope);
+	assert(scope); 
+	svSetScope(scope);
+	return read_ifpc(); 
+}
+
+uint32_t core_read_pc() {
+	const svScope scope = svGetScopeFromName(WBUscope);
 	assert(scope); 
 	svSetScope(scope);
 	return read_pc(); 
 }
 
 uint32_t core_read_dnpc() {
-	const svScope scope = svGetScopeFromName(IFUscope);
+	const svScope scope = svGetScopeFromName(WBUscope);
 	assert(scope); 
 	svSetScope(scope);
 	return read_dnpc(); 
@@ -49,7 +60,7 @@ uint32_t core_read_reg(uint32_t idx) {
 }
 
 uint32_t core_read_state() {
-	const svScope scope = svGetScopeFromName(IFUscope);
+	const svScope scope = svGetScopeFromName(WBUscope);
 	assert(scope); 
 	svSetScope(scope);
 	return read_state();
@@ -70,6 +81,7 @@ static uint64_t IDU_jump_num = 0;
 static uint64_t LSU_write_num = 0;
 static int inst_cat;
 extern "C" void performance_counter(int category) {
+#ifdef CONFIG_PERF_COUNTER
 	if (category==0)
 	{
 		IFU_inst_num++;
@@ -105,6 +117,7 @@ extern "C" void performance_counter(int category) {
 	{
 		LSU_write_num++;
 	}
+#endif
 }
 
 static uint64_t Load_Store_cycle_num = 0;
@@ -140,11 +153,17 @@ void performance_statistic() {
 	Log("\ntotal IDU LSU instructions = %lu", IDU_lsu_num);
 	Log("\ntotal IDU CSR instructions = %lu", IDU_csr_num);
 	Log("\ntotal IDU jump instructions = %lu", IDU_jump_num);
-	Log("\naverage Load Store inst cycle = %lu", Load_Store_cycle_num/IDU_lsu_num);
-	Log("\naverage ALU inst cycle = %lu", ALU_cycle_num/IDU_alu_num);
-	Log("\naverage jump inst cycle = %lu", jump_cycle_num/IDU_jump_num);
-	Log("\naverage icache cycle = %f", (double)cache_acc_cycle_num/(double)cache_acc_num);
-	Log("\naverage icache hit rate = %f", (double)cache_hit_num/(double)cache_acc_num);
+	if (IDU_lsu_num)
+		Log("\naverage Load Store inst cycle = %lu", Load_Store_cycle_num/IDU_lsu_num);
+	if (IDU_alu_num)
+		Log("\naverage ALU inst cycle = %lu", ALU_cycle_num/IDU_alu_num);
+	if (IDU_jump_num)
+		Log("\naverage jump inst cycle = %lu", jump_cycle_num/IDU_jump_num);
+	if (cache_acc_num) {
+		Log("\naverage icache cycle = %f", (double)cache_acc_cycle_num/(double)cache_acc_num);
+		Log("\naverage icache hit rate = %f", (double)cache_hit_num/(double)cache_acc_num);
+	}
+	
 }
 
 

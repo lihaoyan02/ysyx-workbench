@@ -48,21 +48,21 @@ void init_difftest(char *ref_so_file, long img_size, int port) {
 	#else
 	ref_difftest_memcpy(MROM_BASE, memory_export(MEM_BASE), img_size, DIFFTEST_TO_REF);
 	#endif
-	update_reg_state();
+	init_reg_state();
 	ref_difftest_regcpy(&cpu, DIFFTEST_TO_REF);
 }
 
 static bool difftest_checkregs(CPU_state *ref_r, uint32_t pc) {
 	bool ret = true;
+	if(ref_r->pc != pc) {
+		ret = false;
+		printf("pc is different, ref=0x%08x, dut=0x%08x\n",ref_r->pc, pc);
+	}
 	for( int i=0; i<16; i++) {
 		if(ref_r->gpr[i] != cpu.gpr[i]) {
 			ret = false;
 			printf("reg %s is different, ref=%x, dut=%x\n",reg_idx2str(i),ref_r->gpr[i],cpu.gpr[i]);
 		}
-	}
-	if(ref_r->pc != pc) {
-		ret = false;
-		printf("pc is different, ref=0x%08x, dut=0x%08x\n",ref_r->pc, pc);
 	}
 	return ret;
 }
@@ -77,7 +77,7 @@ static void checkregs(CPU_state *ref, uint32_t pc) {
 
 void difftest_step(uint32_t pc, uint32_t npc) {
 	CPU_state ref_r;
-	static bool n_ignore_first = false;
+	static bool n_ignore_first = true;
 
 	/*if (is_skip_ref_r) { 
 		update_reg_state();
@@ -96,10 +96,18 @@ void difftest_step(uint32_t pc, uint32_t npc) {
 	
 	if (n_ignore_first) {
 		update_reg_state();
+		ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
+		if (ref_r.pc != pc) {
+			npc_state.state = NPC_ABORT;
+			npc_state.halt_pc = pc;
+			printf("pc is different, ref=0x%08x, dut=0x%08x\n",ref_r.pc, pc);
+			printf("self execution falil: don't reach next pc\n");
+			return;
+		}
 		ref_difftest_exec(1);
 		ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
 
-		checkregs(&ref_r, pc);
+		checkregs(&ref_r, npc);
 	} else 
 		n_ignore_first = true;
 

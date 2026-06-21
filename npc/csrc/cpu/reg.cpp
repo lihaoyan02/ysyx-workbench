@@ -41,3 +41,10 @@ void update_reg_state() {
 	}
 	cpu.pc = core_read_pc();
 }
+
+void init_reg_state() {
+	for(int i=0; i<16; i++) {
+		cpu.gpr[i] = core_read_reg(i);
+	}
+	cpu.pc = core_read_ifpc();
+}

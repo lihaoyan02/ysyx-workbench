@@ -28,4 +28,8 @@
 `define J_BLT_U 3'b101
 `define J_BLT 3'b110
 
+`define CSRW_IDLE 2'b00
+`define CSRW_RS1 2'b01
+`define CSRW_SRS1 2'b10
+
 `endif

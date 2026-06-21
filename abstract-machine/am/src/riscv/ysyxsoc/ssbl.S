@@ -57,7 +57,7 @@ _ssbl_entry:
 
 8:
   # 启动trm/环境初始化
-  fence.i
+  # fence.i
   call _trm_init
 
 
