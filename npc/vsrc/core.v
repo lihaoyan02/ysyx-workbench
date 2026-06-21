@@ -180,8 +180,6 @@ wire [XLEN-1:0] id_ex_csr_cause;
 wire id_ex_csr_wvalid;
 wire [11:0] id_ex_csr_waddr;
 wire [11:0] id_csr_raddr;
-// wire id_csr_valid, id_csr_wen, id_csr_event;
-// wire [11:0] id_csr_addr;
 
 wire icache_flush;
 
@@ -223,15 +221,16 @@ wire icache_flush;
 		.id_ex_csr_waddr(id_ex_csr_waddr),
 		.id_csr_raddr(id_csr_raddr),
 		// .icache_flush(icache_flush),
-		// .id_csr_valid(id_csr_valid),
-		// .id_csr_wen(id_csr_wen),
-		// .id_csr_event(id_csr_event),
-		// .id_csr_addr(id_csr_addr),
 
+		// for data hazard
 		.exu_bussy(ex_ls_valid),
 		.ex_ls_rd(ex_ls_rd),
 		.lsu_bussy(lsu_bussy),
 		.ls_wb_rd(ls_wb_rd),
+		.ex_ls_csr_wvalid(ex_ls_csr_wvalid),
+		.ex_ls_csr_waddr(ex_ls_csr_waddr),
+		.ls_wb_csr_wvalid(ls_wb_csr_wvalid),
+		.ls_wb_csr_waddr(ls_wb_csr_waddr),
 
 		.ex_glb_flush(ex_glb_flush)
 	);

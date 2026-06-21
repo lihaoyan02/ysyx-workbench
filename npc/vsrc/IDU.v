@@ -34,6 +34,7 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 	output id_ex_wb_en, //enable write back
 	output id_ex_ebreak_flag,
 
+	// csr control signal
 	output id_ex_csr_exvalid,
 	output [XLEN-1:0] id_ex_csr_cause,
 	output id_ex_csr_wvalid,
@@ -43,16 +44,15 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 	// fence.i control signal
 	// output reg icache_flush,
 
-	// csr control signal
-	// output id_csr_valid,
-	// output id_csr_wen,
-	// output id_csr_event,
-	// output [11:0] id_csr_addr,
-
 	input exu_bussy,
 	input [REGADDR_WIDTH-1:0] ex_ls_rd,
 	input lsu_bussy,
 	input [REGADDR_WIDTH-1:0] ls_wb_rd,
+
+	input ex_ls_csr_wvalid,
+	input [11:0] ex_ls_csr_waddr,
+	input ls_wb_csr_wvalid,
+	input [11:0] ls_wb_csr_waddr,
 
 	input ex_glb_flush
 
@@ -65,9 +65,12 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 		WB_IMM = 3'b011, WB_MEM = 3'b100;
 /*------------------------data hazard--------------------------------*/
 wire data_hazard;
-assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd==rs2)) |
-					(ls_wb_rd != 0 & lsu_bussy) &  ((ls_wb_rd==rs1) | (ls_wb_rd==rs2)) |
-					(id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex_rd==rs2));
+assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex_rd==rs2))) |
+					((ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd==rs2))) |
+					((ls_wb_rd != 0 & lsu_bussy) &  ((ls_wb_rd==rs1) | (ls_wb_rd==rs2))) |
+					((id_ex_csr_wvalid & id_ex_valid) & (id_ex_csr_waddr == csr_raddr)) |
+					((ex_ls_csr_wvalid & exu_bussy) & (ex_ls_csr_waddr == csr_raddr)) |
+					((ls_wb_csr_wvalid & lsu_bussy) & (ls_wb_csr_waddr == csr_raddr));
 
 /*----------------------output assignment----------------------------*/
 	assign id_if_ready = (~id_ex_valid | (id_ex_valid & ex_id_ready)) 
@@ -97,11 +100,6 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 	assign id_ex_csr_wvalid = idu_exu_csr_wvalid;
 	assign id_ex_csr_waddr = idu_exu_csr_waddr;
 	assign id_csr_raddr = idu_csr_raddr;
-
-	// assign id_csr_valid = idu_csr_valid;
-	// assign id_csr_wen = idu_csr_wen;
-	// assign id_csr_event = idu_csr_event;
-	// assign id_csr_addr = idu_csr_addr;
 
 	wire [6:0] opcode;
 	wire [2:0] funct3;
@@ -141,9 +139,6 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 	reg [11:0] csr_waddr;
 	reg [11:0] csr_raddr;
 
-	// reg csr_event;
-	// reg csr_wen;
-	// reg [11:0] csr_addr;
 	// reg icache_flush_nxt;
 
 	reg unknown_flag;
@@ -180,11 +175,6 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 	reg [11:0] idu_exu_csr_waddr;
 	reg [11:0] idu_csr_raddr;
 
-	// reg idu_csr_valid;
-	// reg idu_csr_wen;
-	// reg idu_csr_event;
-	// reg [11:0] idu_csr_addr;
-
 	always @(posedge clk) begin
 		if (rst) begin
 			idu_valid <= 0;
@@ -199,21 +189,6 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 			idu_valid <= 0;
 		end
 	end
-
-	// always @(posedge clk) begin
-	// 	if (rst) begin
-	// 		idu_csr_valid <= 0;
-	// 	end
-	// 	else if (ex_glb_flush) begin
-	// 		idu_csr_valid <= 0;
-	// 	end
-	// 	else if (if_id_valid & id_if_ready) begin
-	// 		idu_csr_valid <= 1;
-	// 	end
-	// 	else begin
-	// 		idu_csr_valid <= 0;
-	// 	end
-	// end
 
 	always @(posedge clk) begin
 		if (rst) begin
@@ -244,9 +219,6 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 			idu_exu_csr_waddr <= 0;
 			idu_csr_raddr <= 0;
 			
-			// idu_csr_wen <= 0;
-			// idu_csr_event <= 0;
-			// idu_csr_addr <= 0;
 			// icache_flush <= 0;
 		end
 		else if (if_id_valid & id_if_ready) begin
@@ -281,11 +253,6 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 			idu_exu_csr_waddr <= csr_waddr;
 			idu_csr_raddr <= csr_raddr;
 			
-			// idu_csr_wen <= csr_wen;
-			// idu_csr_event <= csr_event;
-			// idu_csr_addr <= csr_addr;
-			
-			
 			// icache_flush <= icache_flush_nxt;
 		end
 	end
@@ -308,15 +275,12 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 		ebreak_flag = 1'b0;	
 		lsu_en = 1'b0;
 		lsu_wen = 1'b0;
-		lsu_ctrl = funct3;
+		lsu_ctrl = 0;
 		csr_exvalid = 0;
 		csr_cause = 0;
 		csr_wvalid = 0;
 		csr_waddr = 0;
 		csr_raddr = 0;
-		// csr_event = 1'b0;
-		// csr_wen = 1'b0;
-		// csr_addr = if_id_inst[31:20];
 		unknown_flag = 0;
 		if (if_id_valid) begin
 			case (opcode)
@@ -474,6 +438,7 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 					decode_category = LSU_CAT;
 					rd = if_id_inst[11:7];
 					rs1 = if_id_inst[19:15];
+					lsu_ctrl = funct3;
 					case (funct3)
 						3'b000,3'b001,3'b010,3'b100,3'b101: begin
 							alu_ctrl = `ALU_ADD;
@@ -494,6 +459,7 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 					decode_category = LSU_CAT;
 					rs1 = if_id_inst[19:15];
 					rs2 = if_id_inst[24:20];
+					lsu_ctrl = funct3;
 					case (funct3)
 						3'b000, 3'b010, 3'b001: begin
 							alu_ctrl = `ALU_ADD;
@@ -522,8 +488,6 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 						csr_exvalid = 1;
 						csr_cause = 32'hb;
 						csr_raddr = 12'h305; //mtvec
-						// csr_addr = 12'h305; //mtvec
-						// csr_event = 1'b1;
 						alu_ctrl = `ALU_OP2;
 						alu_op_ctrl = `OP_RS1_CSR;
 						j_en = 1'b1;
@@ -531,7 +495,6 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 					/*------mret------*/
 					else if(if_id_inst[31:7] == 25'b001100000010_00000_000_00000) begin
 						csr_raddr = 12'h341; //mepc
-						// csr_addr = 12'h341; //mepc
 						alu_ctrl = `ALU_OP2;
 						alu_op_ctrl = `OP_RS1_CSR;
 						j_en = 1'b1;
@@ -544,7 +507,6 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 						csr_wctrl = `CSRW_RS1;
 						alu_ctrl = `ALU_OP2;
 						alu_op_ctrl = `OP_RS1_CSR;
-						// csr_wen = 1'b1;
 						wb_en = 1'b1;
 						wb_ctrl = WB_ALU;
 					end
@@ -556,7 +518,6 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 						csr_wctrl = `CSRW_SRS1;
 						alu_ctrl = `ALU_OP2;
 						alu_op_ctrl = `OP_RS1_CSR;
-						// csr_wen = 1'b0;
 						wb_en = 1'b1;
 						wb_ctrl = WB_ALU;
 					end
