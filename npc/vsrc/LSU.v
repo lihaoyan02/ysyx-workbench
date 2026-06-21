@@ -19,6 +19,12 @@ module LSU #(XLEN = 32) (
 	input [4:0] ex_ls_rd,
 	input ex_ls_ebreak_flag,
 
+	input ex_ls_csr_exvalid,
+	input [XLEN-1:0] ex_ls_csr_cause,
+	input ex_ls_csr_wvalid,
+	input [11:0] ex_ls_csr_waddr,
+	input [XLEN-1:0] ex_ls_csr_wdata,
+
 	output ls_wb_valid,
 	input ls_wb_ready,
 	output [XLEN-1:0] ls_wb_pc,
@@ -32,6 +38,12 @@ module LSU #(XLEN = 32) (
 	output [XLEN-1:0] ls_wb_exu_data,
 	output [XLEN-1:0] ls_wb_rdata,
 	output lsu_bussy,
+
+	output ls_wb_csr_exvalid,
+	output [XLEN-1:0] ls_wb_csr_cause,
+	output ls_wb_csr_wvalid,
+	output [11:0] ls_wb_csr_waddr,
+	output [XLEN-1:0] ls_wb_csr_wdata,
 
 	output AWVALID,
 	input AWREADY,
@@ -83,6 +95,12 @@ assign ls_wb_ebreak = lsu_wbu_ebreak;
 assign ls_wb_exu_data = exu_data;
 assign ls_wb_rdata = lsu_rdata;
 assign lsu_bussy = bussy;
+
+assign ls_wb_csr_exvalid = csr_exvalid;
+assign ls_wb_csr_cause = csr_cause;
+assign ls_wb_csr_wvalid = csr_wvalid;
+assign ls_wb_csr_waddr = csr_waddr;
+assign ls_wb_csr_wdata = csr_wdata;
 /*-----------------sequential logic for output-----------------*/
 reg lsu_valid;
 reg bussy;
@@ -116,6 +134,9 @@ reg [4:0] lsu_rd;
 reg [2:0] lsu_wbu_ctrl;
 reg lsu_wbu_en, lsu_wbu_ebreak;
 reg [XLEN-1:0] lsu_pc, lsu_npc, lsu_inst, lsu_imm, exu_data, lsu_rdata;
+reg csr_exvalid, csr_wvalid;
+reg [XLEN-1:0] csr_cause, csr_wdata;
+reg [11:0] csr_waddr;
 always @(posedge clk) begin
 	if (rst) begin
 		lsu_wbu_en <= 0;
@@ -128,6 +149,11 @@ always @(posedge clk) begin
 		lsu_rdata <= 0;
 		lsu_rd <= 0;
 		lsu_wbu_ebreak <= 0;
+		csr_exvalid <= 0;
+		csr_cause <= 0;
+		csr_wvalid <= 0;
+		csr_waddr <= 0;
+		csr_wdata <= 0;
 	end
 	else if (ex_ls_valid & ls_ex_ready) begin
 		lsu_wbu_en <= ex_ls_wb_en;
@@ -140,6 +166,11 @@ always @(posedge clk) begin
 		lsu_rdata <= rdata;
 		lsu_rd <= ex_ls_rd;
 		lsu_wbu_ebreak <= ex_ls_ebreak_flag;
+		csr_exvalid <= ex_ls_csr_exvalid;
+		csr_cause <= ex_ls_csr_cause;
+		csr_wvalid <= ex_ls_csr_wvalid;
+		csr_waddr <= ex_ls_csr_waddr;
+		csr_wdata <= ex_ls_csr_wdata;
 	end
 	else if (R_handshaked) begin
 		lsu_rdata <= rdata;
