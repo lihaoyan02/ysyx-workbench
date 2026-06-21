@@ -27,8 +27,6 @@ extern VerilatedVcdC* tfp;
 
 uint32_t core_read_inst();
 
-uint32_t core_read_ifpc();
-
 uint32_t core_read_pc();
 
 uint32_t core_read_dnpc();

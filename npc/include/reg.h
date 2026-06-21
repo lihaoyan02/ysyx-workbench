@@ -28,6 +28,4 @@ uint32_t reg_str2val(const char *s, bool *success);
 
 void update_reg_state();
 
-void init_reg_state();
-
 #endif

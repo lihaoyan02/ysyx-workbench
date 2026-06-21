@@ -1,86 +1,74 @@
-module CSR_group #(CSR_ADDR_WIDTH = 12, XLEN = 32, CSR_NUM = 8) (
+module CSR_group #(CSR_ADDR_WIDTH = 12, DATA_WIDTH = 32, CSR_NUM = 8) (
 	input clk,
 	input rst,
-	input csr_exvalid,
-	input [XLEN-1:0] csr_cause,
-	input [XLEN-1:0] csr_pc,
-	input csr_wvalid,
-	input [CSR_ADDR_WIDTH-1:0] csr_waddr,
-	input [XLEN-1:0] csr_wdata,
-	
-	
-	input [CSR_ADDR_WIDTH-1:0] csr_raddr,
-	output reg [XLEN-1:0] csr_rdata
+	input wen,
+	input [DATA_WIDTH-1:0] pc,
+	input csr_event,
+	input [CSR_ADDR_WIDTH-1:0] addr,
+	input [DATA_WIDTH-1:0] wdata,
+	output reg [DATA_WIDTH-1:0] rdata
 );
 
+reg [DATA_WIDTH-1:0] csr [CSR_NUM-1:0];
 integer i = 0;
 
-import "DPI-C" function void unknow_inst(int pc, int inst);
-
-assign csr_rdata = rdata;
-
-reg [XLEN-1:0] mestatus;
-reg [XLEN-1:0] mtvec;
-reg [XLEN-1:0] mepc;
-reg [XLEN-1:0] mecause;
-reg [XLEN-1:0] mcycle;
-reg [XLEN-1:0] mcycleh;
-reg [XLEN-1:0] mvendorid;
-reg [XLEN-1:0] marchid;
+import "DPI-C" function void unknow_inst();
 
 always @(posedge clk) begin
 	if(rst) begin
-		mestatus <= 32'h1800; //mestatus 0x300
-		mtvec <= 0;
-		mepc <= 0;
-		mecause <= 0;
-		mcycle <= 0;
-		mcycleh <= 0;
-		mvendorid <= 32'h79737978; //mvendorid ysyx
-		marchid <= 32'd25120308; //marchid
+		csr[0] <= 32'h1800; //mestatus 0x300
+		csr[6] <= 32'h79737978; //mvendorid ysyx
+		csr[7] <= 32'd25120308; //marchid
+		for (i=1; i<CSR_NUM-2; i = i+1) begin
+			csr[i] <= {DATA_WIDTH{1'b0}};
+		end
 	end
 	else begin
-		if(~((csr_wvalid) & (csr_waddr == 12'hb00 | csr_waddr == 12'hb80))) begin
-			{mcycleh,mcycle} <= {mcycleh,mcycle} + 1;
+		if(wen != 1 | ~(addr == 12'hb00 | addr == 12'hb80)) begin
+			{csr[5],csr[4]} <= {csr[5],csr[4]} + 1;
 		end
-		if(csr_exvalid) begin
-			mepc <= csr_pc;
-			mecause <= csr_cause;
+		if(wen) begin
+			case (addr)
+				12'h300: //mestatus
+					csr[0] <= wdata; 
+				12'h305: //mtvec
+					csr[1] <= wdata; 
+				12'h341: //mepc
+					csr[2] <= wdata;
+				12'h342: //mecause
+					csr[3] <= wdata;
+				12'hb00: //mcycle
+					csr[4] <= wdata;
+				12'hb80: //mcycleh
+					csr[5] <= wdata;
+				default: unknow_inst();
+			endcase
 		end
-		else if (csr_wvalid) begin
-				case (csr_waddr)
-					12'h300: mestatus <= csr_wdata; 
-					12'h305: mtvec <= csr_wdata; 
-					12'h341: mepc <= csr_wdata;
-					12'h342: mecause <= csr_wdata;
-					12'hb00: mcycle <= csr_wdata;
-					12'hb80: mcycleh <= csr_wdata;
-					default: unknow_inst(csr_pc, 0);
-				endcase
-			
+		if(csr_event) begin
+			csr[2] <= pc;
+			csr[3] <= 32'hb;
 		end
 	end
 end
 
-reg [XLEN-1:0] rdata;
 always @(*) begin
-	case (csr_raddr)
+	case (addr)
 		12'h300:
-			rdata = mestatus;
+			rdata = csr[0];
 		12'h305:
-			rdata = mtvec;
+			rdata = csr[1];
 		12'h341:
-			rdata = mepc;
+			rdata = csr[2];
 		12'h342:
-			rdata = mecause;
+			rdata = csr[3];
 		12'hb00:
-			rdata = mcycle;
+			rdata = csr[4];
 		12'hb80:
-			rdata = mcycleh;
+			rdata = csr[5];
 		12'hf11:
-			rdata = mvendorid;
+			rdata = csr[6];
 		12'hf12:
-			rdata = marchid;
+			rdata = csr[7];
 		default:
 			rdata = 32'b0;
 	endcase

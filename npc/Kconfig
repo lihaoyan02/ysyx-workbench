@@ -91,10 +91,6 @@ config FTRACE
 
 endmenu
 
-config PERF_COUNTER
-	bool "Enable performance counter"
-	default y
-
 config DIFFTEST
 	bool "Enable differential testing"
 	default n

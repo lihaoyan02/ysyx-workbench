@@ -138,7 +138,7 @@ static void exec_one_inst() {
 		single_cycle();
 		uint32_t current_state = core_read_state();
 		if(current_state==1) {
-			IFDEF(CONFIG_PERF_COUNTER, cycle_record(i+1));
+			cycle_record(i+1);
 			return;
 		}
 	}
@@ -187,9 +187,8 @@ static void statistic() {
 	Log("average instuction per cycle = %.4lf", (double)g_nr_guest_inst / nr_clk_tick);
 	Log("average cycle per instruction = %ld", nr_clk_tick / g_nr_guest_inst);
 	Log("host time spent = %lu us", g_timer);
-	if (g_timer)
-		Log("estimated frequency = %lu MHz", nr_clk_tick/g_timer);
-	IFDEF(CONFIG_PERF_COUNTER, performance_statistic());
+	Log("estimated frequency = %lu MHz", nr_clk_tick/g_timer);
+	performance_statistic();
 }
 
 void assert_fail_msg() {
@@ -234,8 +233,8 @@ void cpu_exec(uint64_t n) {
 	}
 }
 
-extern "C" void unknow_inst(int pc, int inst) {
-	// int pc = core_read_pc();
-	// int inst = core_read_inst();
-	Assert(npc_state.state != NPC_RUNNING,"Unknown instruction at pc=0x%08x inst=0x%08x", pc, inst);
+extern "C" void unknow_inst() {
+	int pc = core_read_pc();
+	int inst = core_read_inst();
+	Assert(npc_state.state != NPC_RUNNING,"Unknown instruction at pc=0x%08x inst=0x%08x", pc,inst);
 }
