@@ -71,6 +71,19 @@ extern "C" void AXI_Access_Falt() {
 	int inst = core_read_inst();
 	Assert(npc_state.state != NPC_RUNNING,"axi access falt at pc=0x%08x inst=0x%08x", pc,inst);
 }
+
+static int write_ptr = 0, read_ptr = 0;
+static int inst_fifo[5];
+void inst_fifo_push(int category) {
+	inst_fifo[write_ptr] = category;
+	write_ptr = (write_ptr + 1) % 5;
+}
+int inst_fifo_pop() {
+	int category = inst_fifo[read_ptr];
+	read_ptr = (read_ptr + 1) % 5;
+	return category;
+}
+
 static uint64_t IFU_inst_num = 0;
 static uint64_t ALU_inst_num = 0;
 static uint64_t LSU_read_num = 0;
@@ -79,7 +92,6 @@ static uint64_t IDU_lsu_num = 0;
 static uint64_t IDU_csr_num = 0;
 static uint64_t IDU_jump_num = 0;
 static uint64_t LSU_write_num = 0;
-static int inst_cat;
 extern "C" void performance_counter(int category) {
 #ifdef CONFIG_PERF_COUNTER
 	if (category==0)
@@ -97,12 +109,12 @@ extern "C" void performance_counter(int category) {
 	else if (category==3)
 	{
 		IDU_alu_num++;
-		inst_cat = category;
+		inst_fifo_push(category);
 	}
 	else if (category==4)
 	{
 		IDU_lsu_num++;
-		inst_cat = category;
+		inst_fifo_push(category);
 	}
 	else if (category==5)
 	{
@@ -111,7 +123,7 @@ extern "C" void performance_counter(int category) {
 	else if (category==6)
 	{
 		IDU_jump_num++;
-		inst_cat = category;
+		inst_fifo_push(category);
 	}
 	else if (category==7)
 	{
@@ -129,6 +141,7 @@ static uint64_t cache_hit_num = 0;
 static uint64_t cache_acc_cycle_num = 0;
 
 void cycle_record(int cycle) {
+	int inst_cat = inst_fifo_pop();
 	if (inst_cat==4)
 	{
 		Load_Store_cycle_num += (uint64_t)cycle;
@@ -141,7 +154,6 @@ void cycle_record(int cycle) {
 	{
 		jump_cycle_num += (uint64_t)cycle;
 	}
-	inst_cat = 0;
 }
 
 void performance_statistic() {
