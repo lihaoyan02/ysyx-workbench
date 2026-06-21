@@ -14,10 +14,23 @@ module WBU #(XLEN = 32) (
 	input [XLEN-1:0] ls_wb_exu_data,
 	input [XLEN-1:0] ls_wb_rdata,
 
+	input ls_wb_csr_exvalid,
+	input [XLEN-1:0] ls_wb_csr_cause,
+	input ls_wb_csr_wvalid,
+	input [11:0] ls_wb_csr_waddr,
+	input [XLEN-1:0] ls_wb_csr_wdata,
+
 	output wb_rf_valid,
 	output wb_rf_wen,
 	output [4:0] wb_rf_rd,
 	output [XLEN-1:0] wb_rf_data,
+
+	output wb_csr_exvalid,
+	output [XLEN-1:0] wb_csr_cause,
+	output [XLEN-1:0] wb_csr_pc,
+	output wb_csr_wvalid,
+	output [11:0] wb_csr_waddr,
+	output [XLEN-1:0] wb_csr_wdata,
 
 	output ebreak_flag
 );
@@ -43,6 +56,13 @@ assign wb_rf_wen = wb_rf_valid ? ls_wb_en : 0;
 assign wb_rf_rd =  wb_rf_valid ? ls_wb_rd : 0;
 assign wb_rf_data =  wb_rf_valid ? wb_data : 0;
 assign ebreak_flag =  wb_rf_valid ? ls_wb_ebreak : 0;
+
+assign wb_csr_exvalid =  wb_rf_valid ? ls_wb_csr_exvalid : 0;
+assign wb_csr_cause =  wb_rf_valid ? ls_wb_csr_cause : 0;
+assign wb_csr_pc =  wb_rf_valid ? ls_wb_pc : 0;
+assign wb_csr_wvalid =  wb_rf_valid ? ls_wb_csr_wvalid : 0;
+assign wb_csr_waddr =  wb_rf_valid ? ls_wb_csr_waddr : 0;
+assign wb_csr_wdata =  wb_rf_valid ? ls_wb_csr_wdata : 0;
 
 reg [XLEN-1:0] commit_pc, commit_npc, commit_inst, commit;
 always @(posedge clk) begin

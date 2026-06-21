@@ -16,6 +16,7 @@ module EXU #(XLEN = 32) (
 	input [XLEN-1:0] rf_ex_rs2_data,
 	input id_ex_j_en,
 	input [2:0] id_ex_j_cond,
+	input [1:0] id_ex_csr_wctrl,
 	input [XLEN-1:0] csr_ex_data,
 	
 	input id_ex_lsu_en,
@@ -25,6 +26,12 @@ module EXU #(XLEN = 32) (
 	input [2:0] id_ex_wb_ctrl,
 	input id_ex_wb_en,
 	input id_ex_ebreak_flag,
+
+	input id_ex_csr_exvalid,
+	input [XLEN-1:0] id_ex_csr_cause,
+	input id_ex_csr_wvalid,
+	input [11:0] id_ex_csr_waddr,
+
 	// to LSU
 	output ex_ls_valid,
 	input ls_ex_ready,
@@ -42,6 +49,13 @@ module EXU #(XLEN = 32) (
 	output [2:0] ex_ls_wb_ctrl,
 	output ex_ls_wb_en,
 	output ex_ls_ebreak_flag,
+
+	output ex_ls_csr_exvalid,
+	output [XLEN-1:0] ex_ls_csr_cause,
+	output ex_ls_csr_wvalid,
+	output [11:0] ex_ls_csr_waddr,
+	output [XLEN-1:0] ex_ls_csr_wdata,
+
 	// to IFU
 	output ex_if_jvalid,
 	input if_ex_jready,
@@ -67,6 +81,11 @@ reg [4:0] exu_rd;
 reg [2:0] exu_wb_ctrl;
 reg exu_wb_en;
 reg exu_ebreak_flag;
+reg ex_ls_csr_exvalid_r;
+reg [XLEN-1:0] ex_ls_csr_cause_r;
+reg ex_ls_csr_wvalid_r;
+reg [11:0] ex_ls_csr_waddr_r;
+reg [XLEN-1:0] ex_ls_csr_wdata_r;
 
 /*----------------output----------------------*/
 assign ex_id_ready = ~ex_ls_valid | (ex_ls_valid & ls_ex_ready) & (~glb_flush);
@@ -85,6 +104,11 @@ assign ex_ls_rd = exu_rd;
 assign ex_ls_wb_ctrl = exu_wb_ctrl;
 assign ex_ls_wb_en = exu_wb_en;
 assign ex_ls_ebreak_flag = exu_ebreak_flag;
+assign ex_ls_csr_exvalid = ex_ls_csr_exvalid_r;
+assign ex_ls_csr_cause = ex_ls_csr_cause_r;
+assign ex_ls_csr_wvalid = ex_ls_csr_wvalid_r;
+assign ex_ls_csr_waddr = ex_ls_csr_waddr_r;
+assign ex_ls_csr_wdata = ex_ls_csr_wdata_r;
 assign ex_if_jvalid = jump_valid;
 assign ex_if_jpc = exu_out;
 assign ex_glb_flush = glb_flush;
@@ -140,6 +164,20 @@ always @(*) begin
 		j_enable = 1'b0;
 end
 
+/*-------------------CSRW----------------------*/
+reg [XLEN-1:0] csr_wdata;
+always @(*) begin
+	if (id_ex_csr_wvalid) begin
+		case (id_ex_csr_wctrl)
+			`CSRW_IDLE: csr_wdata = 0;
+			`CSRW_RS1: csr_wdata = rf_ex_rs1_data;
+			`CSRW_SRS1: csr_wdata = rf_ex_rs1_data | csr_ex_data;
+			default: csr_wdata = 0;
+		endcase
+	end
+	else
+		csr_wdata = 0;
+end
 /*-------------------sequential logic----------------------*/
 always @(posedge clk) begin
 	if (rst) begin
@@ -194,6 +232,11 @@ always @(posedge clk) begin
 		exu_wb_ctrl <= 3'b0;
 		exu_wb_en <= 1'b0;
 		exu_ebreak_flag <= 1'b0;
+		ex_ls_csr_exvalid_r <= 0;
+		ex_ls_csr_cause_r <= 0;
+		ex_ls_csr_wvalid_r <= 0;
+		ex_ls_csr_waddr_r <= 0;
+		ex_ls_csr_wdata_r <= 0;
 	end
 	else if (id_ex_valid & ex_id_ready) begin
 		if (id_ex_alu_ctrl!=`ALU_IDLE & id_ex_alu_ctrl!=`ALU_OP2) begin
@@ -217,6 +260,12 @@ always @(posedge clk) begin
 		exu_wb_ctrl <= id_ex_wb_ctrl;
 		exu_wb_en <= id_ex_wb_en;
 		exu_ebreak_flag <= id_ex_ebreak_flag;
+
+		ex_ls_csr_exvalid_r <= id_ex_csr_exvalid;
+		ex_ls_csr_cause_r <= id_ex_csr_cause;
+		ex_ls_csr_wvalid_r <= id_ex_csr_wvalid;
+		ex_ls_csr_waddr_r <= id_ex_csr_waddr;
+		ex_ls_csr_wdata_r <= csr_wdata;
 	end
 end
 endmodule

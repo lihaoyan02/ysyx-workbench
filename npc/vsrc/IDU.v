@@ -22,6 +22,7 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 	output [REGADDR_WIDTH-1:0] id_rf_rs2,
 	output id_ex_j_en,
 	output [2:0] id_ex_j_cond,
+	output [1:0] id_ex_csr_wctrl,
 	
 	// lsu control signal
 	output id_ex_lsu_en, //enable lsu
@@ -32,15 +33,21 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 	output [2:0] id_ex_wb_ctrl,
 	output id_ex_wb_en, //enable write back
 	output id_ex_ebreak_flag,
+
+	output id_ex_csr_exvalid,
+	output [XLEN-1:0] id_ex_csr_cause,
+	output id_ex_csr_wvalid,
+	output [11:0] id_ex_csr_waddr,
+	output [11:0] id_csr_raddr,
 	
 	// fence.i control signal
 	// output reg icache_flush,
 
 	// csr control signal
-	output id_csr_valid,
-	output id_csr_wen,
-	output id_csr_event,
-	output [11:0] id_csr_addr,
+	// output id_csr_valid,
+	// output id_csr_wen,
+	// output id_csr_event,
+	// output [11:0] id_csr_addr,
 
 	input exu_bussy,
 	input [REGADDR_WIDTH-1:0] ex_ls_rd,
@@ -77,16 +84,24 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 	assign id_rf_rs2 = idu_rs2;
 	assign id_ex_j_en = idu_j_en;
 	assign id_ex_j_cond = idu_j_cond;
+	assign id_ex_csr_wctrl = idu_exu_csr_wctrl;
 	assign id_ex_lsu_en = idu_lsu_en;
 	assign id_ex_lsu_wen = idu_lsu_wen;
 	assign id_ex_lsu_ctrl = idu_lsu_ctrl;
 	assign id_ex_wb_ctrl = idu_wb_ctrl;
 	assign id_ex_wb_en = idu_wb_en;
 	assign id_ex_ebreak_flag = idu_ebreak_flag;
-	assign id_csr_valid = idu_csr_valid;
-	assign id_csr_wen = idu_csr_wen;
-	assign id_csr_event = idu_csr_event;
-	assign id_csr_addr = idu_csr_addr;
+
+	assign id_ex_csr_exvalid = idu_exu_csr_exvalid;
+	assign id_ex_csr_cause = idu_exu_csr_cause;
+	assign id_ex_csr_wvalid = idu_exu_csr_wvalid;
+	assign id_ex_csr_waddr = idu_exu_csr_waddr;
+	assign id_csr_raddr = idu_csr_raddr;
+
+	// assign id_csr_valid = idu_csr_valid;
+	// assign id_csr_wen = idu_csr_wen;
+	// assign id_csr_event = idu_csr_event;
+	// assign id_csr_addr = idu_csr_addr;
 
 	wire [6:0] opcode;
 	wire [2:0] funct3;
@@ -118,14 +133,22 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 	reg ebreak_flag;
 	reg j_en;
 	reg [2:0] j_cond;
-	reg csr_event;
-	reg csr_wen;
-	reg [11:0] csr_addr;
+	reg [1:0] csr_wctrl;
+
+	reg csr_exvalid;
+	reg [XLEN-1:0] csr_cause;
+	reg csr_wvalid;
+	reg [11:0] csr_waddr;
+	reg [11:0] csr_raddr;
+
+	// reg csr_event;
+	// reg csr_wen;
+	// reg [11:0] csr_addr;
 	// reg icache_flush_nxt;
 
 	reg unknown_flag;
 
-	integer decode_cat;
+	integer decode_category;
 	localparam ALU_CAT = 3, LSU_CAT = 4, CSR_CAT = 5, JUMP_CAT = 6, OTHER_CAT = 10;
 
 	/*--------------define register------------------*/
@@ -141,6 +164,7 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 	reg [REGADDR_WIDTH-1:0] idu_rs2;
 	reg idu_j_en;
 	reg [2:0] idu_j_cond;
+	reg [1:0] idu_exu_csr_wctrl;
 	// registers for lsu control signal
 	reg idu_lsu_en; //enable lsu
 	reg idu_lsu_wen;
@@ -150,10 +174,16 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 	reg idu_wb_en; //enable write back
 	reg idu_ebreak_flag;
 	// registers for csr control signal
-	reg idu_csr_valid;
-	reg idu_csr_wen;
-	reg idu_csr_event;
-	reg [11:0] idu_csr_addr;
+	reg idu_exu_csr_exvalid;
+	reg [XLEN-1:0] idu_exu_csr_cause;
+	reg idu_exu_csr_wvalid;
+	reg [11:0] idu_exu_csr_waddr;
+	reg [11:0] idu_csr_raddr;
+
+	// reg idu_csr_valid;
+	// reg idu_csr_wen;
+	// reg idu_csr_event;
+	// reg [11:0] idu_csr_addr;
 
 	always @(posedge clk) begin
 		if (rst) begin
@@ -170,20 +200,20 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 		end
 	end
 
-	always @(posedge clk) begin
-		if (rst) begin
-			idu_csr_valid <= 0;
-		end
-		else if (ex_glb_flush) begin
-			idu_csr_valid <= 0;
-		end
-		else if (if_id_valid & id_if_ready) begin
-			idu_csr_valid <= 1;
-		end
-		else begin
-			idu_csr_valid <= 0;
-		end
-	end
+	// always @(posedge clk) begin
+	// 	if (rst) begin
+	// 		idu_csr_valid <= 0;
+	// 	end
+	// 	else if (ex_glb_flush) begin
+	// 		idu_csr_valid <= 0;
+	// 	end
+	// 	else if (if_id_valid & id_if_ready) begin
+	// 		idu_csr_valid <= 1;
+	// 	end
+	// 	else begin
+	// 		idu_csr_valid <= 0;
+	// 	end
+	// end
 
 	always @(posedge clk) begin
 		if (rst) begin
@@ -197,6 +227,7 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 			idu_rs2 <= 0;
 			idu_j_en <= 0;
 			idu_j_cond <= `J_UNCOND;
+			idu_exu_csr_wctrl <= `CSRW_IDLE;
 
 			
 			idu_lsu_en <= 0;
@@ -206,14 +237,20 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 			idu_wb_ctrl <= WB_IDLE;
 			idu_wb_en <= 0;
 			idu_ebreak_flag <= 0;
+
+			idu_exu_csr_exvalid <= 0;
+			idu_exu_csr_cause <= 0;
+			idu_exu_csr_wvalid <= 0;
+			idu_exu_csr_waddr <= 0;
+			idu_csr_raddr <= 0;
 			
-			idu_csr_wen <= 0;
-			idu_csr_event <= 0;
-			idu_csr_addr <= 0;
+			// idu_csr_wen <= 0;
+			// idu_csr_event <= 0;
+			// idu_csr_addr <= 0;
 			// icache_flush <= 0;
 		end
 		else if (if_id_valid & id_if_ready) begin
-			performance_counter(decode_cat);
+			performance_counter(decode_category);
 			if (unknown_flag) begin
 				unknow_inst(if_id_pc, if_id_inst);
 			end
@@ -228,6 +265,7 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 			idu_rs2 <= rs2;
 			idu_j_en <= j_en;
 			idu_j_cond <= j_cond;
+			idu_exu_csr_wctrl <= csr_wctrl;
 
 			idu_lsu_en <= lsu_en;
 			idu_lsu_wen <= lsu_wen;
@@ -236,10 +274,16 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 			idu_wb_ctrl <= wb_ctrl;
 			idu_wb_en <= wb_en;
 			idu_ebreak_flag <= ebreak_flag;
+
+			idu_exu_csr_exvalid <= csr_exvalid;
+			idu_exu_csr_cause <= csr_cause;
+			idu_exu_csr_wvalid <= csr_wvalid;
+			idu_exu_csr_waddr <= csr_waddr;
+			idu_csr_raddr <= csr_raddr;
 			
-			idu_csr_wen <= csr_wen;
-			idu_csr_event <= csr_event;
-			idu_csr_addr <= csr_addr;
+			// idu_csr_wen <= csr_wen;
+			// idu_csr_event <= csr_event;
+			// idu_csr_addr <= csr_addr;
 			
 			
 			// icache_flush <= icache_flush_nxt;
@@ -259,20 +303,26 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 		wb_en = 0; // if wb
 		wb_ctrl = WB_IDLE; //from where to wb
 		j_en = 1'b0; // if jump
-		j_cond = `J_UNCOND; // if conditional jump				
+		j_cond = `J_UNCOND; // if conditional jump	
+		csr_wctrl = `CSRW_IDLE;			
 		ebreak_flag = 1'b0;	
 		lsu_en = 1'b0;
 		lsu_wen = 1'b0;
 		lsu_ctrl = funct3;
-		csr_event = 1'b0;
-		csr_wen = 1'b0;
-		csr_addr = if_id_inst[31:20];
+		csr_exvalid = 0;
+		csr_cause = 0;
+		csr_wvalid = 0;
+		csr_waddr = 0;
+		csr_raddr = 0;
+		// csr_event = 1'b0;
+		// csr_wen = 1'b0;
+		// csr_addr = if_id_inst[31:20];
 		unknown_flag = 0;
 		if (if_id_valid) begin
 			case (opcode)
 				7'b0010111: begin //auipc
 					rd = if_id_inst[11:7];
-					decode_cat = ALU_CAT;
+					decode_category = ALU_CAT;
 					alu_ctrl = `ALU_ADD;
 					alu_op_ctrl = `OP_PC_IMM;
 					imm = imm_U;
@@ -281,7 +331,7 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 				end
 				7'b0110111: begin //lui
 					rd = if_id_inst[11:7];
-					decode_cat = OTHER_CAT;
+					decode_category = OTHER_CAT;
 					imm = imm_U;
 					wb_en = 1;
 					wb_ctrl = WB_IMM;
@@ -289,7 +339,7 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 				7'b0010011: begin
 					rd = if_id_inst[11:7];
 					rs1 = if_id_inst[19:15];
-					decode_cat = ALU_CAT;
+					decode_category = ALU_CAT;
 					alu_op_ctrl = `OP_RS1_IMM;
 					imm = imm_I;
 					wb_en = 1'b1;
@@ -328,7 +378,7 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 					rd = if_id_inst[11:7];
 					rs1 = if_id_inst[19:15];
 					rs2 = if_id_inst[24:20];
-					decode_cat = ALU_CAT;
+					decode_category = ALU_CAT;
 					alu_op_ctrl = `OP_RS1_RS2;
 					wb_en = 1'b1;
 					wb_ctrl = WB_ALU;
@@ -367,7 +417,7 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 				end
 				7'b1101111: begin //jal
 					rd = if_id_inst[11:7];
-					decode_cat = JUMP_CAT;
+					decode_category = JUMP_CAT;
 					alu_ctrl = `ALU_ADD;
 					alu_op_ctrl = `OP_PC_IMM;
 					imm = imm_J;
@@ -379,7 +429,7 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 					if (funct3 == 3'b000) begin
 						rd = if_id_inst[11:7];
 						rs1 = if_id_inst[19:15];
-						decode_cat = JUMP_CAT;
+						decode_category = JUMP_CAT;
 						alu_ctrl = `ALU_ADD;
 						alu_op_ctrl = `OP_RS1_IMM;
 						imm = imm_I;
@@ -393,7 +443,7 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 				7'b1100011: begin
 					rs1 = if_id_inst[19:15];
 					rs2 = if_id_inst[24:20];
-					decode_cat = JUMP_CAT;
+					decode_category = JUMP_CAT;
 					alu_ctrl = `ALU_ADD;
 					alu_op_ctrl = `OP_PC_IMM;
 					imm = imm_B;
@@ -421,7 +471,7 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 						unknown_flag = 1;
 				end
 				7'b0000011: begin //lw, lbu, lb
-					decode_cat = LSU_CAT;
+					decode_category = LSU_CAT;
 					rd = if_id_inst[11:7];
 					rs1 = if_id_inst[19:15];
 					case (funct3)
@@ -441,7 +491,7 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 					endcase
 				end
 				7'b0100011: begin //sb sw sj
-					decode_cat = LSU_CAT;
+					decode_category = LSU_CAT;
 					rs1 = if_id_inst[19:15];
 					rs2 = if_id_inst[24:20];
 					case (funct3)
@@ -459,41 +509,54 @@ assign data_hazard = (ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd
 					end
 					endcase
 				end
-				7'b1110011: begin //ebreak
+				7'b1110011: begin
 					rd = if_id_inst[11:7];
 					rs1 = if_id_inst[19:15];
-					decode_cat = CSR_CAT;
+					decode_category = CSR_CAT;
+					/*------ebreak------*/
 					if(imm_I == 32'b1 && if_id_inst[19:7] == 0) begin
 						ebreak_flag = 1;
 					end
 					/*------ecall------*/
 					else if(if_id_inst[31:7] == 25'b0) begin
-						csr_addr = 12'h305; //mtvec
-						csr_event = 1'b1;
+						csr_exvalid = 1;
+						csr_cause = 32'hb;
+						csr_raddr = 12'h305; //mtvec
+						// csr_addr = 12'h305; //mtvec
+						// csr_event = 1'b1;
 						alu_ctrl = `ALU_OP2;
 						alu_op_ctrl = `OP_RS1_CSR;
 						j_en = 1'b1;
 					end
 					/*------mret------*/
 					else if(if_id_inst[31:7] == 25'b001100000010_00000_000_00000) begin
-						csr_addr = 12'h341; //mepc
+						csr_raddr = 12'h341; //mepc
+						// csr_addr = 12'h341; //mepc
 						alu_ctrl = `ALU_OP2;
 						alu_op_ctrl = `OP_RS1_CSR;
 						j_en = 1'b1;
 					end
 					/*------csrrw------*/
 					else if(funct3 == 3'b001) begin
+						csr_wvalid = 1;
+						csr_waddr = if_id_inst[31:20];
+						csr_raddr = if_id_inst[31:20];
+						csr_wctrl = `CSRW_RS1;
 						alu_ctrl = `ALU_OP2;
 						alu_op_ctrl = `OP_RS1_CSR;
-						csr_wen = 1'b1;
+						// csr_wen = 1'b1;
 						wb_en = 1'b1;
 						wb_ctrl = WB_ALU;
 					end
 					/*------csrrs------*/
 					else if(funct3 == 3'b010) begin 
-						alu_ctrl = `ALU_OR;
+						csr_wvalid = 1;
+						csr_waddr = if_id_inst[31:20];
+						csr_raddr = if_id_inst[31:20];
+						csr_wctrl = `CSRW_SRS1;
+						alu_ctrl = `ALU_OP2;
 						alu_op_ctrl = `OP_RS1_CSR;
-						csr_wen = 1'b0;
+						// csr_wen = 1'b0;
 						wb_en = 1'b1;
 						wb_ctrl = WB_ALU;
 					end

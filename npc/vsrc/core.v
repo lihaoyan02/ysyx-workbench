@@ -170,12 +170,18 @@ wire [2:0] id_ex_j_cond;
 
 wire id_ex_lsu_en, id_ex_lsu_wen;
 wire [2:0] id_ex_lsu_ctrl;
+wire [1:0] id_ex_csr_wctrl;
 
 wire [2:0] id_ex_wb_ctrl;
 wire id_ex_wb_en, id_ex_ebreak_flag;
 
-wire id_csr_valid, id_csr_wen, id_csr_event;
-wire [11:0] id_csr_addr;
+wire id_ex_csr_exvalid;
+wire [XLEN-1:0] id_ex_csr_cause;
+wire id_ex_csr_wvalid;
+wire [11:0] id_ex_csr_waddr;
+wire [11:0] id_csr_raddr;
+// wire id_csr_valid, id_csr_wen, id_csr_event;
+// wire [11:0] id_csr_addr;
 
 wire icache_flush;
 
@@ -201,6 +207,7 @@ wire icache_flush;
 		.id_rf_rs2(id_rf_rs2),
 		.id_ex_j_en(id_ex_j_en),
 		.id_ex_j_cond(id_ex_j_cond),
+		.id_ex_csr_wctrl(id_ex_csr_wctrl),
 		
 		.id_ex_lsu_en(id_ex_lsu_en),
 		.id_ex_lsu_wen(id_ex_lsu_wen),
@@ -210,11 +217,16 @@ wire icache_flush;
 		.id_ex_wb_en(id_ex_wb_en),
 		.id_ex_ebreak_flag(id_ex_ebreak_flag),
 
+		.id_ex_csr_exvalid(id_ex_csr_exvalid),
+		.id_ex_csr_cause(id_ex_csr_cause),
+		.id_ex_csr_wvalid(id_ex_csr_wvalid),
+		.id_ex_csr_waddr(id_ex_csr_waddr),
+		.id_csr_raddr(id_csr_raddr),
 		// .icache_flush(icache_flush),
-		.id_csr_valid(id_csr_valid),
-		.id_csr_wen(id_csr_wen),
-		.id_csr_event(id_csr_event),
-		.id_csr_addr(id_csr_addr),
+		// .id_csr_valid(id_csr_valid),
+		// .id_csr_wen(id_csr_wen),
+		// .id_csr_event(id_csr_event),
+		// .id_csr_addr(id_csr_addr),
 
 		.exu_bussy(ex_ls_valid),
 		.ex_ls_rd(ex_ls_rd),
@@ -247,17 +259,24 @@ wire [XLEN-1:0] rs2_data;
 /*-----------------------------------------------*/
 /*-------------------CSR-------------------------*/
 /*-----------------------------------------------*/
+wire wb_csr_valid;
+wire [XLEN-1:0] wb_csr_cause;
+wire [XLEN-1:0] wb_csr_pc;
+wire wb_csr_wvalid;
+wire [11:0] wb_csr_waddr;
+wire [XLEN-1:0] wb_csr_wdata;
 wire [XLEN-1:0] csr_rdata;
 	CSR_group u_csr (
 		.clk(clk),
 		.rst(rst),
-		.csr_valid(id_csr_valid),
-		.wen(id_csr_wen),
-		.pc(id_ex_pc),
-		.csr_event(id_csr_event),
-		.addr(id_csr_addr),
-		.wdata(rs1_data),
-		.rdata(csr_rdata)
+		.csr_exvalid(wb_csr_valid),
+		.csr_cause(wb_csr_cause),
+		.csr_pc(wb_csr_pc),
+		.csr_wvalid(wb_csr_wvalid),
+		.csr_waddr(wb_csr_waddr),
+		.csr_wdata(wb_csr_wdata),
+		.csr_raddr(id_csr_raddr),
+		.csr_rdata(csr_rdata)
 	);
 
 /*-----------------------------------------------*/
@@ -269,6 +288,11 @@ wire [XLEN-1:0] ex_ls_wdata, ex_ls_data_out, ex_ls_pc, ex_ls_npc, ex_ls_inst, ex
 wire [4:0] ex_ls_rd;
 wire [2:0] ex_ls_wb_ctrl;
 wire ex_ls_wb_en, ex_ls_ebreak_flag;
+wire ex_ls_csr_exvalid;
+wire [XLEN-1:0] ex_ls_csr_cause;
+wire ex_ls_csr_wvalid;
+wire [11:0] ex_ls_csr_waddr;
+wire [XLEN-1:0] ex_ls_csr_wdata;
 wire ex_if_jvalid, if_ex_jready, ex_glb_flush;
 
 	EXU u_EXU (
@@ -287,6 +311,7 @@ wire ex_if_jvalid, if_ex_jready, ex_glb_flush;
 		.rf_ex_rs2_data(rs2_data),
 		.id_ex_j_en(id_ex_j_en),
 		.id_ex_j_cond(id_ex_j_cond),
+		.id_ex_csr_wctrl(id_ex_csr_wctrl),
 		.csr_ex_data(csr_rdata),
 
 		.id_ex_lsu_en(id_ex_lsu_en),
@@ -295,6 +320,11 @@ wire ex_if_jvalid, if_ex_jready, ex_glb_flush;
 		.id_ex_wb_ctrl(id_ex_wb_ctrl),
 		.id_ex_wb_en(id_ex_wb_en),
 		.id_ex_ebreak_flag(id_ex_ebreak_flag),
+
+		.id_ex_csr_exvalid(id_ex_csr_exvalid),
+		.id_ex_csr_cause(id_ex_csr_cause),
+		.id_ex_csr_wvalid(id_ex_csr_wvalid),
+		.id_ex_csr_waddr(id_ex_csr_waddr),
 
 		.ex_ls_valid(ex_ls_valid),
 		.ls_ex_ready(ls_ex_ready),
@@ -313,6 +343,12 @@ wire ex_if_jvalid, if_ex_jready, ex_glb_flush;
 		.ex_ls_wb_en(ex_ls_wb_en),
 		.ex_ls_ebreak_flag(ex_ls_ebreak_flag),
 
+		.ex_ls_csr_exvalid(ex_ls_csr_exvalid),
+		.ex_ls_csr_cause(ex_ls_csr_cause),
+		.ex_ls_csr_wvalid(ex_ls_csr_wvalid),
+		.ex_ls_csr_waddr(ex_ls_csr_waddr),
+		.ex_ls_csr_wdata(ex_ls_csr_wdata),
+
 		.ex_if_jvalid(ex_if_jvalid),
 		.if_ex_jready(if_ex_jready),
 		.ex_if_jpc(ex_if_jpc),
@@ -330,6 +366,11 @@ wire [2:0] ls_wb_ctrl;
 wire ls_wb_en, ls_wb_ebreak;
 wire [XLEN-1:0] ls_wb_exu_data, ls_wb_rdata;
 wire lsu_bussy;
+wire ls_wb_csr_exvalid;
+wire [XLEN-1:0] ls_wb_csr_cause;
+wire ls_wb_csr_wvalid;
+wire [11:0] ls_wb_csr_waddr;
+wire [XLEN-1:0] ls_wb_csr_wdata;
 	LSU u_LSU (
 		.clk(clk),
 		.rst(rst),
@@ -352,6 +393,12 @@ wire lsu_bussy;
 		.ex_ls_rd(ex_ls_rd),
 		.ex_ls_ebreak_flag(ex_ls_ebreak_flag),
 
+		.ex_ls_csr_exvalid(ex_ls_csr_exvalid),
+		.ex_ls_csr_cause(ex_ls_csr_cause),
+		.ex_ls_csr_wvalid(ex_ls_csr_wvalid),
+		.ex_ls_csr_waddr(ex_ls_csr_waddr),
+		.ex_ls_csr_wdata(ex_ls_csr_wdata),
+
 		.ls_wb_valid(ls_wb_valid),
 		.ls_wb_ready(ls_wb_ready),
 		.ls_wb_pc(ls_wb_pc),
@@ -365,6 +412,12 @@ wire lsu_bussy;
 		.ls_wb_exu_data(ls_wb_exu_data),
 		.ls_wb_rdata(ls_wb_rdata),
 		.lsu_bussy(lsu_bussy),
+
+		.ls_wb_csr_exvalid(ls_wb_csr_exvalid),
+		.ls_wb_csr_cause(ls_wb_csr_cause),
+		.ls_wb_csr_wvalid(ls_wb_csr_wvalid),
+		.ls_wb_csr_waddr(ls_wb_csr_waddr),
+		.ls_wb_csr_wdata(ls_wb_csr_wdata),
 
 		.AWVALID(lsu_AWVALID),
 		.AWREADY(lsu_AWREADY),
@@ -420,10 +473,23 @@ wire ebreak_flag;
 		.ls_wb_exu_data(ls_wb_exu_data),
 		.ls_wb_rdata(ls_wb_rdata),
 
+		.ls_wb_csr_exvalid(ls_wb_csr_exvalid),
+		.ls_wb_csr_cause(ls_wb_csr_cause),
+		.ls_wb_csr_wvalid(ls_wb_csr_wvalid),
+		.ls_wb_csr_waddr(ls_wb_csr_waddr),
+		.ls_wb_csr_wdata(ls_wb_csr_wdata),
+
 		.wb_rf_valid(wb_rf_valid),
 		.wb_rf_wen(wb_rf_wen),
 		.wb_rf_rd(wb_rf_rd),
 		.wb_rf_data(wb_rf_data),
+
+		.wb_csr_exvalid(wb_csr_valid),
+		.wb_csr_cause(wb_csr_cause),
+		.wb_csr_pc(wb_csr_pc),
+		.wb_csr_wvalid(wb_csr_wvalid),
+		.wb_csr_waddr(wb_csr_waddr),
+		.wb_csr_wdata(wb_csr_wdata),
 		
 		.ebreak_flag(ebreak_flag)
 	);
