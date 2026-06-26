@@ -73,7 +73,7 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 	// 	WB_IMM = 3'b011, WB_MEM = 3'b100;
 /*------------------------data hazard--------------------------------*/
 wire data_hazard;
-assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex_rd==rs2)) ) | //& (id_ex_wb_ctrl!=`WB_ALU)) |
+assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex_rd==rs2)) & (id_ex_wb_ctrl!=`WB_ALU)) |
 					((ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd==rs2))) |
 					((ls_wb_rd != 0 & lsu_bussy) &  ((ls_wb_rd==rs1) | (ls_wb_rd==rs2))) |
 					((id_ex_csr_wvalid & id_ex_valid) & (id_ex_csr_waddr == csr_raddr)) |
