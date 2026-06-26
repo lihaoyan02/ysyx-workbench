@@ -126,10 +126,10 @@ assign exu_bypass_rs1 = (id_ex_rs1 != 0 & ex_ls_valid) & ((id_ex_rs1==ex_ls_rd) 
 assign exu_bypass_rs2 = (id_ex_rs2 != 0 & ex_ls_valid) & ((id_ex_rs2==ex_ls_rd) & (ex_ls_wb_ctrl==`WB_ALU));
 assign wbu_bypass_rs1 = (id_ex_rs1 != 0 & ls_wb_valid) & (id_ex_rs1==wb_rf_rd);
 assign wbu_bypass_rs2 = (id_ex_rs2 != 0 & ls_wb_valid) & (id_ex_rs2==wb_rf_rd);
-assign id_ex_rs1_data_bypass = exu_bypass_rs1 ? ex_ls_data_out : 
-							wbu_bypass_rs1 ? wb_rf_data : id_ex_rs1_data;
-assign id_ex_rs2_data_bypass = exu_bypass_rs2 ? ex_ls_data_out : 
-							wbu_bypass_rs2 ? wb_rf_data : id_ex_rs2_data;
+assign id_ex_rs1_data_bypass = exu_bypass_rs1 ? ex_ls_data_out : id_ex_rs1_data;
+							// wbu_bypass_rs1 ? wb_rf_data : id_ex_rs1_data;
+assign id_ex_rs2_data_bypass = exu_bypass_rs2 ? ex_ls_data_out : id_ex_rs2_data;
+							// wbu_bypass_rs2 ? wb_rf_data : id_ex_rs2_data;
 
 /*-------------------ALU----------------------*/
 wire [XLEN-1:0] op1;
