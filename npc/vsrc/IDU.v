@@ -13,13 +13,21 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 	output [XLEN-1:0] id_ex_pc,
 	output [XLEN-1:0] id_ex_inst,
 
+	// to register file
+	output [REGADDR_WIDTH-1:0] id_rf_rs1,
+	output [REGADDR_WIDTH-1:0] id_rf_rs2,
+	input [XLEN-1:0] rf_id_rs1_data,
+	input [XLEN-1:0] rf_id_rs2_data,
+
 	// exu control signal
 	output [3:0] id_ex_alu_ctrl,
 	output [1:0] id_ex_alu_op_ctrl,
 	output [XLEN-1:0] id_ex_imm,
 	output [REGADDR_WIDTH-1:0] id_ex_rd,
-	output [REGADDR_WIDTH-1:0] id_rf_rs1, 	
-	output [REGADDR_WIDTH-1:0] id_rf_rs2,
+	output [REGADDR_WIDTH-1:0] id_ex_rs1,
+	output [REGADDR_WIDTH-1:0] id_ex_rs2,
+	output [XLEN-1:0] id_ex_rs1_data,
+	output [XLEN-1:0] id_ex_rs2_data,
 	output id_ex_j_en,
 	output [2:0] id_ex_j_cond,
 	output [1:0] id_ex_csr_wctrl,
@@ -44,10 +52,15 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 	// fence.i control signal
 	// output reg icache_flush,
 
-	input exu_bussy,
+	input ex_ls_valid,
 	input [REGADDR_WIDTH-1:0] ex_ls_rd,
+	input [2:0] ex_ls_wb_ctrl,
+	input [XLEN-1:0] ex_ls_data_out,
 	input lsu_bussy,
+	// input ls_wb_valid,
 	input [REGADDR_WIDTH-1:0] ls_wb_rd,
+	// input [2:0] ls_wb_ctrl,
+	// input [XLEN-1:0] ls_wb_rdata,
 
 	input ex_ls_csr_wvalid,
 	input [11:0] ex_ls_csr_waddr,
@@ -61,17 +74,26 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 	import "DPI-C" function void unknow_inst(int pc, int inst); 
 	import "DPI-C" function void performance_counter(int category); 
 
-	localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010, 
-		WB_IMM = 3'b011, WB_MEM = 3'b100;
 /*------------------------data hazard--------------------------------*/
 wire data_hazard;
-assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex_rd==rs2))) |
-					((ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd==rs2))) |
-					((ls_wb_rd != 0 & lsu_bussy) &  ((ls_wb_rd==rs1) | (ls_wb_rd==rs2))) |
+assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex_rd==rs2)) & (wb_ctrl!=`WB_ALU)) |
+					((ex_ls_rd != 0 & ex_ls_valid) &  ((ex_ls_rd==rs1) | (ex_ls_rd==rs2)) & (ex_ls_wb_ctrl!=`WB_ALU)) |
+					((ls_wb_rd != 0 & lsu_bussy) &  ((ls_wb_rd==rs1) | (ls_wb_rd==rs2)) ) | //& ~((ls_wb_valid ==1) & (ls_wb_ctrl==`WB_MEM))) |
 					((id_ex_csr_wvalid & id_ex_valid) & (id_ex_csr_waddr == csr_raddr)) |
-					((ex_ls_csr_wvalid & exu_bussy) & (ex_ls_csr_waddr == csr_raddr)) |
+					((ex_ls_csr_wvalid & ex_ls_valid) & (ex_ls_csr_waddr == csr_raddr)) |
 					((ls_wb_csr_wvalid & lsu_bussy) & (ls_wb_csr_waddr == csr_raddr));
 
+wire bypass_rs1, bypass_rs2;
+wire bypass_ex_ls, bypass_ls_wb;
+wire [XLEN-1:0] rs1_data_bypass, rs2_data_bypass;
+assign bypass_rs1 = (ex_ls_rd==rs1) | (ls_wb_rd==rs1);
+assign bypass_rs2 = (ex_ls_rd==rs2) | (ls_wb_rd==rs2);
+assign bypass_ex_ls = (ex_ls_rd != 0 & ex_ls_valid & (ex_ls_wb_ctrl!=`WB_ALU)) & ((ex_ls_rd==rs1) | (ex_ls_rd==rs2));
+// assign bypass_ls_wb = (ls_wb_rd != 0 & ls_wb_valid) & ((ls_wb_rd==rs1) | (ls_wb_rd==rs2));
+assign rs1_data_bypass = (bypass_rs1 & bypass_ex_ls) ? ex_ls_data_out : rf_id_rs1_data;
+						// (bypass_rs1 & bypass_ls_wb) ? ls_wb_rdata : rf_id_rs1_data;
+assign rs2_data_bypass = (bypass_rs2 & bypass_ex_ls) ? ex_ls_data_out : rf_id_rs2_data;
+						// (bypass_rs2 & bypass_ls_wb) ? ls_wb_rdata : rf_id_rs2_data;
 /*----------------------output assignment----------------------------*/
 	assign id_if_ready = (~id_ex_valid | (id_ex_valid & ex_id_ready)) 
 						& (~idu_ebreak_flag)  				// last instruction
@@ -83,8 +105,12 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 	assign id_ex_alu_op_ctrl = idu_alu_op_ctrl;
 	assign id_ex_imm = idu_imm;
 	assign id_ex_rd = idu_rd;
-	assign id_rf_rs1 = idu_rs1;
-	assign id_rf_rs2 = idu_rs2;
+	assign id_rf_rs1 = rs1; //idu_rs1;
+	assign id_rf_rs2 = rs2; //idu_rs2;
+	assign id_ex_rs1 = idu_rs1;
+	assign id_ex_rs2 = idu_rs2;
+	assign id_ex_rs1_data = rs1_data;
+	assign id_ex_rs2_data = rs2_data;
 	assign id_ex_j_en = idu_j_en;
 	assign id_ex_j_cond = idu_j_cond;
 	assign id_ex_csr_wctrl = idu_exu_csr_wctrl;
@@ -157,6 +183,8 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 	reg [REGADDR_WIDTH-1:0] idu_rd;
 	reg [REGADDR_WIDTH-1:0] idu_rs1; 	
 	reg [REGADDR_WIDTH-1:0] idu_rs2;
+	reg [XLEN-1:0] rs1_data;
+	reg [XLEN-1:0] rs2_data;
 	reg idu_j_en;
 	reg [2:0] idu_j_cond;
 	reg [1:0] idu_exu_csr_wctrl;
@@ -200,6 +228,8 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 			idu_rd <= 0;
 			idu_rs1 <= 0;
 			idu_rs2 <= 0;
+			rs1_data <= 0;
+			rs2_data <= 0;
 			idu_j_en <= 0;
 			idu_j_cond <= `J_UNCOND;
 			idu_exu_csr_wctrl <= `CSRW_IDLE;
@@ -209,7 +239,7 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 			idu_lsu_wen <= 0;
 			idu_lsu_ctrl <= 0;
 
-			idu_wb_ctrl <= WB_IDLE;
+			idu_wb_ctrl <= `WB_IDLE;
 			idu_wb_en <= 0;
 			idu_ebreak_flag <= 0;
 
@@ -235,6 +265,8 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 			idu_rd <= rd;
 			idu_rs1 <= rs1;
 			idu_rs2 <= rs2;
+			rs1_data <= rs1_data_bypass;
+			rs2_data <= rs2_data_bypass;
 			idu_j_en <= j_en;
 			idu_j_cond <= j_cond;
 			idu_exu_csr_wctrl <= csr_wctrl;
@@ -268,7 +300,7 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 		alu_op_ctrl = `OP_RS1_RS2; // if choose imm
 		imm = 32'b0;
 		wb_en = 0; // if wb
-		wb_ctrl = WB_IDLE; //from where to wb
+		wb_ctrl = `WB_IDLE; //from where to wb
 		j_en = 1'b0; // if jump
 		j_cond = `J_UNCOND; // if conditional jump	
 		csr_wctrl = `CSRW_IDLE;			
@@ -291,14 +323,14 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 					alu_op_ctrl = `OP_PC_IMM;
 					imm = imm_U;
 					wb_en = 1;
-					wb_ctrl = WB_ALU;
+					wb_ctrl = `WB_ALU;
 				end
 				7'b0110111: begin //lui
 					rd = if_id_inst[11:7];
 					decode_category = OTHER_CAT;
 					imm = imm_U;
 					wb_en = 1;
-					wb_ctrl = WB_IMM;
+					wb_ctrl = `WB_IMM;
 				end
 				7'b0010011: begin
 					rd = if_id_inst[11:7];
@@ -307,7 +339,7 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 					alu_op_ctrl = `OP_RS1_IMM;
 					imm = imm_I;
 					wb_en = 1'b1;
-					wb_ctrl = WB_ALU;
+					wb_ctrl = `WB_ALU;
 					if (funct3 == 3'b000) begin //addi
 						alu_ctrl = `ALU_ADD;
 					end
@@ -345,7 +377,7 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 					decode_category = ALU_CAT;
 					alu_op_ctrl = `OP_RS1_RS2;
 					wb_en = 1'b1;
-					wb_ctrl = WB_ALU;
+					wb_ctrl = `WB_ALU;
 					if(funct3==3'b0 && funct7 == 7'b0000000) begin //add
 						alu_ctrl = `ALU_ADD;
 					end
@@ -386,7 +418,7 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 					alu_op_ctrl = `OP_PC_IMM;
 					imm = imm_J;
 					wb_en = 1'b1;
-					wb_ctrl = WB_PC;
+					wb_ctrl = `WB_PC;
 					j_en = 1'b1;
 				end
 				7'b1100111: begin //jalr
@@ -398,7 +430,7 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 						alu_op_ctrl = `OP_RS1_IMM;
 						imm = imm_I;
 						wb_en = 1;
-						wb_ctrl = WB_PC;
+						wb_ctrl = `WB_PC;
 						j_en = 1'b1;
 					end
 					else
@@ -447,7 +479,7 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 							lsu_en = 1'b1;
 							lsu_wen = 1'b0;
 							wb_en = 1'b1;
-							wb_ctrl = WB_MEM;
+							wb_ctrl = `WB_MEM;
 						end
 					default: begin
 						$display("unknow opcode =7'b0000011");
@@ -508,7 +540,7 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 						alu_ctrl = `ALU_OP2;
 						alu_op_ctrl = `OP_RS1_CSR;
 						wb_en = 1'b1;
-						wb_ctrl = WB_ALU;
+						wb_ctrl = `WB_ALU;
 					end
 					/*------csrrs------*/
 					else if(funct3 == 3'b010) begin 
@@ -519,7 +551,7 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 						alu_ctrl = `ALU_OP2;
 						alu_op_ctrl = `OP_RS1_CSR;
 						wb_en = 1'b1;
-						wb_ctrl = WB_ALU;
+						wb_ctrl = `WB_ALU;
 					end
 					else begin
 						$display("unknow opcode =7'b1110011");

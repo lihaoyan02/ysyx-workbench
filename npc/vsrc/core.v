@@ -165,6 +165,10 @@ wire [XLEN-1:0] id_ex_imm;
 wire [4:0] id_ex_rd;
 wire [4:0] id_rf_rs1; // to rf
 wire [4:0] id_rf_rs2; // to rf
+wire [4:0] id_ex_rs1; // to ex
+wire [4:0] id_ex_rs2; // to ex
+wire [XLEN-1:0] id_ex_rs1_data;
+wire [XLEN-1:0] id_ex_rs2_data;
 wire id_ex_j_en;
 wire [2:0] id_ex_j_cond;
 
@@ -197,12 +201,19 @@ wire icache_flush;
 		.id_ex_pc(id_ex_pc),
 		.id_ex_inst(id_ex_inst),
 
+		.id_rf_rs1(id_rf_rs1),
+		.id_rf_rs2(id_rf_rs2),
+		.rf_id_rs1_data(rf_id_rs1_data),
+		.rf_id_rs2_data(rf_id_rs2_data),
+
 		.id_ex_alu_ctrl(id_ex_alu_ctrl),
 		.id_ex_alu_op_ctrl(id_ex_alu_op_ctrl),
 		.id_ex_imm(id_ex_imm),
 		.id_ex_rd(id_ex_rd),
-		.id_rf_rs1(id_rf_rs1),
-		.id_rf_rs2(id_rf_rs2),
+		.id_ex_rs1(id_ex_rs1),
+		.id_ex_rs2(id_ex_rs2),
+		.id_ex_rs1_data(id_ex_rs1_data),
+		.id_ex_rs2_data(id_ex_rs2_data),
 		.id_ex_j_en(id_ex_j_en),
 		.id_ex_j_cond(id_ex_j_cond),
 		.id_ex_csr_wctrl(id_ex_csr_wctrl),
@@ -223,10 +234,15 @@ wire icache_flush;
 		// .icache_flush(icache_flush),
 
 		// for data hazard
-		.exu_bussy(ex_ls_valid),
+		.ex_ls_valid(ex_ls_valid),
 		.ex_ls_rd(ex_ls_rd),
+		.ex_ls_wb_ctrl(ex_ls_wb_ctrl),
+		.ex_ls_data_out(ex_ls_data_out),
 		.lsu_bussy(lsu_bussy),
+		// .ls_wb_valid(ls_wb_valid),
 		.ls_wb_rd(ls_wb_rd),
+		// .ls_wb_ctrl(ls_wb_ctrl),
+		// .ls_wb_rdata(ls_wb_rdata),
 		.ex_ls_csr_wvalid(ex_ls_csr_wvalid),
 		.ex_ls_csr_waddr(ex_ls_csr_waddr),
 		.ls_wb_csr_wvalid(ls_wb_csr_wvalid),
@@ -241,8 +257,7 @@ wire wb_rf_valid, wb_rf_wen;
 wire [4:0] wb_rf_rd;
 wire [XLEN-1:0] wb_rf_data;
 
-wire [XLEN-1:0] rs1_data;
-wire [XLEN-1:0] rs2_data;
+wire [XLEN-1:0] rf_id_rs1_data, rf_id_rs2_data;
 	RegisterFile u_gpr (
 		.clk(clk),
 		.rst(rst),
@@ -252,8 +267,8 @@ wire [XLEN-1:0] rs2_data;
 		.wdata(wb_rf_data),
 		.raddr1(id_rf_rs1),
 		.raddr2(id_rf_rs2),
-		.rdata1(rs1_data),
-		.rdata2(rs2_data)
+		.rdata1(rf_id_rs1_data),
+		.rdata2(rf_id_rs2_data)
 	);
 /*-----------------------------------------------*/
 /*-------------------CSR-------------------------*/
@@ -306,8 +321,10 @@ wire ex_if_jvalid, if_ex_jready, ex_glb_flush;
 		.id_ex_alu_op_ctrl(id_ex_alu_op_ctrl),
 		.id_ex_imm(id_ex_imm),
 		.id_ex_rd(id_ex_rd),
-		.rf_ex_rs1_data(rs1_data),
-		.rf_ex_rs2_data(rs2_data),
+		.id_ex_rs1(id_ex_rs1),
+		.id_ex_rs2(id_ex_rs2),
+		.id_ex_rs1_data(id_ex_rs1_data),
+		.id_ex_rs2_data(id_ex_rs2_data),
 		.id_ex_j_en(id_ex_j_en),
 		.id_ex_j_cond(id_ex_j_cond),
 		.id_ex_csr_wctrl(id_ex_csr_wctrl),
@@ -324,6 +341,10 @@ wire ex_if_jvalid, if_ex_jready, ex_glb_flush;
 		.id_ex_csr_cause(id_ex_csr_cause),
 		.id_ex_csr_wvalid(id_ex_csr_wvalid),
 		.id_ex_csr_waddr(id_ex_csr_waddr),
+
+		.ls_wb_valid(ls_wb_valid),
+		.wb_rf_rd(wb_rf_rd),
+		.wb_rf_data(wb_rf_data),
 
 		.ex_ls_valid(ex_ls_valid),
 		.ls_ex_ready(ls_ex_ready),
