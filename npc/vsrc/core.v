@@ -165,6 +165,8 @@ wire [XLEN-1:0] id_ex_imm;
 wire [4:0] id_ex_rd;
 wire [4:0] id_rf_rs1; // to rf
 wire [4:0] id_rf_rs2; // to rf
+wire [XLEN-1:0] id_ex_rs1_data;
+wire [XLEN-1:0] id_ex_rs2_data;
 wire id_ex_j_en;
 wire [2:0] id_ex_j_cond;
 
@@ -197,12 +199,19 @@ wire icache_flush;
 		.id_ex_pc(id_ex_pc),
 		.id_ex_inst(id_ex_inst),
 
+		.id_rf_rs1(id_rf_rs1),
+		.id_rf_rs2(id_rf_rs2),
+		.rf_id_rs1_data(rf_id_rs1_data),
+		.rf_id_rs2_data(rf_id_rs2_data),
+
 		.id_ex_alu_ctrl(id_ex_alu_ctrl),
 		.id_ex_alu_op_ctrl(id_ex_alu_op_ctrl),
 		.id_ex_imm(id_ex_imm),
 		.id_ex_rd(id_ex_rd),
-		.id_rf_rs1(id_rf_rs1),
-		.id_rf_rs2(id_rf_rs2),
+		.id_ex_rs1_data(id_ex_rs1_data),
+		.id_ex_rs2_data(id_ex_rs2_data),
+		// .id_rf_rs1(id_rf_rs1),
+		// .id_rf_rs2(id_rf_rs2),
 		.id_ex_j_en(id_ex_j_en),
 		.id_ex_j_cond(id_ex_j_cond),
 		.id_ex_csr_wctrl(id_ex_csr_wctrl),
@@ -241,8 +250,7 @@ wire wb_rf_valid, wb_rf_wen;
 wire [4:0] wb_rf_rd;
 wire [XLEN-1:0] wb_rf_data;
 
-wire [XLEN-1:0] rs1_data;
-wire [XLEN-1:0] rs2_data;
+wire [XLEN-1:0] rf_id_rs1_data, rf_id_rs2_data;
 	RegisterFile u_gpr (
 		.clk(clk),
 		.rst(rst),
@@ -252,8 +260,8 @@ wire [XLEN-1:0] rs2_data;
 		.wdata(wb_rf_data),
 		.raddr1(id_rf_rs1),
 		.raddr2(id_rf_rs2),
-		.rdata1(rs1_data),
-		.rdata2(rs2_data)
+		.rdata1(rf_id_rs1_data),
+		.rdata2(rf_id_rs2_data)
 	);
 /*-----------------------------------------------*/
 /*-------------------CSR-------------------------*/
@@ -306,8 +314,8 @@ wire ex_if_jvalid, if_ex_jready, ex_glb_flush;
 		.id_ex_alu_op_ctrl(id_ex_alu_op_ctrl),
 		.id_ex_imm(id_ex_imm),
 		.id_ex_rd(id_ex_rd),
-		.rf_ex_rs1_data(rs1_data),
-		.rf_ex_rs2_data(rs2_data),
+		.rf_ex_rs1_data(id_ex_rs1_data),
+		.rf_ex_rs2_data(id_ex_rs2_data),
 		.id_ex_j_en(id_ex_j_en),
 		.id_ex_j_cond(id_ex_j_cond),
 		.id_ex_csr_wctrl(id_ex_csr_wctrl),
