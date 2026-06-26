@@ -52,8 +52,10 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 
 	input exu_bussy,
 	input [REGADDR_WIDTH-1:0] ex_ls_rd,
+	// input [2:0] ex_ls_wb_ctrl,
 	input lsu_bussy,
 	input [REGADDR_WIDTH-1:0] ls_wb_rd,
+	// input [2:0] ls_wb_wb_ctrl,
 
 	input ex_ls_csr_wvalid,
 	input [11:0] ex_ls_csr_waddr,
@@ -78,6 +80,10 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 					((ex_ls_csr_wvalid & exu_bussy) & (ex_ls_csr_waddr == csr_raddr)) |
 					((ls_wb_csr_wvalid & lsu_bussy) & (ls_wb_csr_waddr == csr_raddr));
 
+// wire bypass_rs1, bypass_rs2;
+// wire bypass_ex_ls, bypass_ls_wb;
+// assign bypass_ex_ls = (ex_ls_rd != 0 & exu_bussy) & ((ex_ls_rd==rs1) | (ex_ls_rd==rs2));
+// assign bypass_ls_wb = (ls_wb_rd != 0 & lsu_bussy) & ((ls_wb_rd==rs1) | (ls_wb_rd==rs2));
 /*----------------------output assignment----------------------------*/
 	assign id_if_ready = (~id_ex_valid | (id_ex_valid & ex_id_ready)) 
 						& (~idu_ebreak_flag)  				// last instruction
