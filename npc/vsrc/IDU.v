@@ -57,8 +57,9 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 	input [2:0] ex_ls_wb_ctrl,
 	input [XLEN-1:0] ex_ls_data_out,
 	input lsu_bussy,
+	input ls_wb_valid,
 	input [REGADDR_WIDTH-1:0] ls_wb_rd,
-	// input [2:0] ls_wb_wb_ctrl,
+	input [2:0] ls_wb_ctrl,
 
 	input ex_ls_csr_wvalid,
 	input [11:0] ex_ls_csr_waddr,
@@ -78,7 +79,7 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 wire data_hazard;
 assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex_rd==rs2)) & (wb_ctrl!=`WB_ALU)) |
 					((ex_ls_rd != 0 & ex_ls_valid) &  ((ex_ls_rd==rs1) | (ex_ls_rd==rs2)) & (ex_ls_wb_ctrl!=`WB_ALU)) |
-					((ls_wb_rd != 0 & lsu_bussy) &  ((ls_wb_rd==rs1) | (ls_wb_rd==rs2))) |
+					((ls_wb_rd != 0 & lsu_bussy) &  ((ls_wb_rd==rs1) | (ls_wb_rd==rs2)) & (ls_wb_valid!=1)) |
 					((id_ex_csr_wvalid & id_ex_valid) & (id_ex_csr_waddr == csr_raddr)) |
 					((ex_ls_csr_wvalid & ex_ls_valid) & (ex_ls_csr_waddr == csr_raddr)) |
 					((ls_wb_csr_wvalid & lsu_bussy) & (ls_wb_csr_waddr == csr_raddr));
