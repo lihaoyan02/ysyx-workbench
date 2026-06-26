@@ -239,7 +239,7 @@ wire icache_flush;
 		.ex_ls_wb_ctrl(ex_ls_wb_ctrl),
 		.ex_ls_data_out(ex_ls_data_out),
 		.lsu_bussy(lsu_bussy),
-		.ls_wb_valid(ls_wb_valid),
+		// .ls_wb_valid(ls_wb_valid),
 		.ls_wb_rd(ls_wb_rd),
 		// .ls_wb_ctrl(ls_wb_ctrl),
 		// .ls_wb_rdata(ls_wb_rdata),
