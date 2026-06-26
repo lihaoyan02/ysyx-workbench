@@ -1,3 +1,4 @@
+`include "alu_opcodes.v"
 module WBU #(XLEN = 32) (
 	input clk,
 	input rst,
@@ -35,17 +36,17 @@ module WBU #(XLEN = 32) (
 	output ebreak_flag
 );
 
-localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, 
-	WB_PC = 3'b010, WB_IMM = 3'b011, WB_MEM = 3'b100;
+// localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, 
+// 	WB_PC = 3'b010, WB_IMM = 3'b011, WB_MEM = 3'b100;
 
 reg [XLEN-1:0] wb_data;
 always @(*) begin
 	case (ls_wb_ctrl)
-		WB_IDLE: wb_data = {XLEN{1'b0}};
-		WB_ALU: wb_data =  ls_wb_exu_data;
-		WB_PC: wb_data = ls_wb_pc + 4;
-		WB_IMM: wb_data = ls_wb_imm;
-		WB_MEM: wb_data = ls_wb_rdata;
+		`WB_IDLE: wb_data = {XLEN{1'b0}};
+		`WB_ALU: wb_data =  ls_wb_exu_data;
+		`WB_PC: wb_data = ls_wb_pc + 4;
+		`WB_IMM: wb_data = ls_wb_imm;
+		`WB_MEM: wb_data = ls_wb_rdata;
 		default: wb_data = {XLEN{1'b0}};
 	endcase
 end

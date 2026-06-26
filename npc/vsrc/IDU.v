@@ -69,11 +69,11 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 	import "DPI-C" function void unknow_inst(int pc, int inst); 
 	import "DPI-C" function void performance_counter(int category); 
 
-	localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010, 
-		WB_IMM = 3'b011, WB_MEM = 3'b100;
+	// localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010, 
+	// 	WB_IMM = 3'b011, WB_MEM = 3'b100;
 /*------------------------data hazard--------------------------------*/
 wire data_hazard;
-assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex_rd==rs2))) |
+assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex_rd==rs2)) & (id_ex_wb_ctrl!=`WB_ALU)) |
 					((ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd==rs2))) |
 					((ls_wb_rd != 0 & lsu_bussy) &  ((ls_wb_rd==rs1) | (ls_wb_rd==rs2))) |
 					((id_ex_csr_wvalid & id_ex_valid) & (id_ex_csr_waddr == csr_raddr)) |
@@ -227,7 +227,7 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 			idu_lsu_wen <= 0;
 			idu_lsu_ctrl <= 0;
 
-			idu_wb_ctrl <= WB_IDLE;
+			idu_wb_ctrl <= `WB_IDLE;
 			idu_wb_en <= 0;
 			idu_ebreak_flag <= 0;
 
@@ -288,7 +288,7 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 		alu_op_ctrl = `OP_RS1_RS2; // if choose imm
 		imm = 32'b0;
 		wb_en = 0; // if wb
-		wb_ctrl = WB_IDLE; //from where to wb
+		wb_ctrl = `WB_IDLE; //from where to wb
 		j_en = 1'b0; // if jump
 		j_cond = `J_UNCOND; // if conditional jump	
 		csr_wctrl = `CSRW_IDLE;			
@@ -311,14 +311,14 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 					alu_op_ctrl = `OP_PC_IMM;
 					imm = imm_U;
 					wb_en = 1;
-					wb_ctrl = WB_ALU;
+					wb_ctrl = `WB_ALU;
 				end
 				7'b0110111: begin //lui
 					rd = if_id_inst[11:7];
 					decode_category = OTHER_CAT;
 					imm = imm_U;
 					wb_en = 1;
-					wb_ctrl = WB_IMM;
+					wb_ctrl = `WB_IMM;
 				end
 				7'b0010011: begin
 					rd = if_id_inst[11:7];
@@ -327,7 +327,7 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 					alu_op_ctrl = `OP_RS1_IMM;
 					imm = imm_I;
 					wb_en = 1'b1;
-					wb_ctrl = WB_ALU;
+					wb_ctrl = `WB_ALU;
 					if (funct3 == 3'b000) begin //addi
 						alu_ctrl = `ALU_ADD;
 					end
@@ -365,7 +365,7 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 					decode_category = ALU_CAT;
 					alu_op_ctrl = `OP_RS1_RS2;
 					wb_en = 1'b1;
-					wb_ctrl = WB_ALU;
+					wb_ctrl = `WB_ALU;
 					if(funct3==3'b0 && funct7 == 7'b0000000) begin //add
 						alu_ctrl = `ALU_ADD;
 					end
@@ -406,7 +406,7 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 					alu_op_ctrl = `OP_PC_IMM;
 					imm = imm_J;
 					wb_en = 1'b1;
-					wb_ctrl = WB_PC;
+					wb_ctrl = `WB_PC;
 					j_en = 1'b1;
 				end
 				7'b1100111: begin //jalr
@@ -418,7 +418,7 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 						alu_op_ctrl = `OP_RS1_IMM;
 						imm = imm_I;
 						wb_en = 1;
-						wb_ctrl = WB_PC;
+						wb_ctrl = `WB_PC;
 						j_en = 1'b1;
 					end
 					else
@@ -467,7 +467,7 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 							lsu_en = 1'b1;
 							lsu_wen = 1'b0;
 							wb_en = 1'b1;
-							wb_ctrl = WB_MEM;
+							wb_ctrl = `WB_MEM;
 						end
 					default: begin
 						$display("unknow opcode =7'b0000011");
@@ -528,7 +528,7 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 						alu_ctrl = `ALU_OP2;
 						alu_op_ctrl = `OP_RS1_CSR;
 						wb_en = 1'b1;
-						wb_ctrl = WB_ALU;
+						wb_ctrl = `WB_ALU;
 					end
 					/*------csrrs------*/
 					else if(funct3 == 3'b010) begin 
@@ -539,7 +539,7 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 						alu_ctrl = `ALU_OP2;
 						alu_op_ctrl = `OP_RS1_CSR;
 						wb_en = 1'b1;
-						wb_ctrl = WB_ALU;
+						wb_ctrl = `WB_ALU;
 					end
 					else begin
 						$display("unknow opcode =7'b1110011");

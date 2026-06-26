@@ -312,6 +312,8 @@ wire ex_if_jvalid, if_ex_jready, ex_glb_flush;
 		.id_ex_alu_op_ctrl(id_ex_alu_op_ctrl),
 		.id_ex_imm(id_ex_imm),
 		.id_ex_rd(id_ex_rd),
+		.id_ex_rs1(id_rf_rs1),
+		.id_ex_rs2(id_rf_rs2),
 		.id_ex_rs1_data(id_ex_rs1_data),
 		.id_ex_rs2_data(id_ex_rs2_data),
 		.id_ex_j_en(id_ex_j_en),

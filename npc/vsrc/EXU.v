@@ -12,6 +12,8 @@ module EXU #(XLEN = 32) (
 	input [1:0] id_ex_alu_op_ctrl,
 	input [XLEN-1:0] id_ex_imm,
 	input [4:0] id_ex_rd,
+	input [4:0] id_ex_rs1,
+	input [4:0] id_ex_rs2,
 	input [XLEN-1:0] id_ex_rs1_data,
 	input [XLEN-1:0] id_ex_rs2_data,
 	input id_ex_j_en,
@@ -113,13 +115,21 @@ assign ex_if_jvalid = jump_valid;
 assign ex_if_jpc = exu_out;
 assign ex_glb_flush = glb_flush;
 
+/*-------------------bypass----------------------*/
+wire bypass_rs1, bypass_rs2;
+wire [XLEN-1:0] id_ex_rs1_data_bypass, id_ex_rs2_data_bypass;
+assign bypass_rs1 = (id_ex_rs1 != 0 & ex_ls_valid) & ((id_ex_rs1==ex_ls_rd) & (ex_ls_wb_ctrl==`WB_ALU));
+assign bypass_rs2 = (id_ex_rs2 != 0 & ex_ls_valid) & ((id_ex_rs2==ex_ls_rd) & (ex_ls_wb_ctrl==`WB_ALU));
+assign id_ex_rs1_data_bypass = bypass_rs1 ? ex_ls_data_out : id_ex_rs1_data;
+assign id_ex_rs2_data_bypass = bypass_rs2 ? ex_ls_data_out : id_ex_rs2_data;
+
 /*-------------------ALU----------------------*/
 wire [XLEN-1:0] op1;
 wire [XLEN-1:0] op2;
 reg [XLEN-1:0] alu_out;
-assign op1 = (id_ex_alu_op_ctrl==`OP_PC_IMM) ? id_ex_pc : id_ex_rs1_data;
+assign op1 = (id_ex_alu_op_ctrl==`OP_PC_IMM) ? id_ex_pc : id_ex_rs1_data_bypass;
 assign op2 = (id_ex_alu_op_ctrl==`OP_RS1_IMM | id_ex_alu_op_ctrl==`OP_PC_IMM) ? id_ex_imm : 
-	(id_ex_alu_op_ctrl==`OP_RS1_CSR) ? csr_ex_data : id_ex_rs2_data;
+	(id_ex_alu_op_ctrl==`OP_RS1_CSR) ? csr_ex_data : id_ex_rs2_data_bypass;
 
 wire [XLEN-1:0] sub_out;
 assign sub_out = op1 - op2;
@@ -144,19 +154,19 @@ end
 /*-------------------BJU----------------------*/
 reg j_enable;
 wire [XLEN-1:0] rs1_min_rs2;
-assign rs1_min_rs2 = id_ex_rs1_data - id_ex_rs2_data;
+assign rs1_min_rs2 = id_ex_rs1_data_bypass - id_ex_rs2_data_bypass;
 always @(*) begin
 	if (id_ex_j_en) begin
 		case (id_ex_j_cond)
 			`J_UNCOND: j_enable = 1'b1;
-			`J_BEQ: j_enable = (id_ex_rs1_data == id_ex_rs2_data);
-			`J_BNE: j_enable = (id_ex_rs1_data != id_ex_rs2_data);
-			`J_BGE: j_enable = (id_ex_rs1_data[XLEN-1] == id_ex_rs2_data[XLEN-1]) ?
-			 	~rs1_min_rs2[XLEN-1] : id_ex_rs2_data[XLEN-1];
-			`J_BGE_U: j_enable = id_ex_rs1_data >= id_ex_rs2_data; 
-			`J_BLT_U: j_enable = id_ex_rs1_data < id_ex_rs2_data; 
-			`J_BLT: j_enable = (id_ex_rs1_data[XLEN-1] == id_ex_rs2_data[XLEN-1]) ?
-			 	rs1_min_rs2[XLEN-1] : id_ex_rs1_data[XLEN-1];
+			`J_BEQ: j_enable = (id_ex_rs1_data_bypass == id_ex_rs2_data_bypass);
+			`J_BNE: j_enable = (id_ex_rs1_data_bypass != id_ex_rs2_data_bypass);
+			`J_BGE: j_enable = (id_ex_rs1_data_bypass[XLEN-1] == id_ex_rs2_data_bypass[XLEN-1]) ?
+			 	~rs1_min_rs2[XLEN-1] : id_ex_rs2_data_bypass[XLEN-1];
+			`J_BGE_U: j_enable = id_ex_rs1_data_bypass >= id_ex_rs2_data_bypass; 
+			`J_BLT_U: j_enable = id_ex_rs1_data_bypass < id_ex_rs2_data_bypass; 
+			`J_BLT: j_enable = (id_ex_rs1_data_bypass[XLEN-1] == id_ex_rs2_data_bypass[XLEN-1]) ?
+			 	rs1_min_rs2[XLEN-1] : id_ex_rs1_data_bypass[XLEN-1];
 			default: j_enable = 1'b0;
 		endcase
 	end
@@ -170,8 +180,8 @@ always @(*) begin
 	if (id_ex_csr_wvalid) begin
 		case (id_ex_csr_wctrl)
 			`CSRW_IDLE: csr_wdata = 0;
-			`CSRW_RS1: csr_wdata = id_ex_rs1_data;
-			`CSRW_SRS1: csr_wdata = id_ex_rs1_data | csr_ex_data;
+			`CSRW_RS1: csr_wdata = id_ex_rs1_data_bypass;
+			`CSRW_SRS1: csr_wdata = id_ex_rs1_data_bypass | csr_ex_data;
 			default: csr_wdata = 0;
 		endcase
 	end
@@ -246,7 +256,7 @@ always @(posedge clk) begin
 		exu_lsu_en <= id_ex_lsu_en;
 		exu_lsu_wen <= id_ex_lsu_wen;
 		exu_lsu_ctrl <= id_ex_lsu_ctrl;
-		exu_lsu_wdata <= id_ex_rs2_data;
+		exu_lsu_wdata <= id_ex_rs2_data_bypass;
 		exu_pc <= id_ex_pc;
 		if (j_enable) begin //for debug
 			exu_npc <= alu_out;

@@ -32,4 +32,10 @@
 `define CSRW_RS1 2'b01
 `define CSRW_SRS1 2'b10
 
+`define WB_IDLE 3'b000
+`define WB_ALU 3'b001
+`define WB_PC 3'b010
+`define WB_IMM 3'b011
+`define WB_MEM 3'b100
+
 `endif
