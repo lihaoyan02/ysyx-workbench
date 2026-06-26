@@ -74,8 +74,6 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 	import "DPI-C" function void unknow_inst(int pc, int inst); 
 	import "DPI-C" function void performance_counter(int category); 
 
-	// localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, WB_PC = 3'b010, 
-	// 	WB_IMM = 3'b011, WB_MEM = 3'b100;
 /*------------------------data hazard--------------------------------*/
 wire data_hazard;
 assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex_rd==rs2)) & (wb_ctrl!=`WB_ALU)) |
