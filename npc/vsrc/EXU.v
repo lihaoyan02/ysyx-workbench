@@ -34,10 +34,9 @@ module EXU #(XLEN = 32) (
 	input id_ex_csr_wvalid,
 	input [11:0] id_ex_csr_waddr,
 
-	input ls_wb_valid,
-	input [4:0] ls_wb_rd,
-	input [2:0] ls_wb_ctrl,
-	input [XLEN-1:0] ls_wb_rdata,
+	input wb_rf_valid,
+	input [4:0] wb_rf_rd,
+	input [XLEN-1:0] wb_rf_data,
 
 	// to LSU
 	output ex_ls_valid,
@@ -121,14 +120,14 @@ assign ex_if_jpc = exu_out;
 assign ex_glb_flush = glb_flush;
 
 /*-------------------bypass----------------------*/
-wire exu_bypass_rs1, exu_bypass_rs2, lsu_bypass_rs1, lsu_bypass_rs2;
+wire exu_bypass_rs1, exu_bypass_rs2, wbu_bypass_rs1, wbu_bypass_rs2;
 wire [XLEN-1:0] id_ex_rs1_data_bypass, id_ex_rs2_data_bypass;
 assign exu_bypass_rs1 = (id_ex_rs1 != 0 & ex_ls_valid) & ((id_ex_rs1==ex_ls_rd) & (ex_ls_wb_ctrl==`WB_ALU));
 assign exu_bypass_rs2 = (id_ex_rs2 != 0 & ex_ls_valid) & ((id_ex_rs2==ex_ls_rd) & (ex_ls_wb_ctrl==`WB_ALU));
-assign lsu_bypass_rs1 = (id_ex_rs1 != 0 & ls_wb_valid) & ((id_ex_rs1==ls_wb_rd) & (ls_wb_ctrl==`WB_MEM));
-assign lsu_bypass_rs2 = (id_ex_rs2 != 0 & ls_wb_valid) & ((id_ex_rs2==ls_wb_rd) & (ls_wb_ctrl==`WB_MEM));
-assign id_ex_rs1_data_bypass = exu_bypass_rs1 ? ex_ls_data_out : lsu_bypass_rs1 ? ls_wb_rdata : id_ex_rs1_data;
-assign id_ex_rs2_data_bypass = exu_bypass_rs2 ? ex_ls_data_out : lsu_bypass_rs2 ? ls_wb_rdata : id_ex_rs2_data;
+assign wbu_bypass_rs1 = (id_ex_rs1 != 0 & wb_rf_valid) & (id_ex_rs1==wb_rf_rd);
+assign wbu_bypass_rs2 = (id_ex_rs2 != 0 & wb_rf_valid) & (id_ex_rs2==wb_rf_rd);
+assign id_ex_rs1_data_bypass = exu_bypass_rs1 ? ex_ls_data_out : wbu_bypass_rs1 ? wb_rf_data : id_ex_rs1_data;
+assign id_ex_rs2_data_bypass = exu_bypass_rs2 ? ex_ls_data_out : wbu_bypass_rs2 ? wb_rf_data : id_ex_rs2_data;
 
 /*-------------------ALU----------------------*/
 wire [XLEN-1:0] op1;

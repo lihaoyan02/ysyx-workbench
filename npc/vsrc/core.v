@@ -342,10 +342,9 @@ wire ex_if_jvalid, if_ex_jready, ex_glb_flush;
 		.id_ex_csr_wvalid(id_ex_csr_wvalid),
 		.id_ex_csr_waddr(id_ex_csr_waddr),
 
-		.ls_wb_valid(ls_wb_valid),
-		.ls_wb_rd(ls_wb_rd),
-		.ls_wb_ctrl(ls_wb_ctrl),
-		.ls_wb_rdata(ls_wb_rdata),
+		.wb_rf_valid(wb_rf_valid),
+		.wb_rf_rd(wb_rf_rd),
+		.wb_rf_data(wb_rf_data),
 
 		.ex_ls_valid(ex_ls_valid),
 		.ls_ex_ready(ls_ex_ready),
