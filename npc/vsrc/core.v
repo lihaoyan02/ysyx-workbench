@@ -234,7 +234,7 @@ wire icache_flush;
 		// .icache_flush(icache_flush),
 
 		// for data hazard
-		.exu_bussy(ex_ls_valid),
+		.ex_ls_valid(ex_ls_valid),
 		.ex_ls_rd(ex_ls_rd),
 		.ex_ls_wb_ctrl(ex_ls_wb_ctrl),
 		.ex_ls_data_out(ex_ls_data_out),

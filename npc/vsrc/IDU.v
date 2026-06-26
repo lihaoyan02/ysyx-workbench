@@ -52,7 +52,7 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 	// fence.i control signal
 	// output reg icache_flush,
 
-	input exu_bussy,
+	input ex_ls_valid,
 	input [REGADDR_WIDTH-1:0] ex_ls_rd,
 	input [2:0] ex_ls_wb_ctrl,
 	input [XLEN-1:0] ex_ls_data_out,
@@ -77,10 +77,10 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 /*------------------------data hazard--------------------------------*/
 wire data_hazard;
 assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex_rd==rs2)) & (wb_ctrl!=`WB_ALU)) |
-					((ex_ls_rd != 0 & exu_bussy) &  ((ex_ls_rd==rs1) | (ex_ls_rd==rs2)) & (ex_ls_wb_ctrl!=`WB_ALU)) |
+					((ex_ls_rd != 0 & ex_ls_valid) &  ((ex_ls_rd==rs1) | (ex_ls_rd==rs2)) & (ex_ls_wb_ctrl!=`WB_ALU)) |
 					((ls_wb_rd != 0 & lsu_bussy) &  ((ls_wb_rd==rs1) | (ls_wb_rd==rs2))) |
 					((id_ex_csr_wvalid & id_ex_valid) & (id_ex_csr_waddr == csr_raddr)) |
-					((ex_ls_csr_wvalid & exu_bussy) & (ex_ls_csr_waddr == csr_raddr)) |
+					((ex_ls_csr_wvalid & ex_ls_valid) & (ex_ls_csr_waddr == csr_raddr)) |
 					((ls_wb_csr_wvalid & lsu_bussy) & (ls_wb_csr_waddr == csr_raddr));
 
 wire bypass_rs1, bypass_rs2;
@@ -88,7 +88,7 @@ wire bypass_ex_ls, bypass_ls_wb;
 wire [XLEN-1:0] rs1_data_bypass, rs2_data_bypass;
 assign bypass_rs1 = (ex_ls_rd==rs1);
 assign bypass_rs2 = (ex_ls_rd==rs2);
-assign bypass_ex_ls = (ex_ls_rd != 0 & exu_bussy) & ((ex_ls_rd==rs1) | (ex_ls_rd==rs2));
+assign bypass_ex_ls = (ex_ls_rd != 0 & ex_ls_valid) & ((ex_ls_rd==rs1) | (ex_ls_rd==rs2));
 assign bypass_ls_wb = (ls_wb_rd != 0 & lsu_bussy) & ((ls_wb_rd==rs1) | (ls_wb_rd==rs2));
 assign rs1_data_bypass = bypass_rs1 & bypass_ex_ls ? ex_ls_data_out : rf_id_rs1_data;
 assign rs2_data_bypass = bypass_rs2 & bypass_ex_ls ? ex_ls_data_out : rf_id_rs2_data;
