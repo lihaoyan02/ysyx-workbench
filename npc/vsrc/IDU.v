@@ -24,6 +24,8 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 	output [1:0] id_ex_alu_op_ctrl,
 	output [XLEN-1:0] id_ex_imm,
 	output [REGADDR_WIDTH-1:0] id_ex_rd,
+	output [REGADDR_WIDTH-1:0] id_ex_rs1,
+	output [REGADDR_WIDTH-1:0] id_ex_rs2,
 	output [XLEN-1:0] id_ex_rs1_data,
 	output [XLEN-1:0] id_ex_rs2_data,
 	output id_ex_j_en,
@@ -97,6 +99,8 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 	assign id_ex_rd = idu_rd;
 	assign id_rf_rs1 = rs1; //idu_rs1;
 	assign id_rf_rs2 = rs2; //idu_rs2;
+	assign id_ex_rs1 = idu_rs1;
+	assign id_ex_rs2 = idu_rs2;
 	assign id_ex_rs1_data = rs1_data;
 	assign id_ex_rs2_data = rs2_data;
 	assign id_ex_j_en = idu_j_en;
@@ -169,8 +173,8 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 	reg [1:0] idu_alu_op_ctrl;
 	reg [XLEN-1:0] idu_imm;
 	reg [REGADDR_WIDTH-1:0] idu_rd;
-	// reg [REGADDR_WIDTH-1:0] idu_rs1; 	
-	// reg [REGADDR_WIDTH-1:0] idu_rs2;
+	reg [REGADDR_WIDTH-1:0] idu_rs1; 	
+	reg [REGADDR_WIDTH-1:0] idu_rs2;
 	reg [XLEN-1:0] rs1_data;
 	reg [XLEN-1:0] rs2_data;
 	reg idu_j_en;
@@ -214,8 +218,8 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 			idu_alu_op_ctrl <= `OP_RS1_RS2;
 			idu_imm <= 0;
 			idu_rd <= 0;
-			// idu_rs1 <= 0;
-			// idu_rs2 <= 0;
+			idu_rs1 <= 0;
+			idu_rs2 <= 0;
 			rs1_data <= 0;
 			rs2_data <= 0;
 			idu_j_en <= 0;
@@ -251,8 +255,8 @@ assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex
 			idu_alu_op_ctrl <= alu_op_ctrl;
 			idu_imm <= imm;
 			idu_rd <= rd;
-			// idu_rs1 <= rs1;
-			// idu_rs2 <= rs2;
+			idu_rs1 <= rs1;
+			idu_rs2 <= rs2;
 			rs1_data <= rf_id_rs1_data;
 			rs2_data <= rf_id_rs2_data;
 			idu_j_en <= j_en;
