@@ -78,7 +78,7 @@ module IDU #(XLEN = 32, REGADDR_WIDTH = 5) (
 wire data_hazard;
 assign data_hazard = ((id_ex_rd != 0 & id_ex_valid) &  ((id_ex_rd==rs1) | (id_ex_rd==rs2)) & (wb_ctrl!=`WB_ALU)) |
 					((ex_ls_rd != 0 & ex_ls_valid) &  ((ex_ls_rd==rs1) | (ex_ls_rd==rs2)) & (ex_ls_wb_ctrl!=`WB_ALU)) |
-					((ls_wb_rd != 0 & lsu_bussy) &  ((ls_wb_rd==rs1) | (ls_wb_rd==rs2)) ) | //& ~(ls_wb_valid ==1)) | //ignore when write back happens
+					((ls_wb_rd != 0 & lsu_bussy) &  ((ls_wb_rd==rs1) | (ls_wb_rd==rs2)) & ~ls_wb_valid) | //ignore when write back happens
 					((id_ex_csr_wvalid & id_ex_valid) & (id_ex_csr_waddr == csr_raddr)) |
 					((ex_ls_csr_wvalid & ex_ls_valid) & (ex_ls_csr_waddr == csr_raddr)) |
 					((ls_wb_csr_wvalid & lsu_bussy) & (ls_wb_csr_waddr == csr_raddr));
@@ -90,10 +90,10 @@ assign bypass_rs1 = (ex_ls_rd==rs1) | (ls_wb_rd==rs1);
 assign bypass_rs2 = (ex_ls_rd==rs2) | (ls_wb_rd==rs2);
 assign bypass_ex_ls = (ex_ls_rd != 0 & ex_ls_valid & (ex_ls_wb_ctrl!=`WB_ALU)) & ((ex_ls_rd==rs1) | (ex_ls_rd==rs2));
 assign bypass_ls_wb = (ls_wb_rd != 0 & ls_wb_valid) & ((ls_wb_rd==rs1) | (ls_wb_rd==rs2));
-assign rs1_data_bypass = (bypass_rs1 & bypass_ex_ls) ? ex_ls_data_out : rf_id_rs1_data;
-						// (bypass_rs1 & bypass_ls_wb) ? wb_rf_data : rf_id_rs1_data;
-assign rs2_data_bypass = (bypass_rs2 & bypass_ex_ls) ? ex_ls_data_out : rf_id_rs2_data;
-						// (bypass_rs2 & bypass_ls_wb) ? wb_rf_data : rf_id_rs2_data;
+assign rs1_data_bypass = (bypass_rs1 & bypass_ex_ls) ? ex_ls_data_out : //rf_id_rs1_data;
+						(bypass_rs1 & bypass_ls_wb) ? wb_rf_data : rf_id_rs1_data;
+assign rs2_data_bypass = (bypass_rs2 & bypass_ex_ls) ? ex_ls_data_out : //rf_id_rs2_data;
+						(bypass_rs2 & bypass_ls_wb) ? wb_rf_data : rf_id_rs2_data;
 /*----------------------output assignment----------------------------*/
 	assign id_if_ready = (~id_ex_valid | (id_ex_valid & ex_id_ready)) 
 						& (~idu_ebreak_flag)  				// last instruction
