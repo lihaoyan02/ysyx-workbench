@@ -34,8 +34,9 @@ module EXU #(XLEN = 32) (
 	input id_ex_csr_wvalid,
 	input [11:0] id_ex_csr_waddr,
 
+	input lsu_bussy,
 	input ls_wb_valid,
-	input [4:0] wb_rf_rd,
+	input [4:0] ls_wb_rd,
 	input [XLEN-1:0] wb_rf_data,
 
 	// to LSU
@@ -94,7 +95,7 @@ reg [11:0] ex_ls_csr_waddr_r;
 reg [XLEN-1:0] ex_ls_csr_wdata_r;
 
 /*----------------output----------------------*/
-assign ex_id_ready = ~ex_ls_valid | (ex_ls_valid & ls_ex_ready) & (~glb_flush);
+assign ex_id_ready = (~ex_ls_valid | (ex_ls_valid & ls_ex_ready)) & (~glb_flush) & (~data_hazard);
 
 assign ex_ls_valid = exu_valid;
 assign ex_ls_en = exu_lsu_en;
@@ -124,13 +125,19 @@ wire exu_bypass_rs1, exu_bypass_rs2, wbu_bypass_rs1, wbu_bypass_rs2;
 wire [XLEN-1:0] id_ex_rs1_data_bypass, id_ex_rs2_data_bypass;
 assign exu_bypass_rs1 = (id_ex_rs1 != 0 & ex_ls_valid) & ((id_ex_rs1==ex_ls_rd) & (ex_ls_wb_ctrl==`WB_ALU));
 assign exu_bypass_rs2 = (id_ex_rs2 != 0 & ex_ls_valid) & ((id_ex_rs2==ex_ls_rd) & (ex_ls_wb_ctrl==`WB_ALU));
-assign wbu_bypass_rs1 = (id_ex_rs1 != 0 & ls_wb_valid) & (id_ex_rs1==wb_rf_rd);
-assign wbu_bypass_rs2 = (id_ex_rs2 != 0 & ls_wb_valid) & (id_ex_rs2==wb_rf_rd);
+assign wbu_bypass_rs1 = (id_ex_rs1 != 0 & ls_wb_valid) & (id_ex_rs1==ls_wb_rd);
+assign wbu_bypass_rs2 = (id_ex_rs2 != 0 & ls_wb_valid) & (id_ex_rs2==ls_wb_rd);
 assign id_ex_rs1_data_bypass = exu_bypass_rs1 ? ex_ls_data_out : 
 							wbu_bypass_rs1 ? wb_rf_data : id_ex_rs1_data;
 assign id_ex_rs2_data_bypass = exu_bypass_rs2 ? ex_ls_data_out : 
 							wbu_bypass_rs2 ? wb_rf_data : id_ex_rs2_data;
 
+wire data_hazard_ex, data_hazard_ls, data_hazard;
+assign data_hazard_ex = ((id_ex_rs1 != 0 & ex_ls_valid ) & (id_ex_rs1==ex_ls_rd) & (ex_ls_wb_ctrl != `WB_ALU)) |
+					((id_ex_rs2 != 0 & ex_ls_valid) & (id_ex_rs2==ex_ls_rd) & (ex_ls_wb_ctrl != `WB_ALU));
+assign data_hazard_ls = ((id_ex_rs1 != 0 & lsu_bussy & (~ls_wb_valid)) & (id_ex_rs1==ls_wb_rd)) |
+					((id_ex_rs2 != 0 & lsu_bussy & (~ls_wb_valid)) & (id_ex_rs2==ls_wb_rd));
+assign data_hazard = data_hazard_ex | data_hazard_ls;
 /*-------------------ALU----------------------*/
 wire [XLEN-1:0] op1;
 wire [XLEN-1:0] op2;

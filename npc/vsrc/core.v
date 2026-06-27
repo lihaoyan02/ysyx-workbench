@@ -239,10 +239,10 @@ wire icache_flush;
 		.ex_ls_wb_ctrl(ex_ls_wb_ctrl),
 		.ex_ls_data_out(ex_ls_data_out),
 		.lsu_bussy(lsu_bussy),
-		// .ls_wb_valid(ls_wb_valid),
+		.ls_wb_valid(ls_wb_valid),
 		.ls_wb_rd(ls_wb_rd),
 		// .ls_wb_ctrl(ls_wb_ctrl),
-		// .ls_wb_rdata(ls_wb_rdata),
+		.wb_rf_data(wb_rf_data),
 		.ex_ls_csr_wvalid(ex_ls_csr_wvalid),
 		.ex_ls_csr_waddr(ex_ls_csr_waddr),
 		.ls_wb_csr_wvalid(ls_wb_csr_wvalid),
@@ -342,8 +342,9 @@ wire ex_if_jvalid, if_ex_jready, ex_glb_flush;
 		.id_ex_csr_wvalid(id_ex_csr_wvalid),
 		.id_ex_csr_waddr(id_ex_csr_waddr),
 
+		.lsu_bussy(lsu_bussy),
 		.ls_wb_valid(ls_wb_valid),
-		.wb_rf_rd(wb_rf_rd),
+		.ls_wb_rd(ls_wb_rd),
 		.wb_rf_data(wb_rf_data),
 
 		.ex_ls_valid(ex_ls_valid),
