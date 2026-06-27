@@ -133,8 +133,10 @@ assign id_ex_rs2_data_bypass = exu_bypass_rs2 ? ex_ls_data_out :
 							wbu_bypass_rs2 ? wb_rf_data : id_ex_rs2_data;
 
 wire data_hazard;
-assign data_hazard = ((id_ex_rs1 != 0 & lsu_bussy & (~ex_ls_valid)) & (id_ex_rs1==wb_rf_rd)) |
-					((id_ex_rs2 != 0 & lsu_bussy & (~ex_ls_valid)) & (id_ex_rs2==wb_rf_rd));
+assign data_hazard = //((id_ex_rs1 != 0 & ex_ls_valid ) & (id_ex_rs1==wb_rf_rd) & (ex_ls_wb_ctrl==`WB_ALU)) |
+					//((id_ex_rs2 != 0 & ex_ls_valid) & (id_ex_rs2==wb_rf_rd) & (ex_ls_wb_ctrl==`WB_ALU)) |
+					((id_ex_rs1 != 0 & lsu_bussy & (~ls_wb_valid)) & (id_ex_rs1==wb_rf_rd)) |
+					((id_ex_rs2 != 0 & lsu_bussy & (~ls_wb_valid)) & (id_ex_rs2==wb_rf_rd));
 /*-------------------ALU----------------------*/
 wire [XLEN-1:0] op1;
 wire [XLEN-1:0] op2;
