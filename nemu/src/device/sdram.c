@@ -8,7 +8,7 @@
 static void *sdram_space = NULL;
 
 void init_sdram() {
-  sdram_space = new_space(SDRAM_SIZE);
+  sdram_space = malloc(SDRAM_SIZE);
   assert(sdram_space != NULL);
   add_mmio_map("sdram", SDRAM_ADDR, sdram_space, SDRAM_SIZE, NULL);
   memset(sdram_space, 0, SDRAM_SIZE);
