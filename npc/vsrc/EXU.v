@@ -95,7 +95,7 @@ reg [11:0] ex_ls_csr_waddr_r;
 reg [XLEN-1:0] ex_ls_csr_wdata_r;
 
 /*----------------output----------------------*/
-assign ex_id_ready = ~ex_ls_valid | (ex_ls_valid & ls_ex_ready) & (~glb_flush) & (~data_hazard);
+assign ex_id_ready = (~ex_ls_valid | (ex_ls_valid & ls_ex_ready)) & (~glb_flush) & (~data_hazard);
 
 assign ex_ls_valid = exu_valid;
 assign ex_ls_en = exu_lsu_en;
