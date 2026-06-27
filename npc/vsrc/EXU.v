@@ -34,6 +34,7 @@ module EXU #(XLEN = 32) (
 	input id_ex_csr_wvalid,
 	input [11:0] id_ex_csr_waddr,
 
+	input lsu_bussy,
 	input ls_wb_valid,
 	input [4:0] wb_rf_rd,
 	input [XLEN-1:0] wb_rf_data,
@@ -94,7 +95,7 @@ reg [11:0] ex_ls_csr_waddr_r;
 reg [XLEN-1:0] ex_ls_csr_wdata_r;
 
 /*----------------output----------------------*/
-assign ex_id_ready = ~ex_ls_valid | (ex_ls_valid & ls_ex_ready) & (~glb_flush);
+assign ex_id_ready = ~ex_ls_valid | (ex_ls_valid & ls_ex_ready) & (~glb_flush) & (~data_hazard);
 
 assign ex_ls_valid = exu_valid;
 assign ex_ls_en = exu_lsu_en;
@@ -131,6 +132,9 @@ assign id_ex_rs1_data_bypass = exu_bypass_rs1 ? ex_ls_data_out :
 assign id_ex_rs2_data_bypass = exu_bypass_rs2 ? ex_ls_data_out : 
 							wbu_bypass_rs2 ? wb_rf_data : id_ex_rs2_data;
 
+wire data_hazard;
+assign data_hazard = ((id_ex_rs1 != 0 & lsu_bussy) & (id_ex_rs1==wb_rf_rd)) |
+					((id_ex_rs2 != 0 & lsu_bussy) & (id_ex_rs2==wb_rf_rd));
 /*-------------------ALU----------------------*/
 wire [XLEN-1:0] op1;
 wire [XLEN-1:0] op2;
