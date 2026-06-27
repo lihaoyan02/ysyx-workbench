@@ -128,9 +128,9 @@ assign exu_bypass_rs2 = (id_ex_rs2 != 0 & ex_ls_valid) & ((id_ex_rs2==ex_ls_rd) 
 assign wbu_bypass_rs1 = (id_ex_rs1 != 0 & ls_wb_valid) & (id_ex_rs1==ls_wb_rd);
 assign wbu_bypass_rs2 = (id_ex_rs2 != 0 & ls_wb_valid) & (id_ex_rs2==ls_wb_rd);
 assign id_ex_rs1_data_bypass = exu_bypass_rs1 ? ex_ls_data_out : 
-							wbu_bypass_rs1 ? wb_rf_data : id_ex_rs1_data;
+							wbu_bypass_rs1 ? wb_rf_data : id_ex_rs1_data; // fetch bypass data from wbu(with MUX)
 assign id_ex_rs2_data_bypass = exu_bypass_rs2 ? ex_ls_data_out : 
-							wbu_bypass_rs2 ? wb_rf_data : id_ex_rs2_data;
+							wbu_bypass_rs2 ? wb_rf_data : id_ex_rs2_data; // fetch bypass data from wbu(with MUX)
 
 wire data_hazard_ex, data_hazard_ls, data_hazard;
 assign data_hazard_ex = ((id_ex_rs1 != 0 & ex_ls_valid ) & (id_ex_rs1==ex_ls_rd) & (ex_ls_wb_ctrl != `WB_ALU)) |
