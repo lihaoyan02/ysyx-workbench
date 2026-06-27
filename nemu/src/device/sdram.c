@@ -3,7 +3,7 @@
 #include <device/map.h>
 
 #define SDRAM_ADDR 0xa0000000
-#define SDRAM_SIZE 0x4000000
+#define SDRAM_SIZE 0x4000
 
 static void *sdram_space = NULL;
 
