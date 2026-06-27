@@ -7,6 +7,14 @@ menuconfig DEVICE
 
 if DEVICE
 
+config HAS_SRAM
+  bool "Enable sram"
+  default n
+
+config HAS_SDRAM
+  bool "Enable sdram"
+  default n
+
 config DTRACE
 	bool "Enable device tracer"
 	default n

@@ -28,6 +28,8 @@ void init_i8042();
 void init_audio();
 void init_disk();
 void init_sdcard();
+void init_sram();
+void init_sdram();
 void init_alarm();
 
 void send_key(uint8_t, bool);
@@ -86,4 +88,7 @@ void init_device() {
   IFDEF(CONFIG_HAS_SDCARD, init_sdcard());
 
   IFNDEF(CONFIG_TARGET_AM, init_alarm());
+
+  IFDEF(CONFIG_HAS_SRAM, init_sram());
+  IFDEF(CONFIG_HAS_SDRAM, init_sdram());
 }
