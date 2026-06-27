@@ -344,7 +344,7 @@ wire ex_if_jvalid, if_ex_jready, ex_glb_flush;
 
 		.lsu_bussy(lsu_bussy),
 		.ls_wb_valid(ls_wb_valid),
-		.wb_rf_rd(wb_rf_rd),
+		.ls_wb_rd(ls_wb_rd),
 		.wb_rf_data(wb_rf_data),
 
 		.ex_ls_valid(ex_ls_valid),
