@@ -36,9 +36,6 @@ module WBU #(XLEN = 32) (
 	output ebreak_flag
 );
 
-// localparam WB_IDLE = 3'b000, WB_ALU = 3'b001, 
-// 	WB_PC = 3'b010, WB_IMM = 3'b011, WB_MEM = 3'b100;
-
 reg [XLEN-1:0] wb_data;
 always @(*) begin
 	case (ls_wb_ctrl)
