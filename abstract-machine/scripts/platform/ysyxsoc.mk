@@ -37,10 +37,11 @@ run: insert-arg
 gdb: insert-arg
 	$(MAKE) -C $(NPC_HOME) gdb ARGS="$(NPCFLAGS)" IMG=$(IMAGE).bin CONFIG_TARGET_SOC=y
 
-# NEMUFLAGS += -l $(shell dirname $(IMAGE).elf)/nemu-log.txt
-# NEMUFLAGS += -e $(IMAGE).elf
-# NEMUFLAGS += -b
-# run-nemu: insert-arg
-#     $(MAKE) -C $(NEMU_HOME) ISA=$(ISA) run ARGS="$(NEMUFLAGS)" IMG=$(IMAGE).bin
+NEMUFLAGS += -l $(shell dirname $(IMAGE).elf)/nemu-log.txt
+NEMUFLAGS += -e $(IMAGE).elf
+NEMUFLAGS += -b
+
+run-nemu: insert-arg
+	$(MAKE) -C $(NEMU_HOME) ISA=$(ISA) run ARGS="$(NEMUFLAGS)" IMG=$(IMAGE).bin
 
 .PHONY: insert-arg
