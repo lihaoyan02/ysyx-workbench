@@ -39,6 +39,7 @@ gdb: insert-arg
 
 NEMUFLAGS += -l $(shell dirname $(IMAGE).elf)/nemu-log.txt
 NEMUFLAGS += -e $(IMAGE).elf
+NEMUFLAGS += -c $(IMAGE)-pc.bin
 NEMUFLAGS += -b
 
 run-nemu: insert-arg
