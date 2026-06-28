@@ -27,7 +27,7 @@ void init_pc_log(const char *file_name) {
   }
 }
 
-void record_pc(uint64_t pc) {
+void record_pc(vaddr_t pc) {
   if (pc_log_fp == NULL) {
     return;
   }
