@@ -1,25 +1,28 @@
 
-CC = gcc
-CFLAGS = -O2 -std=c11 -Wall
+CC ?= gcc
+CFLAGS ?= -O2 -std=c11 -Wall
+CPPFLAGS += -Iinclude
 LDFLAGS =
 
 BUILD_DIR ?= build
 OBJDIR := $(BUILD_DIR)/obj
 BIN := $(BUILD_DIR)/cachesim
 
+SRC_DIR ?= src
 PCFILE ?= sum-riscv32e-ysyxsoc-pc.bin
 LOGFILE ?= $(BUILD_DIR)/out.log
 
+SRCS := $(wildcard $(SRC_DIR)/*.c)
+OBJS := $(patsubst $(SRC_DIR)/%.c,$(OBJDIR)/%.o,$(SRCS))
+
 all: $(BIN)
 
-$(BIN): $(OBJDIR)/main.o $(OBJDIR)/cache.o | $(BUILD_DIR)
+$(BIN): $(OBJS) | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
-$(OBJDIR)/main.o: main.c cache.h | $(OBJDIR)
-	$(CC) $(CFLAGS) -c main.c -o $@
-
-$(OBJDIR)/cache.o: cache.c cache.h | $(OBJDIR)
-	$(CC) $(CFLAGS) -c cache.c -o $@
+$(OBJDIR)/%.o: $(SRC_DIR)/%.c | $(OBJDIR)
+	mkdir -p $(dir $@)
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
