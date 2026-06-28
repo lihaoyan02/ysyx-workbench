@@ -95,7 +95,6 @@ static void exec_once(Decode *s, vaddr_t pc) {
   s->snpc = pc;
   isa_exec_once(s);
   cpu.pc = s->dnpc;
-  printf("pc: " FMT_WORD " -> " FMT_WORD "\n", s->pc, s->dnpc);
   record_pc(cpu.pc);
 #ifdef CONFIG_ITRACE
   char *p = s->logbuf;
