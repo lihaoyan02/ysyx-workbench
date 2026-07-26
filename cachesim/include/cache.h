@@ -19,7 +19,7 @@
 #endif
 
 #ifndef MISS_PENALTY
-#define MISS_PENALTY 50 // cycles for a miss
+#define MISS_PENALTY 11840 // cycles for a miss
 #endif
 
 // SRAM region config (matches iCache.v)
